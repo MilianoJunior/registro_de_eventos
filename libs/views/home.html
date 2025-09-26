@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% from "components/_macros.html" import card %}
+
+{% block title %}Página Inicial{% endblock %}
+
+{% block content %}
+  <div class="grid">
+
+    {# Card 1: Status rápido #}
+    {% call card("Status Rápido", with_css=True) %}
+      <div class="chips">
+        <span class="chip">Ocorrências: <strong>{{ total_ocorrencias }}</strong></span>
+        {% for st, qtd in por_status.items() %}
+          <span class="chip">{{ st|title }}: <strong>{{ qtd }}</strong></span>
+        {% endfor %}
+      </div>
+      <div class="muted">Atualizado em {{ (recentes[0].created_at if recentes) | dt }}</div>
+    {% endcall %}
+
+    {# Card 2: Últimas ocorrências #}
+    {% call card("Últimas ocorrências") %}
+      <ul class="list-compact">
+        {% for o in recentes %}
+          <li>
+            <div><strong>{{ o.unidade }}</strong> — {{ o.tipo }} ({{ o.severidade }})</div>
+            <div class="muted">{{ o.created_at|dt }}</div>
+            <div class="muted">{{ o.descricao|clip(140) }}</div>
+          </li>
+        {% else %}
+          <li class="muted">Sem registros recentes.</li>
+        {% endfor %}
+      </ul>
+    {% endcall %}
+
+    {# Card 3: Ocorrências por usina #}
+    {% call card("Ocorrências por usina") %}
+      <table class="clean">
+        <tbody>
+          {% for nome, qtd in por_unidade %}
+            <tr>
+              <td>{{ nome }}</td>
+              <td>{{ qtd }}</td>
+            </tr>
+          {% else %}
+            <tr><td class="muted" colspan="2">Sem dados.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% endcall %}
+
+  </div>
+{% endblock %}

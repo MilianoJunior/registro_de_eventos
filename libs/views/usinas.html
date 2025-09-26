@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% from "components/_macros.html" import card %}
+
+{% block title %}{{ usina.nome if usina else sigla }} - Usina{% endblock %}
+
+{% block content %}
+  <div class="grid">
+
+    <h1>{{ usina.nome if usina else sigla }}</h1>
+    
+    {% if usina %}
+      {% call card("Informações da Usina", with_css=True) %}
+        <div class="chips">
+          <span class="chip">Sigla: <strong>{{ usina.sigla }}</strong></span>
+          <span class="chip">Nome: <strong>{{ usina.nome }}</strong></span>
+          {% if usina.localizacao %}
+            <span class="chip">Localização: <strong>{{ usina.localizacao }}</strong></span>
+          {% endif %}
+        </div>
+      {% endcall %}
+    {% else %}
+      {% call card("Usina não encontrada", with_css=True) %}
+        <p class="muted">A usina "{{ sigla }}" não foi encontrada no sistema.</p>
+      {% endcall %}
+    {% endif %}
+
+  </div>
+{% endblock %}

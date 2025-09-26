@@ -1,0 +1,112 @@
+@import 'variables.css';
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body { 
+    height: 100%; 
+    background: var(--color-bg); 
+    color: var(--color-text);
+    font-family: var(--font-family-base);
+    font-size: var(--font-size-md);
+    line-height: var(--line-height-normal);
+}
+
+body {
+    display: grid;
+    grid-template-columns: 260px 1fr;      /* sidebar + conteúdo */
+    grid-template-rows: 100%;
+}
+
+/* SIDENAV */
+.sidenav {
+    position: sticky; 
+    top: 0; 
+    height: 100vh;
+    background: var(--color-bg-alt);
+    border-right: 1px solid var(--color-stroke);
+    padding: var(--space-4) var(--space-3);
+    display: flex; 
+    flex-direction: column; 
+    gap: var(--space-3);
+}
+
+.sidenav__brand {
+    font-weight: var(--font-weight-bold); 
+    letter-spacing: 0.3px; 
+    margin-bottom: var(--space-2);
+    color: var(--color-text);
+    font-size: var(--font-size-lg);
+}
+
+.sidenav__menu { 
+    display: flex; 
+    flex-direction: column; 
+    gap: var(--space-2); 
+}
+
+.sn-section {
+    font-size: var(--font-size-xs); 
+    color: var(--color-text-muted);
+    margin: var(--space-3) var(--space-2) var(--space-2); 
+    text-transform: uppercase; 
+    letter-spacing: 0.08em;
+    font-weight: var(--font-weight-medium);
+}
+
+.sn-item {
+    display: flex; 
+    align-items: center; 
+    gap: var(--space-3);
+    color: var(--color-text); 
+    text-decoration: none;
+    padding: var(--space-3) var(--space-3); 
+    border-radius: var(--radius-md);
+    transition: background-color 0.2s ease;
+}
+
+.sn-item:hover { 
+    background: var(--color-surface); 
+}
+
+.sn-item.active { 
+    background: rgba(59, 130, 246, 0.18); 
+    outline: 1px solid rgba(59, 130, 246, 0.35); 
+}
+
+.sn-ic { 
+    width: 18px; 
+    text-align: center; 
+    opacity: 0.9; 
+}
+
+/* CONTEÚDO */
+.content {
+    min-height: 100vh;
+    padding: var(--space-5);
+    background: var(--color-bg);
+}
+
+/* GRID LAYOUT */
+.grid {
+    display: grid;
+    gap: var(--space-4);
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+}
+
+/* LAYOUT CARDS (mantido para compatibilidade) */
+.layout-cards {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    background-color: var(--color-bg-alt);
+    padding: var(--space-3);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+    width: 100%;
+    height: 100%;
+    border: 1px solid var(--color-stroke);
+}
