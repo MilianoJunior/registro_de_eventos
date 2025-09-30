@@ -15,19 +15,24 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
 </head>
 <body>
-    {% include "components/_sidebar.html" %}
+    {% include "components/navbar.html" %}
     {% block content %}{% endblock %}
 <script>
     const socket = io();
     
-    socket.on('connect', function() {
-        console.log('✅ Socket conectado! ID:', socket.id);
+    let t;
+  function reloadCSS(){
+    document.querySelectorAll('link[rel="stylesheet"]').forEach(link=>{
+      const u = new URL(link.href);
+      u.searchParams.set('v', Date.now()); // cache-bust
+      link.href = u.toString();
     });
-    
-    socket.on('file_changed', function(data) {
-        console.log('🔄 Arquivo alterado recebido:', data);
-        location.reload();
-    });
+  }
+  socket.on('file_changed', (data) => {
+    clearTimeout(t);
+    const p = String(data?.path||"");
+    t = setTimeout(() => p.endsWith('.css') ? reloadCSS() : location.reload(), 120);
+  });
 
 </script>
 </body>

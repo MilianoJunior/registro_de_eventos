@@ -1,7 +1,6 @@
 from datetime import datetime
 from typing import Any, Optional
 
-
 def dt_filter(value: Any) -> str:
     """
     Filtro para formatação de datas no Jinja2.

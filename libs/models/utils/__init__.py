@@ -3,7 +3,7 @@ Módulo para configuração de filtros customizados do Jinja2.
 Centraliza a configuração de filtros relacionados à apresentação de dados.
 """
 
-from libs.models.filters import TEMPLATE_FILTERS
+from libs.models.utils.filters import TEMPLATE_FILTERS
 
 
 def register_template_filters(app):

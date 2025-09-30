@@ -1,9 +1,29 @@
-<header class="navbar">
-  <div class="navbar__left">
-    <img src="{{ url_for('static', filename='imgs/engegom.ico') }}" class="logo" alt="logo">
-    <strong>COG ENGESEP</strong>
-  </div>
-  <div class="navbar__right">
-    <span class="pill">v0.1</span>
-  </div>
-</header>
+{% set MAIN_NAV = [
+  {"label": "Visão Geral",        "endpoint": "index", "icon": "lucide-layout-dashboard"},
+  {"label": "Registrar Evento",   "endpoint": "index", "icon": "lucide-edit-3"},
+  {"label": "Análise & Relatórios","endpoint":"index", "icon": "lucide-chart-bar"}
+] %}
+
+<aside class="navbar">
+  <div class="navbar__brand">EngeSEP O&M</div>
+
+  <nav class="navbar__menu">
+    {% for it in MAIN_NAV %}
+      {% set active = 'active' if request.endpoint == it.endpoint else '' %}
+      <a class="navbar__item {{ active }}" href="{{ url_for(it.endpoint) }}">
+        <span class="navbar__ic">🏠</span> {{ it.label }}
+      </a>
+    {% endfor %}
+
+    <div class="navbar__section">USINAS</div>
+
+    {# Lista dinâmica vinda do controller #}
+    {% for u in usinas %}
+      <a class="navbar__item" href="{{ url_for('usina_page', sigla=u.sigla) }}">
+        <span class="navbar__ic">🏭</span> {{ u.nome }}
+      </a>
+    {% endfor %}
+  </nav>
+
+  <div class="navbar__footer">© 2025 EngeSEP O&M</div>
+</aside>
