@@ -34,6 +34,36 @@
     t = setTimeout(() => p.endsWith('.css') ? reloadCSS() : location.reload(), 120);
   });
 
+  // === NAVBAR TOGGLE ===
+  document.addEventListener('DOMContentLoaded', function() {
+    const navbar = document.getElementById('navbar');
+    const navbarToggle = document.getElementById('navbarToggle');
+    const navbarClose = document.getElementById('navbarClose');
+    const navbarOverlay = document.getElementById('navbarOverlay');
+    
+    // Abrir navbar
+    navbarToggle.addEventListener('click', function() {
+      navbar.classList.add('open');
+      navbarOverlay.classList.add('active');
+    });
+    
+    // Fechar navbar
+    function closeNavbar() {
+      navbar.classList.remove('open');
+      navbarOverlay.classList.remove('active');
+    }
+    
+    navbarClose.addEventListener('click', closeNavbar);
+    navbarOverlay.addEventListener('click', closeNavbar);
+    
+    // Fechar com ESC
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape' && navbar.classList.contains('open')) {
+        closeNavbar();
+      }
+    });
+  });
+
 </script>
 </body>
 </html> 

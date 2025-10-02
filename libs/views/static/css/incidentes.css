@@ -1,0 +1,113 @@
+
+/* .incidentes-list {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    align-items: stretch;
+    gap: calc(var(--gap-base) * var(--multiplier-xs));
+    width: 100%;
+    height: 100%;
+    background: #b0d23f;
+    overflow-y: auto;
+} */
+.incidente-item {
+    display: flex;
+    align-items: flex-start;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+    gap: calc(var(--gap-base) * var(--multiplier-xs));
+    padding: calc(var(--padding-base) * var(--multiplier-xs));
+    background: var(--background-hover);
+    border-radius: calc(var(--radius-base) * var(--multiplier-xs));
+    border: 1px solid var(--color-stroke);
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    
+    /* Efeito de iluminação prateada/brilho metálico */
+    box-shadow: 
+        0 2px 8px rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05),
+        0 0 20px rgba(119, 211, 247, 0.1);
+    
+    /* Gradiente sutil de brilho */
+    background: linear-gradient(
+        135deg,
+        var(--background-hover) 0%,
+        rgba(119, 211, 247, 0.03) 50%,
+        var(--background-hover) 100%
+    );
+    
+    /* Otimização de renderização */
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+.incidente-header {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    align-items: stretch;
+    width: 100%;
+    height: 100%;
+}
+.incidente-icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: calc(var(--font-size-base) * var(--multiplier-xs));
+    font-weight: var(--font-weight-medium);
+    color: var(--color-base);
+    flex-shrink: 0;
+    position: relative;
+    z-index: 1;
+}
+.incidente-content {
+    flex: 1;
+}
+
+.incidente-title {
+    font-size: calc(var(--font-size-base) * var(--multiplier-sm));
+    font-weight: var(--font-weight-medium);
+    color: var(--color-base);
+}
+.incidente-description {
+    font-size: calc(var(--font-size-base) * var(--multiplier-md));
+    font-weight: var(--font-weight-medium);
+    color: var(--color-base);
+}
+.incidente-meta {
+    font-size: calc(var(--font-size-base) * var(--multiplier-xs));
+    font-weight: var(--font-weight-medium);
+    color: var(--color-base);
+}
+.incidente-button-container {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+    align-items: stretch;
+}
+
+.incidente-priority {
+    font-size: calc(var(--font-size-base) * var(--multiplier-xs));
+    font-weight: var(--font-weight-medium);
+    color: var(--color-base);
+    flex-shrink: 0;
+    position: relative;
+    z-index: 1;
+    border-radius: calc(var(--radius-base) * var(--multiplier-xs));
+    padding: calc(var(--padding-base) * var(--multiplier-xs));
+    background: var(--color-warning);
+    color: var(--color-base);
+}
+.incidente-button {
+    width: 100%;
+    height: 100%;
+}

@@ -4,26 +4,43 @@
   {"label": "Análise & Relatórios","endpoint":"index", "icon": "lucide-chart-bar"}
 ] %}
 
-<aside class="navbar">
-  <div class="navbar__brand">EngeSEP O&M</div>
+<!-- Botão Toggle do Navbar -->
+<button class="navbar-toggle" id="navbarToggle" aria-label="Abrir/Fechar Menu">
+  <span class="navbar-toggle__icon">☰</span>
+</button>
+
+<aside class="navbar" id="navbar">
+  <div class="navbar__header">
+    <div class="navbar__brand">EngeSEP O&M</div>
+    <button class="navbar__close" id="navbarClose" aria-label="Fechar Menu">×</button>
+  </div>
 
   <nav class="navbar__menu">
     {% for it in MAIN_NAV %}
       {% set active = 'active' if request.endpoint == it.endpoint else '' %}
       <a class="navbar__item {{ active }}" href="{{ url_for(it.endpoint) }}">
-        <span class="navbar__ic">🏠</span> {{ it.label }}
+        <span class="navbar__ic">🏠</span> 
+        <span class="navbar__label">{{ it.label }}</span>
       </a>
     {% endfor %}
 
-    <div class="navbar__section">USINAS</div>
+    <div class="navbar__section">
+      <span class="navbar__section-text">USINAS</span>
+    </div>
 
     {# Lista dinâmica vinda do controller #}
     {% for u in usinas %}
       <a class="navbar__item" href="{{ url_for('usina_page', sigla=u.sigla) }}">
-        <span class="navbar__ic">🏭</span> {{ u.nome }}
+        <span class="navbar__ic">🏭</span> 
+        <span class="navbar__label">{{ u.nome }}</span>
       </a>
     {% endfor %}
   </nav>
 
-  <div class="navbar__footer">© 2025 EngeSEP O&M</div>
+  <div class="navbar__footer">
+    <span class="navbar__footer-text">© 2025 EngeSEP O&M</span>
+  </div>
 </aside>
+
+<!-- Overlay para fechar navbar ao clicar fora -->
+<div class="navbar-overlay" id="navbarOverlay"></div>

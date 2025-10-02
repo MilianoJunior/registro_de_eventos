@@ -6,7 +6,7 @@
 @import 'status_usinas.css';
 @import 'registro_ocorrencias.css';
 @import 'components.css';
-
+@import 'incidentes.css';
 /* === RESET E ESTILOS GLOBAIS === */
 * {
     margin: 1px;
