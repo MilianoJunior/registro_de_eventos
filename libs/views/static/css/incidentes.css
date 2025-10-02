@@ -13,18 +13,19 @@
 } */
 .incidente-item {
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     flex-direction: row;
     flex-wrap: nowrap;
     justify-content: space-between;
-    gap: calc(var(--gap-base) * var(--multiplier-xs));
-    padding: calc(var(--padding-base) * var(--multiplier-xs));
+    gap: 12px;
+    padding: 12px 16px;
     background: var(--background-hover);
-    border-radius: calc(var(--radius-base) * var(--multiplier-xs));
+    border-radius: var(--radius-base);
     border: 1px solid var(--color-stroke);
     position: relative;
     overflow: hidden;
     transition: all 0.3s ease;
+    min-height: 60px;
     
     /* Efeito de iluminação prateada/brilho metálico */
     box-shadow: 
@@ -55,59 +56,119 @@
     height: 100%;
 }
 .incidente-icon {
-    width: 24px;
-    height: 24px;
+    width: 28px;
+    height: 28px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: calc(var(--font-size-base) * var(--multiplier-xs));
-    font-weight: var(--font-weight-medium);
+    font-size: 14px;
+    font-weight: 700;
     color: var(--color-base);
     flex-shrink: 0;
     position: relative;
     z-index: 1;
 }
+
+/* Efeito hover no item */
+.incidente-item::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(
+        45deg,
+        transparent 30%,
+        rgba(255, 255, 255, 0.05) 50%,
+        transparent 70%
+    );
+    opacity: 0;
+    transition: opacity 0.5s ease;
+    pointer-events: none;
+}
+
+.incidente-item:hover {
+    transform: translateY(-2px);
+    border-color: #77d3f7;
+    box-shadow: 
+        0 4px 16px rgba(0, 0, 0, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1),
+        0 0 30px rgba(119, 211, 247, 0.2),
+        0 0 40px rgba(119, 211, 247, 0.1);
+}
+
+.incidente-item:hover::before {
+    opacity: 1;
+}
 .incidente-content {
     flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    position: relative;
+    z-index: 1;
 }
 
 .incidente-title {
     font-size: calc(var(--font-size-base) * var(--multiplier-sm));
-    font-weight: var(--font-weight-medium);
-    color: var(--color-base);
+    font-weight: 500;
+    color: #898b8f;
+    line-height: 1.2;
 }
+
 .incidente-description {
-    font-size: calc(var(--font-size-base) * var(--multiplier-md));
-    font-weight: var(--font-weight-medium);
+    font-size: calc(var(--font-size-base) * var(--multiplier-sm));
+    font-weight: 500;
     color: var(--color-base);
+    line-height: 1.3;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
+
 .incidente-meta {
     font-size: calc(var(--font-size-base) * var(--multiplier-xs));
-    font-weight: var(--font-weight-medium);
     color: var(--color-base);
+    opacity: 0.6;
+    line-height: 1.2;
 }
 .incidente-button-container {
     display: flex;
     flex-direction: column;
-    flex-wrap: nowrap;
-    justify-content: space-between;
-    align-items: stretch;
+    gap: 6px;
+    align-items: flex-end;
+    position: relative;
+    z-index: 1;
 }
 
 .incidente-priority {
-    font-size: calc(var(--font-size-base) * var(--multiplier-xs));
-    font-weight: var(--font-weight-medium);
-    color: var(--color-base);
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05rem;
     flex-shrink: 0;
-    position: relative;
-    z-index: 1;
-    border-radius: calc(var(--radius-base) * var(--multiplier-xs));
-    padding: calc(var(--padding-base) * var(--multiplier-xs));
+    border-radius: 4px;
+    padding: 4px 8px;
     background: var(--color-warning);
-    color: var(--color-base);
+    color: var(--color-inv);
+    white-space: nowrap;
 }
+
 .incidente-button {
-    width: 100%;
-    height: 100%;
+    font-size: 11px;
+    padding: 6px 12px;
+    border-radius: 4px;
+    background: transparent;
+    border: 1px solid var(--color-stroke);
+    color: var(--color-base);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.incidente-button:hover {
+    background: var(--color-stroke);
+    transform: translateY(-1px);
 }
