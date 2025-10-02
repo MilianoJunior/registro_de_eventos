@@ -7,33 +7,140 @@
 }
 
 .registro-ocorrencias-container {
-    display: var(--registro_ocorrencias-display-base);
-    flex-direction: var(--registro_ocorrencias-flex-direction-base);
-    flex-wrap: var(--registro_ocorrencias-flex-wrap-base);
-    justify-content: var(--registro_ocorrencias-justify-content-base);
-    align-items: var(--registro_ocorrencias-align-items-base);
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    align-items: stretch;
     width: 100%;
     height: 100%;
-    background: var(--registro_ocorrencias-background-base);
+    padding: 10px;
+    overflow-y: auto;
+}
+
+/* Estilização da barra de rolagem */
+.registro-ocorrencias-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+.registro-ocorrencias-container::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.registro-ocorrencias-container::-webkit-scrollbar-thumb {
+    background: transparent;
+    border-radius: 3px;
+    transition: background 0.3s ease;
+}
+
+.registro-ocorrencias-container:hover::-webkit-scrollbar-thumb {
+    background: rgba(128, 128, 128, 0.5);
+}
+
+.registro-ocorrencias-container::-webkit-scrollbar-thumb:hover {
+    background: rgba(128, 128, 128, 0.8);
+}
+
+/* Para Firefox */
+.registro-ocorrencias-container {
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
+}
+
+.registro-ocorrencias-container:hover {
+    scrollbar-color: rgba(128, 128, 128, 0.5) transparent;
+}
+
+/* Título do registro de ocorrências */
+.registro-ocorrencias-titulo {
+    font-size: calc(var(--font-size-base) * var(--multiplier-lg));
+    font-weight: 200;
+    color: var(--color-base);
+    letter-spacing: 0.05rem;
+    text-align: center;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid var(--color-stroke);
+    padding-bottom: 10px;
+    border-radius: var(--radius-base);
+    background: linear-gradient(
+        135deg,
+        var(--background-hover) 0%,
+        rgba(119, 211, 247, 0.03) 50%,
+        var(--background-hover) 100%
+    );
 }
 
 .ocorrencias-list {
     display: flex;
     flex-direction: column;
-    gap: calc(var(--gap-base) * var(--multiplier-lg));
-    max-height: calc(100vh - 250px);
-    overflow-y: auto;
+    gap: 10px;
 }
 
+/* Card de Ocorrência */
 .ocorrencia-item {
     display: flex;
     align-items: flex-start;
-    gap: calc(var(--gap-base) * var(--multiplier-md));
-    padding: calc(var(--padding-base) * 2);
+    gap: 10px;
+    padding: 15px;
     background: var(--background-hover);
     border-radius: var(--radius-base);
     border: 1px solid var(--color-stroke);
-    min-height: 100px;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    
+    /* Efeito de iluminação prateada/brilho metálico */
+    box-shadow: 
+        0 2px 8px rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05),
+        0 0 20px rgba(119, 211, 247, 0.1);
+    
+    /* Gradiente sutil de brilho */
+    background: linear-gradient(
+        135deg,
+        var(--background-hover) 0%,
+        rgba(119, 211, 247, 0.03) 50%,
+        var(--background-hover) 100%
+    );
+    
+    /* Otimização de renderização */
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Efeito de brilho ao passar o mouse */
+.ocorrencia-item::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(
+        45deg,
+        transparent 30%,
+        rgba(255, 255, 255, 0.05) 50%,
+        transparent 70%
+    );
+    opacity: 0;
+    transition: opacity 0.5s ease;
+    pointer-events: none;
+}
+
+.ocorrencia-item:hover {
+    transform: translateY(-2px);
+    border-color: #77d3f7;
+    box-shadow: 
+        0 4px 16px rgba(0, 0, 0, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1),
+        0 0 30px rgba(119, 211, 247, 0.2),
+        0 0 40px rgba(119, 211, 247, 0.1);
+}
+
+.ocorrencia-item:hover::before {
+    opacity: 1;
 }
 
 .ocorrencia-icon {
@@ -46,6 +153,8 @@
     font-size: calc(var(--font-size-base) * var(--multiplier-xs));
     font-weight: var(--font-weight-bold);
     flex-shrink: 0;
+    position: relative;
+    z-index: 1;
 }
 
 .priority-media {
@@ -62,32 +171,40 @@
     flex: 1;
     display: flex;
     flex-direction: column;
-    gap: calc(var(--gap-base) * var(--multiplier-md));
+    gap: 5px;
+    position: relative;
+    z-index: 1;
 }
 
 .ocorrencia-title {
     font-size: calc(var(--font-size-base) * var(--multiplier-sm));
-    font-weight: var(--font-weight-medium);
-    color: var(--color-base);
+    line-height: 1.2rem;
+    letter-spacing: 0.05rem;
+    color: #898b8f;
 }
 
 .ocorrencia-description {
-    font-size: calc(var(--font-size-base) * var(--multiplier-xs));
+    font-size: calc(var(--font-size-base) * var(--multiplier-sm));
     color: var(--color-base);
-    opacity: 0.8;
+    line-height: 1.2rem;
+    letter-spacing: 0.05rem;
 }
 
 .ocorrencia-meta {
     font-size: calc(var(--font-size-base) * var(--multiplier-xs));
     color: var(--color-base);
     opacity: 0.6;
+    line-height: 1.2rem;
 }
 
 .ocorrencia-priority {
     font-size: calc(var(--font-size-base) * var(--multiplier-xs));
     font-weight: var(--font-weight-medium);
-    padding: calc(var(--padding-base) * var(--multiplier-xs));
-    border-radius: calc(var(--radius-base) * var(--multiplier-xs));
+    padding: 4px 8px;
+    border-radius: 4px;
     flex-shrink: 0;
+    white-space: nowrap;
+    position: relative;
+    z-index: 1;
 }
 

@@ -22,5 +22,8 @@
     width: 100%;
     height: calc(100vh - 150px);
     min-height: 600px;
+    padding: var(--padding-base);
+    margin: var(--margin-base);
+    gap: var(--gap-base);
 }
 
