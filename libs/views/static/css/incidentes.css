@@ -1,17 +1,106 @@
-
-/* .incidentes-list {
+/* Carrossel de Incidentes */
+.incidentes-carousel {
     display: flex;
-    flex-direction: column;
-    flex-wrap: nowrap;
-    justify-content: flex-start;
+    flex-direction: row;
     align-items: stretch;
-    gap: calc(var(--gap-base) * var(--multiplier-xs));
+    gap: 0;
     width: 100%;
     height: 100%;
-    background: #b0d23f;
-    overflow-y: auto;
-} */
+    position: relative;
+}
+
+.incidentes-carousel-container {
+    width: 100%;
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+}
+
+.incidentes-carousel-track {
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.5s ease-in-out;
+    height: 100%;
+}
+
+.carousel-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 36px;
+    height: 50%;
+    min-height: 60px;
+    max-height: 100px;
+    background: var(--background-hover);
+    border: 1px solid var(--color-stroke);
+    border-radius: var(--radius-base);
+    color: var(--color-base);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    opacity: 0.4;
+    z-index: 10;
+    
+    /* Efeito de brilho metálico */
+    box-shadow: 
+        0 2px 4px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    
+    background: linear-gradient(
+        135deg,
+        var(--background-hover) 0%,
+        rgba(119, 211, 247, 0.03) 50%,
+        var(--background-hover) 100%
+    );
+}
+
+.carousel-nav:hover {
+    opacity: 1;
+    background: linear-gradient(
+        135deg,
+        rgba(119, 211, 247, 0.08) 0%,
+        rgba(119, 211, 247, 0.12) 50%,
+        rgba(119, 211, 247, 0.08) 100%
+    );
+    border-color: #77d3f7;
+    box-shadow: 
+        0 2px 8px rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1),
+        0 0 20px rgba(119, 211, 247, 0.2);
+}
+
+.carousel-nav:active {
+    box-shadow: 
+        0 1px 2px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.carousel-nav svg {
+    width: 20px;
+    height: 20px;
+}
+
+.carousel-nav-prev {
+    left: 4px;
+}
+
+.carousel-nav-prev svg {
+    transform: rotate(90deg);
+}
+
+.carousel-nav-next {
+    right: 4px;
+}
+
+.carousel-nav-next svg {
+    transform: rotate(90deg);
+}
+
 .incidente-item {
+    min-height: 100%;
+    flex-shrink: 0;
     display: flex;
     align-items: center;
     flex-direction: row;
@@ -25,7 +114,6 @@
     position: relative;
     overflow: hidden;
     transition: all 0.3s ease;
-    min-height: 60px;
     
     /* Efeito de iluminação prateada/brilho metálico */
     box-shadow: 
@@ -171,4 +259,20 @@
 .incidente-button:hover {
     background: var(--color-stroke);
     transform: translateY(-1px);
+}
+
+/* Estilos de prioridade para ícones e badges */
+.priority-alta {
+    background: #ef4444;
+    color: white;
+}
+
+.priority-media {
+    background: var(--color-warning);
+    color: var(--color-inv);
+}
+
+.priority-baixa {
+    background: #10b981;
+    color: white;
 }
