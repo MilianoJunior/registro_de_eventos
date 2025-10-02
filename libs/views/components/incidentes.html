@@ -85,7 +85,7 @@
     
     let currentIndex = 0;
     let autoPlayInterval;
-    const autoPlayDelay = 5000; // 5 segundos
+    const autoPlayDelay = 2000; // 5 segundos
 
     function updateCarousel(transition = true) {
         if (!transition) {
@@ -94,7 +94,26 @@
             track.style.transition = 'transform 0.5s ease-in-out';
         }
         
-        track.style.transform = `translateY(-${currentIndex * 100}%)`;
+        // Calcular a posição para centralizar o item ativo
+        const containerHeight = carousel.querySelector('.incidentes-carousel-container').offsetHeight;
+        const currentItem = items[currentIndex];
+        const itemHeight = currentItem.offsetHeight;
+        const gap = 10; // gap entre items (deve corresponder ao gap do CSS)
+        
+        // Calcular posição: deslocamento total até o item atual - metade do container + metade do item
+        const offset = (currentIndex * (itemHeight + gap)) - ((containerHeight - itemHeight) / 2);
+        
+        track.style.transform = `translateY(-${offset}px)`;
+        
+        // Atualizar classes dos cards para efeito de foco
+        items.forEach((item, index) => {
+            item.classList.remove('active', 'inactive');
+            if (index === currentIndex) {
+                item.classList.add('active');
+            } else {
+                item.classList.add('inactive');
+            }
+        });
         
         // Restaurar transição após um frame
         if (!transition) {
@@ -149,12 +168,23 @@
         carousel.addEventListener('mouseleave', startAutoPlay);
     }
 
+    // Recalcular posição em resize
+    let resizeTimeout;
+    window.addEventListener('resize', () => {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(() => {
+            updateCarousel(false);
+        }, 150);
+    });
+
     // Iniciar autoplay
     if (items.length > 1) {
         startAutoPlay();
     }
 
-    // Inicializar posição
-    updateCarousel(false);
+    // Inicializar posição após o DOM estar pronto
+    setTimeout(() => {
+        updateCarousel(false);
+    }, 100);
 })();
 </script>

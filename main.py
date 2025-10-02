@@ -60,7 +60,7 @@ def setup_file_watcher(socketio):
 if __name__ == '__main__':
     observer = setup_file_watcher(socketio)
     try:
-        socketio.run(app, host='127.0.0.1', port=5000, debug=True)
+        socketio.run(app, host='0.0.0.0', port=5000, debug=True)
     finally:
         observer.stop()
         observer.join()

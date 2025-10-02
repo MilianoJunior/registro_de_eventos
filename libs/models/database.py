@@ -64,7 +64,12 @@ class Database(metaclass=_Singleton):  # <- troque para "object" se NÃO quiser 
                 password=self.password,
                 database=self.database,
                 port=self.port,
-                connection_timeout=self.connection_timeout
+                connection_timeout=self.connection_timeout,
+                autocommit=False,
+                pool_name='mypool',
+                pool_size=5,
+                pool_reset_session=True,
+                use_pure=True
             )
             return self.connection
         except Error as e:
@@ -75,17 +80,46 @@ class Database(metaclass=_Singleton):  # <- troque para "object" se NÃO quiser 
             self.connect()
         return self.connection.cursor()
 
-    def execute_query(self, query, params=None):
-        cur = self._cursor()
-        try:
-            cur.execute(query, params or ())
-            self.connection.commit()
-            return cur
-        except Error as e:
-            self.connection.rollback()
-            raise Exception(f"Erro ao executar query: {e}")
-        finally:
-            cur.close()
+    def execute_query(self, query, params=None, retries=3):
+        """Executa query com retry automático em caso de perda de conexão."""
+        last_error = None
+        
+        for attempt in range(retries):
+            try:
+                # Força reconexão se não estiver viva
+                if not self._is_alive():
+                    if DB_DEBUG and attempt > 0:
+                        print(f"[Database] 🔄 Tentando reconectar (tentativa {attempt + 1}/{retries})")
+                    self.connection = None
+                    self.connect()
+                
+                cur = self._cursor()
+                try:
+                    cur.execute(query, params or ())
+                    self.connection.commit()
+                    return cur
+                except Error as e:
+                    if self.connection and self.connection.is_connected():
+                        self.connection.rollback()
+                    raise
+                finally:
+                    cur.close()
+                    
+            except Error as e:
+                last_error = e
+                error_code = e.errno if hasattr(e, 'errno') else None
+                connection_errors = [2006, 2013, 2055]
+                
+                if error_code in connection_errors and attempt < retries - 1:
+                    if DB_DEBUG:
+                        print(f"[Database] ⚠️ Conexão perdida (erro {error_code}), tentando novamente...")
+                    self.connection = None
+                    time.sleep(0.5 * (attempt + 1))
+                    continue
+                else:
+                    raise Exception(f"Erro ao executar query: {e}")
+        
+        raise Exception(f"Erro ao executar query após {retries} tentativas: {last_error}")
 
     def execute_many(self, queries):
         cur = self._cursor()
@@ -100,17 +134,45 @@ class Database(metaclass=_Singleton):  # <- troque para "object" se NÃO quiser 
         finally:
             cur.close()
 
-    def fetch_data(self, query, params=None):
-        cur = self._cursor()
-        try:
-            cur.execute(query, params or ())
-            result = cur.fetchall()
-            columns = [c[0] for c in cur.description]
-            return [dict(zip(columns, row)) for row in result]
-        except Error as e:
-            raise Exception(f"Erro ao buscar dados: {e}")
-        finally:
-            cur.close()
+    def fetch_data(self, query, params=None, retries=3):
+        """Busca dados com retry automático em caso de perda de conexão."""
+        last_error = None
+        
+        for attempt in range(retries):
+            try:
+                # Força reconexão se não estiver viva
+                if not self._is_alive():
+                    if DB_DEBUG and attempt > 0:
+                        print(f"[Database] 🔄 Tentando reconectar (tentativa {attempt + 1}/{retries})")
+                    self.connection = None  # Force reset
+                    self.connect()
+                
+                cur = self._cursor()
+                try:
+                    cur.execute(query, params or ())
+                    result = cur.fetchall()
+                    columns = [c[0] for c in cur.description]
+                    return [dict(zip(columns, row)) for row in result]
+                finally:
+                    cur.close()
+                    
+            except Error as e:
+                last_error = e
+                error_code = e.errno if hasattr(e, 'errno') else None
+                
+                # Erros de conexão que devem fazer retry
+                connection_errors = [2006, 2013, 2055]  # Server gone away, Lost connection, Lost connection to server at reading
+                
+                if error_code in connection_errors and attempt < retries - 1:
+                    if DB_DEBUG:
+                        print(f"[Database] ⚠️ Conexão perdida (erro {error_code}), tentando novamente...")
+                    self.connection = None  # Force reset
+                    time.sleep(0.5 * (attempt + 1))  # Backoff exponencial
+                    continue
+                else:
+                    raise Exception(f"Erro ao buscar dados: {e}")
+        
+        raise Exception(f"Erro ao buscar dados após {retries} tentativas: {last_error}")
 
     def close(self):
         try:
