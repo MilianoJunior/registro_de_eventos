@@ -45,12 +45,14 @@
     navbarToggle.addEventListener('click', function() {
       navbar.classList.add('open');
       navbarOverlay.classList.add('active');
+      document.body.classList.add('navbar-open');
     });
     
     // Fechar navbar
     function closeNavbar() {
       navbar.classList.remove('open');
       navbarOverlay.classList.remove('active');
+      document.body.classList.remove('navbar-open');
     }
     
     navbarClose.addEventListener('click', closeNavbar);
