@@ -1,0 +1,26 @@
+@import 'variables.css';
+
+/* === LAYOUT GERAL === */
+.content {
+    display: var(--content-display-base);
+    flex-direction: var(--content-flex-direction-base);
+    flex-wrap: var(--content-flex-wrap-base);
+    justify-content: var(--content-justify-content-base);
+    align-items: var(--content-align-items-base);
+    gap: var(--content-gap-base);
+    width: var(--content-width-base);
+    height: var(--content-height-base);
+    background: var(--content-background-base);
+    margin-left: var(--navbar-width-base);
+    padding: var(--padding-base);
+    overflow-y: auto;
+}
+
+.content__body {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    height: calc(100vh - 150px);
+    min-height: 600px;
+}
+

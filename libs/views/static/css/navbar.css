@@ -1,0 +1,75 @@
+@import 'variables.css';
+
+/* === NAVBAR === */
+.navbar {
+    display: var(--navbar-display-base);
+    flex-direction: var(--navbar-flex-direction-base);
+    flex-wrap: var(--navbar-flex-wrap-base);
+    justify-content: var(--navbar-justify-content-base);
+    align-items: var(--navbar-align-items-base);
+    gap: var(--navbar-gap-base);
+    width: var(--navbar-width-base);
+    height: var(--navbar-height-base);
+    background: var(--navbar-background-base);
+    padding: var(--navbar-padding-base);
+    margin: 0;
+    position: fixed;
+    left: 0;
+    top: 0;
+    overflow-y: auto;
+}
+
+.navbar__brand {
+    font-weight: var(--font-weight-bold); 
+    letter-spacing: var(--letter-spacing-base); 
+    margin: var(--navbar-margin-base);
+    color: var(--color-base);
+    font-size: var(--titulo-a);
+}
+
+.navbar__menu { 
+    display: flex; 
+    flex-direction: column; 
+    gap: var(--navbar-gap-base); 
+}
+
+.navbar__section {
+    font-size: var(--titulo-b); 
+    color: var(--color-base);
+    margin: var(--navbar-margin-base); 
+    text-transform: var(--text-transform-base); 
+    letter-spacing: var(--letter-spacing-base);
+    font-weight: var(--font-weight-medium);
+}
+
+.navbar__item {
+    margin: var(--navbar-margin-base);
+    color: var(--color-base);
+    text-decoration: var(--text-decoration-base);
+    padding: var(--navbar-padding-base);
+    border-radius: var(--radius-base);
+    transition: background-color var(--duration-base) var(--easing-standard);
+}
+
+.navbar__item:hover { 
+    background: var(--background-hover); 
+}
+
+.navbar__item.active { 
+    background: var(--background-hover); 
+    outline: 1px solid var(--background-hover); 
+}
+
+.navbar__ic { 
+    width: var(--navbar-ic-width-base); 
+    text-align: var(--navbar-ic-text-align-base); 
+    opacity: var(--navbar-ic-opacity-base); 
+}
+
+.navbar__footer {
+    font-size: var(--navbar-footer-font-size-base);
+    color: var(--color-base);
+    margin: var(--navbar-margin-base);
+    text-align: var(--navbar-ic-text-align-base);
+}
+

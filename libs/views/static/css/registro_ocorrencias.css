@@ -1,0 +1,93 @@
+@import 'variables.css';
+
+/* === REGISTRO DE OCORRÊNCIAS === */
+.events_usinas {
+    width: 100%;
+    height: 100%;
+}
+
+.registro-ocorrencias-container {
+    display: var(--registro_ocorrencias-display-base);
+    flex-direction: var(--registro_ocorrencias-flex-direction-base);
+    flex-wrap: var(--registro_ocorrencias-flex-wrap-base);
+    justify-content: var(--registro_ocorrencias-justify-content-base);
+    align-items: var(--registro_ocorrencias-align-items-base);
+    width: 100%;
+    height: 100%;
+    background: var(--registro_ocorrencias-background-base);
+}
+
+.ocorrencias-list {
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--gap-base) * var(--multiplier-lg));
+    max-height: calc(100vh - 250px);
+    overflow-y: auto;
+}
+
+.ocorrencia-item {
+    display: flex;
+    align-items: flex-start;
+    gap: calc(var(--gap-base) * var(--multiplier-md));
+    padding: calc(var(--padding-base) * 2);
+    background: var(--background-hover);
+    border-radius: var(--radius-base);
+    border: 1px solid var(--color-stroke);
+    min-height: 100px;
+}
+
+.ocorrencia-icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: calc(var(--font-size-base) * var(--multiplier-xs));
+    font-weight: var(--font-weight-bold);
+    flex-shrink: 0;
+}
+
+.priority-media {
+    background: var(--color-warning);
+    color: var(--color-inv);
+}
+
+.priority-alta {
+    background: var(--color-danger);
+    color: var(--color-base);
+}
+
+.ocorrencia-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--gap-base) * var(--multiplier-md));
+}
+
+.ocorrencia-title {
+    font-size: calc(var(--font-size-base) * var(--multiplier-sm));
+    font-weight: var(--font-weight-medium);
+    color: var(--color-base);
+}
+
+.ocorrencia-description {
+    font-size: calc(var(--font-size-base) * var(--multiplier-xs));
+    color: var(--color-base);
+    opacity: 0.8;
+}
+
+.ocorrencia-meta {
+    font-size: calc(var(--font-size-base) * var(--multiplier-xs));
+    color: var(--color-base);
+    opacity: 0.6;
+}
+
+.ocorrencia-priority {
+    font-size: calc(var(--font-size-base) * var(--multiplier-xs));
+    font-weight: var(--font-weight-medium);
+    padding: calc(var(--padding-base) * var(--multiplier-xs));
+    border-radius: calc(var(--radius-base) * var(--multiplier-xs));
+    flex-shrink: 0;
+}
+

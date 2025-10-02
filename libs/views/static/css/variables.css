@@ -19,8 +19,8 @@
   --color-danger: #ef4444;
 
   /* === Tipografia === */
-  --font-family-base: 'poppins', sans-serif;
-  --font-size-base: 15px; /* 16px */
+  --font-family-base: 'inter', sans-serif;
+  --font-size-base: 16px; /* 16px */
   --font-weight-base: 400;
   --font-weight-medium: calc(var(--font-weight-base) * var(--multiplier-md));
   --font-weight-semibold: calc(var(--font-weight-base) * var(--multiplier-lg));

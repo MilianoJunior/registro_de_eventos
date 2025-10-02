@@ -1,0 +1,71 @@
+@import 'variables.css';
+
+/* === CARDS DASHBOARD === */
+.cards-container {
+    display: var(--list_cards-base);
+    flex-direction: var(--list_cards-flex-direction-base);
+    flex-wrap: var(--list_cards-flex-wrap-base);
+    justify-content: var(--list_cards-justify-content-base);
+    align-items: var(--list_cards-align-items-base);
+    gap: var(--list_cards-gap-base);
+    width: var(--list_cards-width);
+    height: var(--list_cards-height);
+    background: var(--list_cards-background-base);
+    padding: var(--padding-base);
+}
+
+.card-item {
+    background: var(--background-hover);
+    border-radius: var(--radius-base) 0 0 var(--radius-base);
+    padding: calc(var(--padding-base) * 2);
+    flex: 1;
+    min-width: 200px;
+    position: relative;
+    clip-path: polygon(0 0, calc(100% - 15px) 0, 100% 100%, 0 100%);
+    transition: all var(--duration-base) ease;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.card-item:hover {
+    background: var(--color-stroke);
+    transform: translateY(-2px);
+}
+
+.card-label {
+    font-size: calc(var(--font-size-base) * var(--multiplier-xs));
+    font-weight: var(--font-weight-medium);
+    margin-bottom: calc(var(--margin-base) * 2);
+    opacity: 0.8;
+}
+
+.card-item:nth-child(1) .card-label {
+    color: #60a5fa; /* Azul claro para Potência Ativa */
+}
+
+.card-item:nth-child(2) .card-label {
+    color: #f59e0b; /* Laranja para Incidentes Abertos */
+}
+
+.card-item:nth-child(3) .card-label {
+    color: #ef4444; /* Vermelho para Alarmes Críticos */
+}
+
+.card-item:nth-child(4) .card-label {
+    color: #eab308; /* Amarelo para Alarmes de Atenção */
+}
+
+.card-item:nth-child(5) .card-label {
+    color: #1bea08; /* Amarelo para Alarmes de Informação */
+}
+
+.card-item:nth-child(6) .card-label {
+    color: #540fd3; /* Amarelo para Alarmes geral */
+}
+.card-value {
+    font-size: calc(var(--font-size-base) * var(--multiplier-lg));
+    font-weight: var(--font-weight-bold);
+    color: var(--color-base);
+    line-height: 1.2;
+}
