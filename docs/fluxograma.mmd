@@ -1,0 +1,63 @@
+%% Fluxograma do projeto - Estado atual e roadmap
+%% Abra este arquivo no Mermaid Live Editor (https://mermaid.live) ou use extensões no VS Code
+
+flowchart TD
+  %% --- Entradas e App ---
+  A[Usuário/Browser] -->|HTTP| B[Flask App\nmain.py]
+  B -->|Registra filtros Jinja2| C[register_template_filters\nlibs/models/utils]
+  B -->|WS| S[(Socket.IO)]
+  B --> R>Rotas\nlibs/routes/routes.py]
+
+  %% --- Rotas ---
+  R -->|GET /| H[HomeController\nlibs/controllers/homeController.py]
+  R -->|GET /usina/:sigla| U[UsinasController\nlibs/controllers/usinasController.py]
+
+  %% --- Views (Jinja) ---
+  H -->|render_template| V1[home.html\nlibs/views/home.html]
+  U -->|render_template| V2[usinas.html\nlibs/views/usinas.html]
+  subgraph Views
+    direction TB
+    V1 --> B1[base.html]
+    V2 --> B1
+    B1 --> C1[components/*.html]
+  end
+
+  %% --- Model / Data Layer ---
+  H -->|Read('op_ocorrencia')| M1[Read\nlibs/models/read.py]
+  H -->|Read('op_usina')| M2[Read\nlibs/models/read.py]
+  U -->|Read('op_usina')| M2
+  M1 --> DB[(MySQL)]
+  M2 --> DB
+  subgraph Data Layer
+    direction TB
+    D1[Database (Singleton)\nlibs/models/database.py]:::db
+    D1 ---|mysql.connector| DB
+    M1 -.-> D1
+    M2 -.-> D1
+  end
+
+  %% --- Infra / Utilidades ---
+  S -.emite->|file_changed| A
+  subgraph Infra
+    direction TB
+    W[Watchdog File Observer\nmain.py] -->|emite via Socket.IO| S
+  end
+
+  classDef db fill:#e3f2fd,stroke:#1976d2,color:#0d47a1
+
+  %% --- Roadmap (futuro) ---
+  subgraph Roadmap
+    direction TB
+    F1{{Autenticação/Autorização}}
+    F2{{Tratamento uniforme de erros API}}
+    F3{{Camada de serviço entre controllers e models}}
+    F4{{Cache (Redis) para leituras frequentes}}
+    F5{{Testes de integração (Flask + DB)}}
+    F6{{CI para rodar testes e lint}}
+  end
+
+  H -.planejado-> F3
+  U -.planejado-> F3
+  D1 -.planejado-> F4
+  R -.planejado-> F2
+  A -.planejado-> F1
