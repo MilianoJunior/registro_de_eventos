@@ -1,0 +1,68 @@
+%% Fluxograma do projeto (Mermaid)
+%% Como visualizar: https://mermaid.live/ ou Markdown com suporte a Mermaid
+
+flowchart TD
+  %% Entradas externas
+  browser[Usuário no Navegador]
+  scada[SCADA/API/Sensores]
+
+  %% App Flask + SocketIO
+  browser -- HTTP GET / --> route_index[Route /]
+  browser -- HTTP GET /usina/:sigla --> route_usina[Route /usina/<sigla>]
+
+  subgraph Flask_App[Flask + SocketIO]
+    direction TB
+    route_index --> ctrl_home[HomeController.home]
+    route_usina --> ctrl_usinas[UsinasController.usina_page]
+
+    ctrl_home -->|usa| read_ocorr[Read("op_ocorrencia")]
+    ctrl_home -->|usa| read_usina_h[Read("op_usina")]
+
+    ctrl_usinas -->|usa| read_usina_u[Read("op_usina")]
+
+    socketio[(SocketIO)]
+    watcher[Watchdog File Watcher]
+    watcher -- file_changed --> socketio
+    socketio -. push atualizações .-> browser
+  end
+
+  %% Models (Read/Edit)
+  subgraph Models[Models]
+    direction TB
+    read_usina_h --> db[(MySQL)]
+    read_ocorr --> db
+    read_usina_u --> db
+
+    subgraph EditLayer[Edit]
+      edit_usina[Edit("op_usina")] --> db
+      edit_usuario[Edit("op_usuario")] --> db
+      edit_ocorr[Edit("op_ocorrencia")] --> db
+    end
+  end
+
+  %% Banco de Dados
+  db --- schema[(Schema op_*)]
+
+  %% Views/Templates
+  subgraph Views[Templates Jinja]
+    home_tpl[home.html]
+    usinas_tpl[usinas.html]
+    comps[components/*]
+  end
+
+  ctrl_home -->|render| home_tpl
+  ctrl_usinas -->|render| usinas_tpl
+  Views --> browser
+
+  %% Próximos passos (MVP -> Futuro)
+  subgraph ProximosPassos[Roadmap]
+    novo_evento[Página: Novo Evento]
+    config[Página: Configurações]
+    auditoria[Histórico op_ocorrencia_hist]
+    anexos[Anexos op_anexo]
+  end
+
+  browser -.-> novo_evento
+  browser -.-> config
+  read_ocorr -. roadmap .-> auditoria
+  read_ocorr -. roadmap .-> anexos

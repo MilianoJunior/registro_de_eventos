@@ -57,5 +57,13 @@ Pagina - Configurações
 
 Pagina - para configurar as variaveis que alteram o desempenho do COG.
 
-Nesse primeiro momento, vamos fazer apenas a pagina Home, e partir do projeto em anexo, os dados de leitura do tempo real já estão sendo realizadas corretamente, vamos considerar que isso vai ser um MVP,
-e que depois vamos melhorar, não vamos inserir muita complexibilidade e alterar a lógica de leitura, o registro de eventos vamos fazer depois, deixe e
+ Nesse primeiro momento, vamos fazer apenas a pagina Home, e partir do projeto em anexo, os dados de leitura do tempo real já estão sendo realizadas corretamente, vamos considerar que isso vai ser um MVP,
+ e que depois vamos melhorar, não vamos inserir muita complexibilidade e alterar a lógica de leitura, o registro de eventos vamos fazer depois, deixe e
+
+### Documentação Visual (Mermaid)
+
+- **Fluxograma do projeto**: veja `docs/flowchart.mmd`.
+  - **Como visualizar**: abra o arquivo no [Mermaid Live Editor](https://mermaid.live/) ou em qualquer visualizador Markdown com suporte a Mermaid.
+  - **Escopo**: rotas (`/`, `/usina/<sigla>`), controllers, camada de models (`Read`/`Edit`), `MySQL`, templates Jinja e um bloco de "Próximos Passos" (Novo Evento, Configurações, Auditoria, Anexos).
+
+> Dica: para manter o diagrama legível, alterações estruturais (novas rotas, controllers ou tabelas) devem ser refletidas em `docs/flowchart.mmd` no mesmo PR das mudanças.
