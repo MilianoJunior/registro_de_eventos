@@ -15,8 +15,10 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
 </head>
 <body>
+  <div class="body-container">
     {% include "components/navbar.html" %}
     {% block content %}{% endblock %}
+  </div>
 <script>
     const socket = io();
     

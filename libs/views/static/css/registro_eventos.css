@@ -1,12 +1,5 @@
 /* Registro de Eventos - Layout e Estilos */
 
-.content {
-    width: 100%;
-    height: 100vh;
-    overflow-y: auto;
-    /* padding: 1.5rem; */
-    background: var(--background-base);
-} 
 
 .registro-container {
     /* max-width: 1000px; */

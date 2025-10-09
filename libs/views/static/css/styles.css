@@ -10,20 +10,27 @@
 @import 'incidentes.css';
 /* === RESET E ESTILOS GLOBAIS === */
 * {
-    margin: 1px;
-    padding: 1px;
-}
-
-html, body { 
-    height: 100%; 
-    background: var(--background-base); 
-    color: var(--color-base);
+    margin: 0;
+    padding: 0;
+    /* box-sizing: border-box; */
+    background: #0e2243;
     font-family: var(--font-family-base);
     font-size: var(--font-size-base);
     line-height: var(--line-height-base);
 }
 
-body {
+
+/* body { 
+    height: 100%;
+    width: 100%;
+    background: var(--background-base); 
+    color: var(--color-base);
+    font-family: var(--font-family-base);
+    font-size: var(--font-size-base);
+    line-height: var(--line-height-base);
+} */
+
+/* body {
     display: flex;
     flex-direction: row;
     margin: 0;
@@ -31,5 +38,8 @@ body {
     width: 100%;
     height: 100vh;
     background: var(--geral-background-base);
-    overflow: hidden;
-}
+    overflow: auto;
+} */
+
+/* Ajustes responsivos globais */
+
