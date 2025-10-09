@@ -52,21 +52,78 @@
     scrollbar-color: rgba(128, 128, 128, 0.5) transparent;
 }
 
-/* Título do registro de ocorrências */
-.registro-ocorrencias-titulo {
+/* Header do registro de ocorrências */
+.registro-ocorrencias-header {
     position: sticky;
     top: 0;
     z-index: 10;
-    font-size: calc(var(--font-size-base) * var(--multiplier-lg));
-    font-weight: 500;
-    color: var(--color-base);
-    letter-spacing: 0.08rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
     padding: 16px 20px;
-    margin: 0;
     background: var(--background-base);
     border-bottom: 2px solid var(--color-stroke);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
+}
+
+/* Título do registro de ocorrências */
+.registro-ocorrencias-titulo {
+    font-size: calc(var(--font-size-base) * var(--multiplier-lg));
+    font-weight: 500;
+    color: var(--color-base);
+    letter-spacing: 0.08rem;
+    margin: 0;
+}
+
+/* Botão Novo Evento */
+.btn-novo-evento {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: calc(var(--font-size-base) * var(--multiplier-sm));
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    white-space: nowrap;
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+}
+
+.btn-novo-evento:hover {
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+}
+
+.btn-novo-evento:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 6px rgba(59, 130, 246, 0.3);
+}
+
+.btn-novo-evento svg {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .registro-ocorrencias-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+    
+    .btn-novo-evento {
+        justify-content: center;
+    }
 }
 
 .ocorrencias-list {

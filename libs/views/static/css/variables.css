@@ -19,7 +19,7 @@
   --color-danger: #ef4444;
 
   /* === Tipografia === */
-  --font-family-base: 'inter', sans-serif;
+  --font-family-base: 'noto sans', sans-serif;
   --font-size-base: 15px; /* 16px */
   --font-weight-base: 400;
   --font-weight-medium: calc(var(--font-weight-base) * var(--multiplier-md));

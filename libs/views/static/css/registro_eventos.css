@@ -1,0 +1,436 @@
+/* Registro de Eventos - Layout e Estilos */
+
+.content {
+    width: 100%;
+    height: 100vh;
+    overflow-y: auto;
+    /* padding: 1.5rem; */
+    background: var(--background-base);
+} 
+
+.registro-container {
+    /* max-width: 1000px; */
+    margin: 0 auto;
+    /* padding: 1rem; */
+    width: 60%;
+    height: 90%;
+    /* background: #1d4ed8; */
+}
+
+.registro-card {
+    width: 95%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 0;
+    margin: 1rem;
+    border-radius: 1rem;
+    overflow: hidden; /* Importante para conter os elementos */
+    
+    /* Efeito de iluminação prateada/brilho metálico */
+    box-shadow: 
+        0 2px 8px rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05),
+        0 0 20px rgba(119, 211, 247, 0.1);
+    
+    /* Gradiente sutil de brilho */
+    background: linear-gradient(
+        135deg,
+        var(--background-hover) 0%,
+        rgba(119, 211, 247, 0.03) 50%,
+        var(--background-hover) 100%
+    );
+    
+    /* Otimização de renderização */
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Container scrollável do formulário */
+.registro-card-body {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 1.5rem;
+    scroll-behavior: smooth;
+    /* Previne que o conteúdo interno ultrapasse */
+    max-width: 100%;
+}
+
+/* Customização da scrollbar - WebKit (Chrome, Safari, Edge) */
+.registro-card-body::-webkit-scrollbar {
+    width: 8px;
+}
+
+.registro-card-body::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+}
+
+.registro-card-body::-webkit-scrollbar-thumb {
+    background: rgba(59, 130, 246, 0.4);
+    border-radius: 4px;
+}
+
+.registro-card-body::-webkit-scrollbar-thumb:hover {
+    background: rgba(59, 130, 246, 0.6);
+}
+
+/* Customização da scrollbar - Firefox */
+.registro-card-body {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(59, 130, 246, 0.4) rgba(255, 255, 255, 0.05);
+}
+
+.registro-title {
+    font-family: var(--font-family-base);
+    font-size: calc(var(--font-size-base) * var(--multiplier-lg));
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-base);
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    letter-spacing: -0.02em;
+    /* background: #22c55e; */
+    flex-shrink: 0; /* Não encolhe quando há overflow */
+    margin: 0;
+}
+
+/* Formulário */
+.registro-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    width: 100%;
+    max-width: 100%;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    width: 100%;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
+}
+
+.form-label {
+    font-size: 0.9375rem;
+    font-weight: 500;
+    color: rgba(248, 249, 249, 0.9);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    letter-spacing: 0.01em;
+}
+
+.required {
+    color: #ef4444;
+    margin-left: 2px;
+}
+
+/* Inputs e Selects */
+.form-input,
+.form-select,
+.form-textarea {
+    width: 100%;
+    padding: 0.875rem 1.125rem;
+    background: rgba(23, 23, 23, 0.8);
+    border: 1.5px solid rgba(255, 255, 255, 0.12);
+    border-radius: 10px;
+    color: var(--color-base);
+    font-family: var(--font-family-base);
+    font-size: 0.9375rem;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    outline: none;
+    box-sizing: border-box; /* Garante que padding seja incluído na largura */
+}
+
+.form-input:hover,
+.form-select:hover,
+.form-textarea:hover {
+    border-color: rgba(255, 255, 255, 0.2);
+    background: rgba(23, 23, 23, 0.95);
+}
+
+.form-input:focus,
+.form-select:focus,
+.form-textarea:focus {
+    border-color: #3b82f6;
+    background: rgba(23, 23, 23, 1);
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+}
+
+.form-input::placeholder,
+.form-textarea::placeholder {
+    color: rgba(248, 249, 249, 0.35);
+}
+
+.form-select {
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg width='14' height='8' viewBox='0 0 14 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L7 7L13 1' stroke='%23f8f9f9' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 1.125rem center;
+    padding-right: 3.5rem;
+}
+
+.form-textarea {
+    resize: vertical;
+    min-height: 120px;
+    max-height: 300px;
+    line-height: 1.65;
+    font-family: 'Inter', system-ui, sans-serif;
+    /* Garante que não ultrapassa o container */
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+/* Seção de Informações */
+.info-section {
+    background: rgba(17, 75, 170, 0.05);
+    border: 1.5px solid rgba(59, 130, 246, 0.2);
+    border-radius: 12px;
+    overflow: hidden;
+    margin: 0.5rem 0;
+}
+
+.info-header {
+    display: flex;
+    align-items: center;
+    gap: 0.875rem;
+    padding: 1.125rem 1.25rem;
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.2s ease;
+}
+
+.info-header:hover {
+    background: rgba(59, 130, 246, 0.08);
+}
+
+.info-icon {
+    color: #3b82f6;
+    flex-shrink: 0;
+    width: 22px;
+    height: 22px;
+}
+
+.info-title {
+    flex: 1;
+    font-weight: 500;
+    font-size: 0.9375rem;
+    color: rgba(248, 249, 249, 0.95);
+    letter-spacing: 0.01em;
+}
+
+.chevron-icon {
+    color: rgba(248, 249, 249, 0.6);
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.chevron-icon.rotated {
+    transform: rotate(180deg);
+}
+
+.info-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), 
+                padding 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.info-content.expanded {
+    max-height: 600px;
+    padding: 0 1.25rem 1.5rem 1.25rem;
+}
+
+.playbook-text {
+    padding: 1rem 1.125rem;
+    background: rgba(59, 130, 246, 0.1);
+    border-left: 3px solid #3b82f6;
+    border-radius: 8px;
+    color: rgba(248, 249, 249, 0.9);
+    margin-bottom: 1.25rem;
+    font-size: 0.875rem;
+    line-height: 1.6;
+}
+
+.playbook-text strong {
+    color: #3b82f6;
+    font-weight: 600;
+}
+
+/* Botão de Submissão */
+.form-actions {
+    display: flex;
+    justify-content: center;
+    margin-top: 1rem;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+}
+
+.btn-submit {
+    padding: 1rem 3rem;
+    font-size: 1rem;
+    font-weight: 600;
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    color: #ffffff;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 16px rgba(59, 130, 246, 0.3);
+    letter-spacing: 0.02em;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-submit::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.btn-submit:hover {
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(59, 130, 246, 0.4);
+}
+
+.btn-submit:hover::before {
+    opacity: 1;
+}
+
+.btn-submit:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+}
+
+.btn-submit:disabled {
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+/* Estados de validação */
+.form-input.error,
+.form-select.error,
+.form-textarea.error {
+    border-color: #ef4444;
+}
+
+.form-input.success,
+.form-select.success,
+.form-textarea.success {
+    border-color: #22c55e;
+}
+
+/* Responsividade */
+@media (max-width: 1024px) {
+    .registro-container {
+        width: 85%;
+        height: 85%;
+    }
+}
+
+@media (max-width: 768px) {
+    .content {
+        padding: 1rem;
+    }
+
+    .registro-container {
+        width: 95%;
+        height: 90%;
+        padding: 0.5rem;
+    }
+
+    .registro-card {
+        width: 100%;
+        margin: 0.5rem;
+    }
+
+    .registro-card-body {
+        padding: 1rem;
+    }
+
+    .registro-title {
+        font-size: calc(var(--font-size-base) * 1.2);
+        padding: 1rem;
+    }
+
+    .registro-form {
+        gap: 1rem;
+    }
+
+    .form-row {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .btn-submit {
+        width: 100%;
+        padding: 1rem 2rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .content {
+        padding: 0.5rem;
+    }
+
+    .registro-container {
+        width: 98%;
+        height: 95%;
+        padding: 0.25rem;
+    }
+
+    .registro-card {
+        margin: 0.25rem;
+    }
+
+    .registro-card-body {
+        padding: 0.75rem;
+    }
+
+    .registro-title {
+        font-size: var(--font-size-base);
+        padding: 0.875rem 1rem;
+    }
+
+    .form-row {
+        gap: 0.75rem;
+    }
+
+    .form-group {
+        gap: 0.5rem;
+    }
+
+    .form-input,
+    .form-select,
+    .form-textarea {
+        padding: 0.75rem 1rem;
+        font-size: 0.875rem;
+    }
+}
+
+@media (min-width: 1440px) {
+    .registro-container {
+        width: 60%;
+        max-width: 1200px;
+    }
+}
+

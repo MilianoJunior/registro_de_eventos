@@ -1,7 +1,8 @@
 {% set MAIN_NAV = [
   {"label": "Visão Geral",        "endpoint": "index", "icon": "lucide-layout-dashboard"},
-  {"label": "Registrar Evento",   "endpoint": "index", "icon": "lucide-edit-3"},
-  {"label": "Análise & Relatórios","endpoint":"index", "icon": "lucide-chart-bar"}
+  {"label": "Registrar Evento",   "endpoint": "registro_eventos", "icon": "lucide-edit-3"},
+  {"label": "Análise & Relatórios","endpoint":"analise_relatorios", "icon": "lucide-chart-bar"},
+  {"label": "Novo Modelo", "endpoint": "novo_modelo", "icon": "lucide-plus"}
 ] %}
 
 <!-- Botão Toggle do Navbar -->
@@ -39,6 +40,10 @@
 
   <div class="navbar__footer">
     <span class="navbar__footer-text">© 2025 EngeSEP O&M</span>
+    <a class="navbar__item" href="{{ url_for('novo_modelo') }}">
+      <span class="navbar__ic">🏭</span> 
+      <span class="navbar__label">Novo Modelo</span>
+    </a>
   </div>
 </aside>
 

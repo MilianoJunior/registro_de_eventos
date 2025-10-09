@@ -210,3 +210,14 @@ def json_param(value: Any) -> Tuple[str, str]:
 
     # OU, se preferir máxima compatibilidade:
     # return "JSON_EXTRACT(%s, '$')", json.dumps(value, ensure_ascii=False)
+
+def desempenho(func):
+    import time
+    def wrapper(*args, **kwargs):
+        start_time = time.time()
+        result = func(*args, **kwargs)
+        end_time = time.time()
+        print(f"{func.__name__} - Tempo de execução: {end_time - start_time} segundos")
+        print('-' * 50)
+        return result
+    return wrapper
