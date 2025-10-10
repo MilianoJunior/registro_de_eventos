@@ -1,11 +1,190 @@
-{% extends "base.html" %}
+<html>
+  <head>
+    <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="" />
+    <link
+      rel="stylesheet"
+      as="style"
+      onload="this.rel='stylesheet'"
+      href="https://fonts.googleapis.com/css2?display=swap&amp;family=Inter%3Awght%40400%3B500%3B700%3B900&amp;family=Noto+Sans%3Awght%40400%3B500%3B700%3B900"
+    />
 
-{% block title %}{{ usina.nome if usina else sigla }} - Usina{% endblock %}
+    <title>Stitch Design</title>
+    <link rel="icon" type="image/x-icon" href="data:image/x-icon;base64," />
 
-{% block content %}
-  <div class="grid">
-
-    <h1>{{ usina.nome if usina else sigla }}</h1>
-
-  </div>
-{% endblock %}
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  </head>
+  <body>
+    <div class="relative flex h-auto min-h-screen w-full flex-col bg-[#111518] dark group/design-root overflow-x-hidden" style='font-family: Inter, "Noto Sans", sans-serif;'>
+      <div class="layout-container flex h-full grow flex-col">
+        <div class="px-40 flex flex-1 justify-center py-5">
+          <div class="layout-content-container flex flex-col max-w-[960px] flex-1">
+            <h2 class="text-white tracking-light text-[28px] font-bold leading-tight px-4 text-left pb-3 pt-5">Usina Alpha</h2>
+            <p class="text-[#9cacba] text-sm font-normal leading-normal pb-3 pt-1 px-4">Operando</p>
+            <div class="flex flex-wrap gap-4 p-4">
+              <div class="flex min-w-[158px] flex-1 flex-col gap-2 rounded-lg p-6 bg-[#283139]">
+                <p class="text-white text-base font-medium leading-normal">Potência Ativa</p>
+                <p class="text-white tracking-light text-2xl font-bold leading-tight">1200 MW</p>
+              </div>
+              <div class="flex min-w-[158px] flex-1 flex-col gap-2 rounded-lg p-6 bg-[#283139]">
+                <p class="text-white text-base font-medium leading-normal">Incidentes Abertos</p>
+                <p class="text-white tracking-light text-2xl font-bold leading-tight">0</p>
+              </div>
+              <div class="flex min-w-[158px] flex-1 flex-col gap-2 rounded-lg p-6 bg-[#283139]">
+                <p class="text-white text-base font-medium leading-normal">Alarmes Críticos</p>
+                <p class="text-white tracking-light text-2xl font-bold leading-tight">0</p>
+              </div>
+              <div class="flex min-w-[158px] flex-1 flex-col gap-2 rounded-lg p-6 bg-[#283139]">
+                <p class="text-white text-base font-medium leading-normal">Alarmes de Atenção</p>
+                <p class="text-white tracking-light text-2xl font-bold leading-tight">1</p>
+              </div>
+            </div>
+            <h2 class="text-white text-[22px] font-bold leading-tight tracking-[-0.015em] px-4 pb-3 pt-5">Desempenho de Alarmes (EEMUA-191)</h2>
+            <div class="flex flex-wrap gap-4 p-4">
+              <div class="flex min-w-[158px] flex-1 flex-col gap-2 rounded-lg p-6 border border-[#3b4954]">
+                <p class="text-white text-base font-medium leading-normal">Alarmes / Hora</p>
+                <p class="text-white tracking-light text-2xl font-bold leading-tight">0.08</p>
+              </div>
+              <div class="flex min-w-[158px] flex-1 flex-col gap-2 rounded-lg p-6 border border-[#3b4954]">
+                <p class="text-white text-base font-medium leading-normal">MTTR (Média)</p>
+                <p class="text-white tracking-light text-2xl font-bold leading-tight">120 min</p>
+              </div>
+              <div class="flex min-w-[158px] flex-1 flex-col gap-2 rounded-lg p-6 border border-[#3b4954]">
+                <p class="text-white text-base font-medium leading-normal">Alarmes Inundantes</p>
+                <p class="text-white tracking-light text-2xl font-bold leading-tight">0</p>
+              </div>
+              <div class="flex min-w-[158px] flex-1 flex-col gap-2 rounded-lg p-6 border border-[#3b4954]">
+                <p class="text-white text-base font-medium leading-normal">Alarmes Oscilantes</p>
+                <p class="text-white tracking-light text-2xl font-bold leading-tight">0</p>
+              </div>
+              <div class="flex min-w-[158px] flex-1 flex-col gap-2 rounded-lg p-6 border border-[#3b4954]">
+                <p class="text-white text-base font-medium leading-normal">Energia Não Gerada</p>
+                <p class="text-white tracking-light text-2xl font-bold leading-tight">15.5 MWh</p>
+              </div>
+              <div class="flex min-w-[158px] flex-1 flex-col gap-2 rounded-lg p-6 border border-[#3b4954]">
+                <p class="text-white text-base font-medium leading-normal">Distribuição de Prioridade (Ativos)</p>
+                <p class="text-white tracking-light text-2xl font-bold leading-tight">100% média, 0% baixa</p>
+              </div>
+            </div>
+            <h2 class="text-white text-[22px] font-bold leading-tight tracking-[-0.015em] px-4 pb-3 pt-5">Linha do Tempo</h2>
+            <div class="p-4">
+              <div class="flex items-stretch justify-between gap-4 rounded-lg">
+                <div class="flex flex-[2_2_0px] flex-col gap-4">
+                  <div class="flex flex-col gap-1">
+                    <p class="text-[#9cacba] text-sm font-normal leading-normal">Geral</p>
+                    <p class="text-white text-base font-bold leading-tight">Nível de jusante anormalmente alto</p>
+                    <p class="text-[#9cacba] text-sm font-normal leading-normal">Média</p>
+                  </div>
+                  <button
+                    class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-8 px-4 flex-row-reverse bg-[#283139] text-white text-sm font-medium leading-normal w-fit"
+                  >
+                    <span class="truncate">Resolver</span>
+                  </button>
+                </div>
+                <div class="w-full bg-center bg-no-repeat aspect-video bg-cover rounded-lg flex-1" style='background-image: url("undefined");'></div>
+                <img alt="Image" class="invisible absolute size-0" />
+              </div>
+            </div>
+            <div class="p-4">
+              <div class="flex items-stretch justify-between gap-4 rounded-lg">
+                <div class="flex flex-col gap-1 flex-[2_2_0px]">
+                  <p class="text-[#9cacba] text-sm font-normal leading-normal">UG-01</p>
+                  <p class="text-white text-base font-bold leading-tight">UG-01 religada com sucesso após manutenção semanal.</p>
+                  <p class="text-[#9cacba] text-sm font-normal leading-normal">Recente</p>
+                </div>
+                <div class="w-full bg-center bg-no-repeat aspect-video bg-cover rounded-lg flex-1" style='background-image: url("undefined");'></div>
+                <img alt="Image" class="invisible absolute size-0" />
+              </div>
+            </div>
+            <div class="p-4">
+              <div class="flex items-stretch justify-between gap-4 rounded-lg">
+                <div class="flex flex-col gap-1 flex-[2_2_0px]">
+                  <p class="text-[#9cacba] text-sm font-normal leading-normal">UG-02</p>
+                  <p class="text-white text-base font-bold leading-tight">Vibração excessiva no rolamento guia da turbina.</p>
+                  <p class="text-[#9cacba] text-sm font-normal leading-normal">Evento</p>
+                </div>
+                <div class="w-full bg-center bg-no-repeat aspect-video bg-cover rounded-lg flex-1" style='background-image: url("undefined");'></div>
+                <img alt="Image" class="invisible absolute size-0" />
+              </div>
+            </div>
+            <h2 class="text-white text-[22px] font-bold leading-tight tracking-[-0.015em] px-4 pb-3 pt-5">Dados dos Sensores</h2>
+            <div class="pb-3">
+              <div class="flex border-b border-[#3b4954] px-4 gap-8">
+                <a class="flex flex-col items-center justify-center border-b-[3px] border-b-white text-white pb-[13px] pt-4" href="#">
+                  <p class="text-white text-sm font-bold leading-normal tracking-[0.015em]">Diário</p>
+                </a>
+                <a class="flex flex-col items-center justify-center border-b-[3px] border-b-transparent text-[#9cacba] pb-[13px] pt-4" href="#">
+                  <p class="text-[#9cacba] text-sm font-bold leading-normal tracking-[0.015em]">Semanal</p>
+                </a>
+                <a class="flex flex-col items-center justify-center border-b-[3px] border-b-transparent text-[#9cacba] pb-[13px] pt-4" href="#">
+                  <p class="text-[#9cacba] text-sm font-bold leading-normal tracking-[0.015em]">Mensal</p>
+                </a>
+              </div>
+            </div>
+            <div class="flex flex-wrap gap-4 px-4 py-6">
+              <div class="flex min-w-72 flex-1 flex-col gap-2 rounded-lg border border-[#3b4954] p-6">
+                <p class="text-white text-base font-medium leading-normal">Temperatura (°C)</p>
+                <div class="flex min-h-[180px] flex-1 flex-col gap-8 py-4">
+                  <svg width="100%" height="148" viewBox="-3 0 478 150" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+                    <path
+                      d="M0 109C18.1538 109 18.1538 21 36.3077 21C54.4615 21 54.4615 41 72.6154 41C90.7692 41 90.7692 93 108.923 93C127.077 93 127.077 33 145.231 33C163.385 33 163.385 101 181.538 101C199.692 101 199.692 61 217.846 61C236 61 236 45 254.154 45C272.308 45 272.308 121 290.462 121C308.615 121 308.615 149 326.769 149C344.923 149 344.923 1 363.077 1C381.231 1 381.231 81 399.385 81C417.538 81 417.538 129 435.692 129C453.846 129 453.846 25 472 25V149H326.769H0V109Z"
+                      fill="url(#paint0_linear_1131_5935)"
+                    ></path>
+                    <path
+                      d="M0 109C18.1538 109 18.1538 21 36.3077 21C54.4615 21 54.4615 41 72.6154 41C90.7692 41 90.7692 93 108.923 93C127.077 93 127.077 33 145.231 33C163.385 33 163.385 101 181.538 101C199.692 101 199.692 61 217.846 61C236 61 236 45 254.154 45C272.308 45 272.308 121 290.462 121C308.615 121 308.615 149 326.769 149C344.923 149 344.923 1 363.077 1C381.231 1 381.231 81 399.385 81C417.538 81 417.538 129 435.692 129C453.846 129 453.846 25 472 25"
+                      stroke="#9cacba"
+                      stroke-width="3"
+                      stroke-linecap="round"
+                    ></path>
+                    <defs>
+                      <linearGradient id="paint0_linear_1131_5935" x1="236" y1="1" x2="236" y2="149" gradientUnits="userSpaceOnUse">
+                        <stop stop-color="#283139"></stop>
+                        <stop offset="1" stop-color="#283139" stop-opacity="0"></stop>
+                      </linearGradient>
+                    </defs>
+                  </svg>
+                  <div class="flex justify-around">
+                    <p class="text-[#9cacba] text-[13px] font-bold leading-normal tracking-[0.015em]">00:00</p>
+                    <p class="text-[#9cacba] text-[13px] font-bold leading-normal tracking-[0.015em]">06:00</p>
+                    <p class="text-[#9cacba] text-[13px] font-bold leading-normal tracking-[0.015em]">12:00</p>
+                    <p class="text-[#9cacba] text-[13px] font-bold leading-normal tracking-[0.015em]">18:00</p>
+                    <p class="text-[#9cacba] text-[13px] font-bold leading-normal tracking-[0.015em]">24:00</p>
+                  </div>
+                </div>
+              </div>
+              <div class="flex min-w-72 flex-1 flex-col gap-2 rounded-lg border border-[#3b4954] p-6">
+                <p class="text-white text-base font-medium leading-normal">Vibração (mm/s)</p>
+                <div class="flex min-h-[180px] flex-1 flex-col gap-8 py-4">
+                  <svg width="100%" height="148" viewBox="-3 0 478 150" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+                    <path
+                      d="M0 109C18.1538 109 18.1538 21 36.3077 21C54.4615 21 54.4615 41 72.6154 41C90.7692 41 90.7692 93 108.923 93C127.077 93 127.077 33 145.231 33C163.385 33 163.385 101 181.538 101C199.692 101 199.692 61 217.846 61C236 61 236 45 254.154 45C272.308 45 272.308 121 290.462 121C308.615 121 308.615 149 326.769 149C344.923 149 344.923 1 363.077 1C381.231 1 381.231 81 399.385 81C417.538 81 417.538 129 435.692 129C453.846 129 453.846 25 472 25V149H326.769H0V109Z"
+                      fill="url(#paint0_linear_1131_5935)"
+                    ></path>
+                    <path
+                      d="M0 109C18.1538 109 18.1538 21 36.3077 21C54.4615 21 54.4615 41 72.6154 41C90.7692 41 90.7692 93 108.923 93C127.077 93 127.077 33 145.231 33C163.385 33 163.385 101 181.538 101C199.692 101 199.692 61 217.846 61C236 61 236 45 254.154 45C272.308 45 272.308 121 290.462 121C308.615 121 308.615 149 326.769 149C344.923 149 344.923 1 363.077 1C381.231 1 381.231 81 399.385 81C417.538 81 417.538 129 435.692 129C453.846 129 453.846 25 472 25"
+                      stroke="#9cacba"
+                      stroke-width="3"
+                      stroke-linecap="round"
+                    ></path>
+                    <defs>
+                      <linearGradient id="paint0_linear_1131_5935" x1="236" y1="1" x2="236" y2="149" gradientUnits="userSpaceOnUse">
+                        <stop stop-color="#283139"></stop>
+                        <stop offset="1" stop-color="#283139" stop-opacity="0"></stop>
+                      </linearGradient>
+                    </defs>
+                  </svg>
+                  <div class="flex justify-around">
+                    <p class="text-[#9cacba] text-[13px] font-bold leading-normal tracking-[0.015em]">00:00</p>
+                    <p class="text-[#9cacba] text-[13px] font-bold leading-normal tracking-[0.015em]">06:00</p>
+                    <p class="text-[#9cacba] text-[13px] font-bold leading-normal tracking-[0.015em]">12:00</p>
+                    <p class="text-[#9cacba] text-[13px] font-bold leading-normal tracking-[0.015em]">18:00</p>
+                    <p class="text-[#9cacba] text-[13px] font-bold leading-normal tracking-[0.015em]">24:00</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

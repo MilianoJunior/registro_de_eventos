@@ -37,8 +37,3 @@ def criar_ocorrencia():
 def analise_relatorios():
     print('7- analise_relatorios')
     return analiseController.analise_relatorios()
-
-@app.route("/novo>")
-def novo_modelo():
-    # carregar métricas / ocorrências da usina
-    return render_template("novo_modelo.html")

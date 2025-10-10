@@ -18,8 +18,8 @@ def estrutura_pastas_arquivos(caminho, prefixo="", imprimir=False):
     for item in os.listdir(caminho):
         item_path = os.path.join(caminho, item)
         list_exclude = ['__pycache__', '.idea', 'README.md', 'requirements.txt', 'prompt.py','__init__.py',
-                        'socket.io.js','tests','.git','.cursor','test.py','amv','docs','testes']
-        list_include = ['.py', '.html', '.css', '.js','.yaml']
+                        'socket.io.js','tests','.git','.cursor','test.py','amv','docs','testes','.py']
+        list_include = ['.html', '.css', '.js','.yaml']
         list_imprimir = ['.py','.html','.css','.js','.yaml']
         if item in list_exclude:
             continue

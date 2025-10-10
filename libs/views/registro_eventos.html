@@ -1,261 +1,145 @@
-{% extends "base.html" %}
-{% block title %}Registrar Nova Ocorrência - COG{% endblock %}
+<html>
+  <head>
+    <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="" />
+    <link
+      rel="stylesheet"
+      as="style"
+      onload="this.rel='stylesheet'"
+      href="https://fonts.googleapis.com/css2?display=swap&amp;family=Inter%3Awght%40400%3B500%3B700%3B900&amp;family=Noto+Sans%3Awght%40400%3B500%3B700%3B900"
+    />
 
-{% block content %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/registro_eventos.css') }}">
+    <title>Stitch Design</title>
+    <link rel="icon" type="image/x-icon" href="data:image/x-icon;base64," />
 
-<div class="content">
-    <div class="registro-container">
-        <div class="registro-card">
-            <h1 class="registro-title">Registrar Nova Ocorrência</h1>
-            
-            <div class="registro-card-body">
-                <form id="formRegistro" class="registro-form">
-                <!-- Linha 1: Usina e Operador -->
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="usina_id" class="form-label">
-                            Usina<span class="required">*</span>
-                        </label>
-                        <select id="usina_id" name="usina_id" class="form-select" required>
-                            <option value="">Selecione a usina</option>
-                            {% for usina in usinas %}
-                            <option value="{{ usina.id }}">{{ usina.nome }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="operador" class="form-label">
-                            Operador<span class="required">*</span>
-                        </label>
-                        <input 
-                            type="text" 
-                            id="operador" 
-                            name="operador" 
-                            class="form-input" 
-                            placeholder="Seu nome"
-                            required
-                        />
-                    </div>
-                </div>
-
-                <!-- Linha 2: Tipo e Categoria -->
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="tipo" class="form-label">
-                            Tipo<span class="required">*</span>
-                        </label>
-                        <select id="tipo" name="tipo" class="form-select" required>
-                            {% for tipo in tipos %}
-                            <option value="{{ tipo }}">{{ tipo }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="categoria" class="form-label">
-                            Categoria<span class="required">*</span>
-                        </label>
-                        <select id="categoria" name="categoria" class="form-select" required>
-                            {% for categoria in categorias %}
-                            <option value="{{ categoria }}">{{ categoria }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                </div>
-
-                <!-- Linha 3: Unidade e Tags -->
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="unidade" class="form-label">
-                            Unidade/Sistema<span class="required">*</span>
-                        </label>
-                        <input 
-                            type="text" 
-                            id="unidade" 
-                            name="unidade" 
-                            class="form-input" 
-                            placeholder="Ex: UG-01, Vertedouro"
-                            required
-                        />
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="tags" class="form-label">
-                            Etiquetas (tags)
-                        </label>
-                        <input 
-                            type="text" 
-                            id="tags" 
-                            name="tags" 
-                            class="form-input" 
-                            placeholder="trip, vibração (separado por vírgula)"
-                        />
-                    </div>
-                </div>
-
-                <!-- Seção: Informações e Templates -->
-                <div class="info-section">
-                    <div class="info-header" onclick="toggleInfoSection()">
-                        <svg class="info-icon" width="22" height="22" viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
-                        </svg>
-                        <span class="info-title">Informações e Templates</span>
-                        <svg class="chevron-icon" id="chevronIcon" width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
-                        </svg>
-                    </div>
-                    
-                    <div class="info-content" id="infoContent">
-                        <div class="playbook-text">
-                            <strong>Playbook:</strong> Documentar manobra, confirmar status dos equipamentos no SCADA.
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="template" class="form-label">
-                                Templates de Texto
-                            </label>
-                            <select id="template" class="form-select" onchange="aplicarTemplate()">
-                                <option value="">Selecione um template...</option>
-                                {% for template in templates %}
-                                <option value="{{ template.id }}" data-texto="{{ template.texto }}">
-                                    {{ template.nome }}
-                                </option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Descrição Detalhada -->
-                <div class="form-group">
-                    <label for="descricao" class="form-label">
-                        Descrição Detalhada<span class="required">*</span>
-                    </label>
-                    <textarea 
-                        id="descricao" 
-                        name="descricao" 
-                        class="form-textarea" 
-                        rows="6"
-                        placeholder="Descreva o evento ou alarme..."
-                        required
-                    ></textarea>
-                </div>
-
-                <!-- Botão de Submissão -->
-                <div class="form-actions">
-                    <button type="submit" class="btn btn-primary btn-submit">
-                        Registrar Ocorrência
-                    </button>
-                </div>
-            </form>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  </head>
+  <body>
+    <div
+      class="relative flex h-auto min-h-screen w-full flex-col bg-[#111518] dark group/design-root overflow-x-hidden"
+      style="--select-button-svg: url('data:image/svg+xml,%3csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2724px%27 height=%2724px%27 fill=%27rgb(156,172,186)%27 viewBox=%270 0 256 256%27%3e%3cpath d=%27M181.66,170.34a8,8,0,0,1,0,11.32l-48,48a8,8,0,0,1-11.32,0l-48-48a8,8,0,0,1,11.32-11.32L128,212.69l42.34-42.35A8,8,0,0,1,181.66,170.34Zm-96-84.68L128,43.31l42.34,42.35a8,8,0,0,0,11.32-11.32l-48-48a8,8,0,0,0-11.32,0l-48,48A8,8,0,0,0,85.66,85.66Z%27%3e%3c/path%3e%3c/svg%3e'); font-family: Inter, &quot;Noto Sans&quot;, sans-serif;"
+    >
+      <div class="layout-container flex h-full grow flex-col">
+        <header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-b-[#283139] px-10 py-3">
+          <div class="flex items-center gap-4 text-white">
+            <div class="size-4">
+              <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path
+                  d="M42.4379 44C42.4379 44 36.0744 33.9038 41.1692 24C46.8624 12.9336 42.2078 4 42.2078 4L7.01134 4C7.01134 4 11.6577 12.932 5.96912 23.9969C0.876273 33.9029 7.27094 44 7.27094 44L42.4379 44Z"
+                  fill="currentColor"
+                ></path>
+              </svg>
             </div>
+            <h2 class="text-white text-lg font-bold leading-tight tracking-[-0.015em]">EngeSEP O&amp;M</h2>
+          </div>
+          <div class="flex flex-1 justify-end gap-8">
+            <div class="flex items-center gap-9"></div>
+            <div
+              class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10"
+              style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCJGPag1YlYBmvKRiyTZyY1csxzKUHXzOB3jkOp4Ab4hwSpzjfuJY1Xr9Gt5X9P4iIX3OWpVk2on1Jq-RJJg2bZWgsXaPOblEWNj7OkgadttF3QXGL58u2LY3BTXGOR1wDzy3OznOYamyC94McP5u8wubzFK3wMoC4e3rNz7hkDIoO4DJG0WcQ3Ox9f_SEU-d75n9ZY5jgALoFwULKbgcN3XD32NJzB3C3P9AhHq3cIfB4-yXh2u8sg1KGs8IqQ0Ix5HR24XCUoM7Mr");'
+            ></div>
+          </div>
+        </header>
+        <div class="px-40 flex flex-1 justify-center py-5">
+          <div class="layout-content-container flex flex-col max-w-[960px] flex-1">
+            <div class="flex flex-wrap justify-between gap-3 p-4">
+              <p class="text-white tracking-light text-[32px] font-bold leading-tight min-w-72">Registrar Nova Ocorrência</p>
+            </div>
+            <div class="flex max-w-[480px] flex-wrap items-end gap-4 px-4 py-3">
+              <label class="flex flex-col min-w-40 flex-1">
+                <p class="text-white text-base font-medium leading-normal pb-2">Usina*</p>
+                <select
+                  class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-white focus:outline-0 focus:ring-0 border border-[#3b4954] bg-[#1b2227] focus:border-[#3b4954] h-14 bg-[image:--select-button-svg] placeholder:text-[#9cacba] p-[15px] text-base font-normal leading-normal"
+                >
+                  <option value="one"></option>
+                  <option value="two">two</option>
+                  <option value="three">three</option>
+                </select>
+              </label>
+            </div>
+            <div class="flex max-w-[480px] flex-wrap items-end gap-4 px-4 py-3">
+              <label class="flex flex-col min-w-40 flex-1">
+                <p class="text-white text-base font-medium leading-normal pb-2">Operador*</p>
+                <input
+                  class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-white focus:outline-0 focus:ring-0 border border-[#3b4954] bg-[#1b2227] focus:border-[#3b4954] h-14 placeholder:text-[#9cacba] p-[15px] text-base font-normal leading-normal"
+                  value=""
+                />
+              </label>
+            </div>
+            <div class="flex max-w-[480px] flex-wrap items-end gap-4 px-4 py-3">
+              <label class="flex flex-col min-w-40 flex-1">
+                <p class="text-white text-base font-medium leading-normal pb-2">Tipo*</p>
+                <select
+                  class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-white focus:outline-0 focus:ring-0 border border-[#3b4954] bg-[#1b2227] focus:border-[#3b4954] h-14 bg-[image:--select-button-svg] placeholder:text-[#9cacba] p-[15px] text-base font-normal leading-normal"
+                >
+                  <option value="one"></option>
+                  <option value="two">two</option>
+                  <option value="three">three</option>
+                </select>
+              </label>
+            </div>
+            <div class="flex max-w-[480px] flex-wrap items-end gap-4 px-4 py-3">
+              <label class="flex flex-col min-w-40 flex-1">
+                <p class="text-white text-base font-medium leading-normal pb-2">Categoria*</p>
+                <select
+                  class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-white focus:outline-0 focus:ring-0 border border-[#3b4954] bg-[#1b2227] focus:border-[#3b4954] h-14 bg-[image:--select-button-svg] placeholder:text-[#9cacba] p-[15px] text-base font-normal leading-normal"
+                >
+                  <option value="one"></option>
+                  <option value="two">two</option>
+                  <option value="three">three</option>
+                </select>
+              </label>
+            </div>
+            <div class="flex max-w-[480px] flex-wrap items-end gap-4 px-4 py-3">
+              <label class="flex flex-col min-w-40 flex-1">
+                <p class="text-white text-base font-medium leading-normal pb-2">Unidade/Sistema*</p>
+                <input
+                  placeholder="Ex: UG-01, Vertedouro"
+                  class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-white focus:outline-0 focus:ring-0 border border-[#3b4954] bg-[#1b2227] focus:border-[#3b4954] h-14 placeholder:text-[#9cacba] p-[15px] text-base font-normal leading-normal"
+                  value=""
+                />
+              </label>
+            </div>
+            <div class="flex max-w-[480px] flex-wrap items-end gap-4 px-4 py-3">
+              <label class="flex flex-col min-w-40 flex-1">
+                <p class="text-white text-base font-medium leading-normal pb-2">Etiquetas (tags)</p>
+                <input
+                  class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-white focus:outline-0 focus:ring-0 border border-[#3b4954] bg-[#1b2227] focus:border-[#3b4954] h-14 placeholder:text-[#9cacba] p-[15px] text-base font-normal leading-normal"
+                  value=""
+                />
+              </label>
+            </div>
+            <h2 class="text-white text-[22px] font-bold leading-tight tracking-[-0.015em] px-4 pb-3 pt-5">Informações e Templates</h2>
+            <p class="text-white text-base font-normal leading-normal pb-3 pt-1 px-4">Playbook: Documentar manobra, confirmar status dos equipamentos no SCADA.</p>
+            <div class="flex max-w-[480px] flex-wrap items-end gap-4 px-4 py-3">
+              <label class="flex flex-col min-w-40 flex-1">
+                <select
+                  class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-white focus:outline-0 focus:ring-0 border border-[#3b4954] bg-[#1b2227] focus:border-[#3b4954] h-14 bg-[image:--select-button-svg] placeholder:text-[#9cacba] p-[15px] text-base font-normal leading-normal"
+                >
+                  <option value="one">Selecionar template...</option>
+                  <option value="two">two</option>
+                  <option value="three">three</option>
+                </select>
+              </label>
+            </div>
+            <div class="flex max-w-[480px] flex-wrap items-end gap-4 px-4 py-3">
+              <label class="flex flex-col min-w-40 flex-1">
+                <p class="text-white text-base font-medium leading-normal pb-2">Descrição Detalhada</p>
+                <textarea
+                  placeholder="Descreva o evento ou alarme..."
+                  class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-white focus:outline-0 focus:ring-0 border border-[#3b4954] bg-[#1b2227] focus:border-[#3b4954] min-h-36 placeholder:text-[#9cacba] p-[15px] text-base font-normal leading-normal"
+                ></textarea>
+              </label>
+            </div>
+            <div class="flex px-4 py-3 justify-end">
+              <button
+                class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#0d8bf2] text-white text-sm font-bold leading-normal tracking-[0.015em]"
+              >
+                <span class="truncate">Registrar Ocorrência</span>
+              </button>
+            </div>
+          </div>
         </div>
+      </div>
     </div>
-</div>
-
-<script>
-    // Toggle da seção de informações
-    function toggleInfoSection() {
-        const content = document.getElementById('infoContent');
-        const chevron = document.getElementById('chevronIcon');
-        content.classList.toggle('expanded');
-        chevron.classList.toggle('rotated');
-    }
-
-    // Aplicar template selecionado
-    function aplicarTemplate() {
-        const select = document.getElementById('template');
-        const option = select.options[select.selectedIndex];
-        const texto = option.getAttribute('data-texto');
-        
-        if (texto) {
-            const descricao = document.getElementById('descricao');
-            descricao.value = texto;
-            // Adiciona feedback visual
-            descricao.style.borderColor = '#3b82f6';
-            setTimeout(() => {
-                descricao.style.borderColor = '';
-            }, 1000);
-        }
-    }
-
-    // Submissão do formulário
-    document.getElementById('formRegistro').addEventListener('submit', async function(e) {
-        e.preventDefault();
-        
-        // Desabilita o botão durante o envio
-        const submitBtn = e.target.querySelector('.btn-submit');
-        const originalText = submitBtn.textContent;
-        submitBtn.disabled = true;
-        submitBtn.textContent = 'Registrando...';
-        submitBtn.style.opacity = '0.7';
-        
-        const formData = {
-            usina_id: parseInt(document.getElementById('usina_id').value),
-            operador: document.getElementById('operador').value,
-            tipo: document.getElementById('tipo').value,
-            categoria: document.getElementById('categoria').value,
-            unidade: document.getElementById('unidade').value,
-            tags: document.getElementById('tags').value,
-            descricao: document.getElementById('descricao').value
-        };
-
-        try {
-            const response = await fetch('/api/ocorrencias', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(formData)
-            });
-
-            const result = await response.json();
-
-            if (result.success) {
-                // Feedback visual de sucesso
-                submitBtn.textContent = '✓ Registrado com sucesso!';
-                submitBtn.style.background = 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)';
-                
-                // Aguarda 1 segundo antes de redirecionar
-                setTimeout(() => {
-                    window.location.href = '/';
-                }, 1200);
-            } else {
-                alert('Erro ao registrar ocorrência: ' + result.error);
-                // Restaura o botão
-                submitBtn.disabled = false;
-                submitBtn.textContent = originalText;
-                submitBtn.style.opacity = '1';
-            }
-        } catch (error) {
-            console.error('Erro:', error);
-            alert('Erro ao enviar formulário. Tente novamente.');
-            // Restaura o botão
-            submitBtn.disabled = false;
-            submitBtn.textContent = originalText;
-            submitBtn.style.opacity = '1';
-        }
-    });
-
-    // Validação em tempo real
-    document.querySelectorAll('input[required], select[required], textarea[required]').forEach(field => {
-        field.addEventListener('blur', function() {
-            if (!this.value.trim()) {
-                this.style.borderColor = '#ef4444';
-            } else {
-                this.style.borderColor = '';
-            }
-        });
-        
-        field.addEventListener('input', function() {
-            if (this.value.trim()) {
-                this.style.borderColor = '';
-            }
-        });
-    });
-</script>
-
-{% endblock %}
-
+  </body>
+</html>
