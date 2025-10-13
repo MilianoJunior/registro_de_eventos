@@ -34,9 +34,13 @@ Para cada `op_usina` e cada Unidade Geradora (UG):
 - Temperaturas de todas as usinas, ordenadas pelo valor do maior risco, com valores de alarme e trip, onde o risco é calculado pela razão entre o valor atual e o TRIP
 - Display de eventos para cada UG e botão para inserir manualmente um novo evento, com cores definidas para as prioridades dos eventos
 
-### 📝 Página - Novo Evento
+### 📝 Página - Registro de Eventos
 
-**Descrição:** Registro do novo evento.
+**Descrição:** Página para registro e gerenciamento de ocorrências operacionais, permitindo criar novos eventos, visualizar histórico, adicionar anexos e acompanhar o status das ocorrências.
+
+### 📊 Página - Análise e Relatórios
+
+**Descrição:** Página para visualização de análises, métricas e relatórios consolidados das usinas e ocorrências.
 
 ### ⚡ Página - Usinas
 
@@ -48,45 +52,107 @@ Para cada `op_usina` e cada Unidade Geradora (UG):
 
 ---
 
-## 📊 Estrutura de Eventos
+## 🏗️ Arquitetura do Projeto
 
-Os Eventos devem conter as seguintes colunas:
+O sistema segue uma arquitetura MVC (Model-View-Controller) organizada da seguinte forma:
 
-```sql
-id                  BIGINT PRIMARY KEY AUTO_INCREMENT,
-usina_id            BIGINT NOT NULL,
-ug_id               BIGINT NULL,
-operador_id         BIGINT NULL,  -- quem registrou/ack
-origem              ENUM('SCADA','CLP','API','MANUAL','SENSOR','TRANSFORMADOR','CELESC') NOT NULL,
-tipo                ENUM('evento','alarme','comando') NOT NULL,
-categoria_id        INT NOT NULL,
-prioridade          ENUM('baixa','media','alta') NOT NULL,
-titulo              VARCHAR(160) NOT NULL,
-descricao           TEXT,
-tag                 VARCHAR(120),
-valor               DECIMAL(18,6) NULL,
-unidade_medida      VARCHAR(16),
-ts_inicio           DATETIME(6) NOT NULL,
-ts_fim              DATETIME(6) NULL,
-estado              ENUM('novo','ativo','reconhecido','investigando','resolvido','cancelado') NOT NULL DEFAULT 'novo'
+### Estrutura de Diretórios
+
 ```
+10_registro_eventos/
+├── libs/
+│   ├── controllers/      # Controladores de lógica de negócio
+│   │   ├── homeController.py
+│   │   ├── eventosController.py
+│   │   ├── usinasController.py
+│   │   └── analiseController.py
+│   ├── models/          # Camada de acesso ao banco de dados
+│   │   ├── read.py      # Classes para operações SELECT
+│   │   ├── edit.py      # Classes para operações UPDATE
+│   │   ├── create.py    # Classes para operações INSERT
+│   │   ├── delete.py    # Classes para operações DELETE
+│   │   ├── database.py  # Gerenciamento de conexões
+│   │   └── docs/        # Documentação do banco
+│   ├── routes/          # Definição de rotas Flask
+│   │   └── routes.py
+│   └── views/           # Templates HTML e arquivos estáticos
+│       ├── home.html
+│       ├── registro_eventos.html
+│       ├── usinas.html
+│       ├── analise_relatorios.html
+│       ├── components/  # Componentes reutilizáveis
+│       └── static/      # CSS, imagens, JS
+├── main.py              # Ponto de entrada da aplicação Flask
+└── requeriments.txt     # Dependências Python
+```
+
+### Camadas da Aplicação
+
+1. **Views (Apresentação):** Templates HTML com Jinja2
+2. **Controllers (Lógica):** Processamento de requisições e orquestração
+3. **Models (Dados):** Classes abstratas para acesso ao banco de dados MySQL
 
 ---
 
-## 🚀 MVP - Status Atual
+## 📊 Estrutura de Ocorrências
 
-Nesse primeiro momento, vamos fazer apenas a página Home. A partir do projeto em anexo, os dados de leitura do tempo real já estão sendo realizadas corretamente.
+O sistema utiliza a tabela `op_ocorrencia` para registrar eventos operacionais:
 
-**Abordagem MVP:**
-- Vamos considerar isso como um MVP
-- Não vamos inserir muita complexidade inicialmente
-- Não vamos alterar a lógica de leitura existente
-- O registro manual de eventos será implementado posteriormente
+```sql
+-- Tabela principal de ocorrências
+op_ocorrencia {
+  BIGINT id PK                    -- Identificador único
+  BIGINT usina_id FK              -- Usina relacionada
+  BIGINT operador_id FK           -- Operador que registrou
+  VARCHAR tipo                    -- Ex.: Evento, Alarme, Trip
+  VARCHAR categoria               -- Ex.: Operação/Humano, Elétrica, Hidráulica
+  VARCHAR unidade                 -- Ex.: UG-01, Vertedouro
+  VARCHAR tags                    -- Tags em formato CSV
+  TEXT playbook                   -- Instruções de resposta
+  TEXT template_texto             -- Template aplicado
+  LONGTEXT descricao              -- Descrição detalhada
+  ENUM status                     -- aberta|em_andamento|resolvida|cancelada
+  ENUM severidade                 -- baixa|média|alta|crítica
+  ENUM origem                     -- humano|scada|api|importacao
+  JSON metadata                   -- Dados extras de integração
+  DATETIME created_at
+  DATETIME updated_at
+  DATETIME resolved_at            -- Data de resolução (nullable)
+}
+```
+
+### Estrutura do Banco de Dados
+
+O sistema é composto por 5 tabelas principais:
+
+1. **`op_usina`** - Cadastro de usinas
+2. **`op_usuario`** - Usuários e operadores do sistema
+3. **`op_ocorrencia`** - Registro de eventos operacionais
+4. **`op_ocorrencia_hist`** - Histórico e auditoria de mudanças
+5. **`op_anexo`** - Anexos de evidências (fotos, relatórios, etc.)
+
+#### Relacionamentos:
+- Uma usina possui muitas ocorrências (1:N)
+- Um operador registra muitas ocorrências (1:N)
+- Uma ocorrência possui histórico de auditoria (1:N)
+- Uma ocorrência pode ter múltiplos anexos (1:N)
+
+Para detalhes completos sobre a estrutura do banco, métodos de consulta e operações, consulte:
+- [📘 Documentação do Banco de Dados](./libs/models/docs/database.md) - Schema completo, modelos e API de acesso
 
 ---
 
 ## 📚 Documentação Adicional
 
-Para mais detalhes sobre a arquitetura e fluxogramas do sistema, consulte:
-- [FLOWCHART.md](./FLOWCHART.md) - Fluxogramas detalhados do projeto
-- [DESIGN_SYSTEM.md](./DESIGN_SYSTEM.md) - Sistema de design e componentes UI
+Para mais detalhes sobre a arquitetura e componentes do sistema:
+
+- **[📘 Database Documentation](./libs/models/docs/database.md)** - Documentação completa do banco de dados
+  - Schema de todas as tabelas
+  - API de leitura (`Read`) - métodos como `get_all()`, `where()`, `get_by_id()`, etc.
+  - API de edição (`Edit`) - métodos como `update_by_id()`, `update_where()`, `increment()`, etc.
+  - Operadores de filtro e consultas avançadas
+  - Diagramas ER (Entity-Relationship)
+
+- **[🔄 FLOWCHART.md](./FLOWCHART.md)** - Fluxogramas detalhados do projeto
+
+- **[🎨 DESIGN_SYSTEM.md](./DESIGN_SYSTEM.md)** - Sistema de design e componentes UI
