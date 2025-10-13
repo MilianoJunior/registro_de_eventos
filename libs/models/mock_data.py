@@ -21,7 +21,18 @@ MOCK_USINAS = [
         'nome': 'CGH-APARECIDA', 
         'sigla': 'APAR', 
         'timezone': 'America/Sao_Paulo', 
-        'ativo': 1, 
+        'ativo': 1,
+        'status_operacional': 'operando',
+        'potencia_ativa_mw': 1200,
+        'mttr': '13h min',
+        'alarmes_por_hora': 8.00,
+        'alarmes_criticos': 0,
+        'incidentes_abertos': 0,
+        'alarmes_atencao': 3,
+        'alarmes_inundantes': 0,
+        'alarmes_oscilantes': 2,
+        'energia_nao_gerada_mwh': 0,
+        'distribuicao_prioridade': {'alta': 0, 'media': 100, 'baixa': 0},
         'created_at': datetime(2025, 9, 23, 14, 28, 29, 150993), 
         'updated_at': datetime(2025, 9, 23, 21, 21, 11, 659664)
     },
@@ -30,7 +41,18 @@ MOCK_USINAS = [
         'nome': 'CGH-FAE', 
         'sigla': 'FAE', 
         'timezone': 'America/Sao_Paulo', 
-        'ativo': 1, 
+        'ativo': 1,
+        'status_operacional': 'operando',
+        'potencia_ativa_mw': 950,
+        'mttr': '8h min',
+        'alarmes_por_hora': 5.20,
+        'alarmes_criticos': 0,
+        'incidentes_abertos': 0,
+        'alarmes_atencao': 1,
+        'alarmes_inundantes': 0,
+        'alarmes_oscilantes': 0,
+        'energia_nao_gerada_mwh': 0,
+        'distribuicao_prioridade': {'alta': 0, 'media': 100, 'baixa': 0},
         'created_at': datetime(2025, 9, 23, 14, 28, 29, 354315), 
         'updated_at': datetime(2025, 9, 23, 14, 28, 29, 354315)
     },
@@ -39,7 +61,18 @@ MOCK_USINAS = [
         'nome': 'CGH-HOPPEN', 
         'sigla': 'HOPP', 
         'timezone': 'America/Sao_Paulo', 
-        'ativo': 1, 
+        'ativo': 1,
+        'status_operacional': 'operando',
+        'potencia_ativa_mw': 850,
+        'mttr': '20 min',
+        'alarmes_por_hora': 0.21,
+        'alarmes_criticos': 0,
+        'incidentes_abertos': 0,
+        'alarmes_atencao': 2,
+        'alarmes_inundantes': 0,
+        'alarmes_oscilantes': 1,
+        'energia_nao_gerada_mwh': 0,
+        'distribuicao_prioridade': {'alta': 0, 'media': 100, 'baixa': 0},
         'created_at': datetime(2025, 9, 23, 14, 28, 29, 558514), 
         'updated_at': datetime(2025, 9, 23, 14, 28, 29, 558514)
     },
@@ -48,7 +81,18 @@ MOCK_USINAS = [
         'nome': 'CGH-PICADAS ALTAS', 
         'sigla': 'PICALT', 
         'timezone': 'America/Sao_Paulo', 
-        'ativo': 1, 
+        'ativo': 1,
+        'status_operacional': 'manutencao',
+        'potencia_ativa_mw': 0,
+        'mttr': 'N/A',
+        'alarmes_por_hora': 0,
+        'alarmes_criticos': 1,
+        'incidentes_abertos': 1,
+        'alarmes_atencao': 0,
+        'alarmes_inundantes': 0,
+        'alarmes_oscilantes': 0,
+        'energia_nao_gerada_mwh': 120,
+        'distribuicao_prioridade': {'alta': 100, 'media': 0, 'baixa': 0},
         'created_at': datetime(2025, 9, 23, 14, 28, 29, 766481), 
         'updated_at': datetime(2025, 9, 23, 14, 28, 29, 766481)
     },
@@ -57,7 +101,18 @@ MOCK_USINAS = [
         'nome': 'PCH-PEDRAS', 
         'sigla': 'PEDR', 
         'timezone': 'America/Sao_Paulo', 
-        'ativo': 1, 
+        'ativo': 1,
+        'status_operacional': 'operando',
+        'potencia_ativa_mw': 1150,
+        'mttr': '10h min',
+        'alarmes_por_hora': 3.45,
+        'alarmes_criticos': 0,
+        'incidentes_abertos': 0,
+        'alarmes_atencao': 1,
+        'alarmes_inundantes': 0,
+        'alarmes_oscilantes': 0,
+        'energia_nao_gerada_mwh': 0,
+        'distribuicao_prioridade': {'alta': 0, 'media': 100, 'baixa': 0},
         'created_at': datetime(2025, 9, 23, 14, 28, 29, 969718), 
         'updated_at': datetime(2025, 9, 23, 14, 28, 29, 969718)
     }
@@ -617,12 +672,16 @@ def get_estatisticas_home():
     unidades = Counter((r.get("unidade") or "-") for r in rows)
     por_unidade = sorted(unidades.items(), key=lambda x: (-x[1], x[0]))[:8]
     
+    # Calcula a potência ativa total das usinas operando
+    potencia_total = sum(u.get('potencia_ativa_mw', 0) for u in MOCK_USINAS if u.get('status_operacional') == 'operando')
+    
     return {
         'recentes': recentes,
         'status': status,
         'unidades': unidades,
         'por_unidade': por_unidade,
         'usinas': MOCK_USINAS,
-        'total_ocorrencias': len(rows)
+        'total_ocorrencias': len(rows),
+        'potencia_total_mw': potencia_total
     }
 

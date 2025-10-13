@@ -1,0 +1,40 @@
+<aside class="w-64 flex flex-col bg-[var(--sidebar-bg)] border-r border-slate-200 dark:border-slate-800">
+  <div class="flex items-center h-16 border-b border-slate-200 dark:border-slate-800 px-4">
+      <h1 class="text-base font-medium text-text-primary flex items-center">
+          <span class="text-white">Enge<span class="text-blue-400">SEP</span></span>
+          <span class="font-normal text-slate-400 ml-2 text-sm">O&M</span>
+      </h1>
+  </div>
+    <nav class="flex-1 space-y-1 p-3">
+        <a class="flex items-center px-3 py-2 rounded-lg text-sm sidebar-item-active" href="{{ url_for('index') }}">
+            <span class="material-icons text-base">dashboard</span>
+            <span class="ml-2.5">Visão Geral</span>
+        </a>
+        <a class="flex items-center px-3 py-2 rounded-lg text-sm text-text-muted hover:text-text-primary sidebar-item" href="{{ url_for('registro_eventos') }}">
+            <span class="material-icons text-base">add_circle_outline</span>
+            <span class="ml-2.5">Registrar Evento</span>
+        </a>
+        <a class="flex items-center px-3 py-2 rounded-lg text-sm text-text-muted hover:text-text-primary sidebar-item" href="{{ url_for('analise_relatorios') }}">
+            <span class="material-icons text-base">analytics</span>
+            <span class="ml-2.5">Análise & Relatórios</span>
+        </a>
+      <div class="pt-3 mt-3 border-t border-slate-200 dark:border-slate-800">
+          <h6 class="px-3 text-xs font-medium text-text-muted uppercase tracking-wide mb-1.5">Usinas</h6>
+          <div class="space-y-0.5">
+              {% if usinas %}
+                  {% for usina in usinas %}
+                      <a class="flex items-center px-3 py-2 rounded-lg text-sm text-text-muted hover:text-text-primary sidebar-item" href="{{ url_for('usina_page', sigla=usina.sigla) }}" data-usina-id="{{ usina.id }}">
+                          <span class="material-icons text-base">factory</span>
+                          <span class="ml-2.5">{{ usina.nome }}</span>
+                      </a>
+                  {% endfor %}
+              {% else %}
+                  <p class="px-3 py-2 text-xs text-text-muted">Nenhuma usina disponível</p>
+              {% endif %}
+          </div>
+      </div>
+  </nav>
+  <div class="p-3 border-t border-slate-200 dark:border-slate-800">
+      <p class="text-center text-xs text-text-muted">© 2025 EngeSEP</p>
+  </div>
+</aside>

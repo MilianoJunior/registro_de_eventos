@@ -30,6 +30,7 @@ class HomeController:
             status = stats['status']
             por_unidade = stats['por_unidade']
             total_ocorrencias = stats['total_ocorrencias']
+            potencia_total_mw = stats['potencia_total_mw']
         else:
             # Usa dados reais do banco de dados
             usinas = self._get_or_set("usinas", lambda: self.usinas.get_all())
@@ -40,6 +41,9 @@ class HomeController:
             unidades = Counter((r.get("unidade") or "-") for r in rows)
             por_unidade = sorted(unidades.items(), key=lambda x: (-x[1], x[0]))[:8]
             total_ocorrencias = len(rows)
+            
+            # Calcula a potência ativa total das usinas operando
+            potencia_total_mw = sum(u.get('potencia_ativa_mw', 0) for u in usinas if u.get('status_operacional') == 'operando')
 
         return render_template("home.html",
             usinas=usinas,
@@ -47,4 +51,5 @@ class HomeController:
             recentes=recentes,
             por_status=dict(status),
             por_unidade=por_unidade,
+            potencia_total_mw=potencia_total_mw,
         )
