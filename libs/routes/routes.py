@@ -3,14 +3,14 @@ from main import app
 from libs.controllers.homeController import HomeController
 from libs.controllers.usinasController import UsinasController
 from libs.controllers.eventosController import EventosController
-from libs.controllers.analiseController import AnaliseController
+# from libs.controllers.analiseController import AnaliseController
 
 from flask import render_template
 
 homeController = HomeController()
 usinasController = UsinasController()
 eventosController = EventosController()
-analiseController = AnaliseController()
+# analiseController = AnaliseController()
 
 @app.route("/")
 def index():
@@ -33,7 +33,7 @@ def criar_ocorrencia():
     print('6- criar_ocorrencia')
     return eventosController.criar_ocorrencia()
 
-@app.route("/analise-relatorios")
-def analise_relatorios():
-    print('7- analise_relatorios')
-    return analiseController.analise_relatorios()
+# @app.route("/analise-relatorios")
+# def analise_relatorios():
+#     print('7- analise_relatorios')
+#     return analiseController.analise_relatorios()

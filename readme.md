@@ -38,7 +38,7 @@ Para cada `op_usina` e cada Unidade Geradora (UG):
 
 **Descrição:** Página para registro e gerenciamento de ocorrências operacionais, permitindo criar novos eventos, visualizar histórico, adicionar anexos e acompanhar o status das ocorrências.
 
-### 📊 Página - Análise e Relatórios
+### 📊 Página - Análise e Relatórios (desativada por enquanto)
 
 **Descrição:** Página para visualização de análises, métricas e relatórios consolidados das usinas e ocorrências.
 

@@ -9,7 +9,7 @@ from collections import Counter
 # ============================================================
 # CONFIGURAÇÃO GLOBAL DE DESENVOLVIMENTO
 # ============================================================
-DEVELOPER_MODE = True  # Alterar para False em produção
+DEVELOPER_MODE = False # Alterar para False em produção
 
 
 # ============================================================
@@ -27,7 +27,7 @@ MOCK_USINAS = [
         'mttr': '13h min',
         'alarmes_por_hora': 8.00,
         'alarmes_criticos': 0,
-        'incidentes_abertos': 0,
+        'incidentes_abertos': 1,
         'alarmes_atencao': 3,
         'alarmes_inundantes': 0,
         'alarmes_oscilantes': 2,
@@ -685,3 +685,65 @@ def get_estatisticas_home():
         'potencia_total_mw': potencia_total
     }
 
+
+def get_ocorrencias_por_usina(usina_id, limit=10):
+    """
+    Retorna ocorrências de uma usina específica ordenadas por data
+    
+    Args:
+        usina_id: ID da usina
+        limit: Número máximo de ocorrências a retornar
+    
+    Returns:
+        Lista de ocorrências da usina ordenadas por created_at (mais recente primeiro)
+    """
+    ocorrencias_usina = [
+        ocorrencia for ocorrencia in MOCK_OCORRENCIAS 
+        if ocorrencia.get('usina_id') == usina_id
+    ]
+    
+    return sorted(ocorrencias_usina, key=lambda r: r.get("created_at"), reverse=True)[:limit]
+
+
+def get_alarmes_ativos_usina(usina_id, categorias=None, limit=5):
+    """
+    Retorna alarmes ativos (status aberta ou em_andamento) de uma usina específica
+    
+    Args:
+        usina_id: ID da usina
+        categorias: Lista de categorias para filtrar (ex: ['Hidráulica', 'Automação'])
+        limit: Número máximo de alarmes a retornar
+    
+    Returns:
+        Lista de alarmes ativos da usina
+    """
+    alarmes = [
+        ocorrencia for ocorrencia in MOCK_OCORRENCIAS 
+        if (ocorrencia.get('usina_id') == usina_id and 
+            ocorrencia.get('status') in ['aberta', 'em_andamento'])
+    ]
+    
+    # Filtra por categorias se especificado
+    if categorias:
+        alarmes = [a for a in alarmes if a.get('categoria') in categorias]
+    
+    return sorted(alarmes, key=lambda r: r.get("created_at"), reverse=True)[:limit]
+
+
+def get_timeline_vertedouro(usina_id, limit=5):
+    """
+    Retorna alarmes relacionados ao vertedouro de uma usina
+    Filtra por categorias relacionadas: Hidráulica, Automação
+    
+    Args:
+        usina_id: ID da usina
+        limit: Número máximo de alarmes a retornar
+    
+    Returns:
+        Lista de alarmes do vertedouro
+    """
+    return get_alarmes_ativos_usina(
+        usina_id, 
+        categorias=['Hidráulica', 'Automação', 'Ambiental'],
+        limit=limit
+    )

@@ -82,53 +82,226 @@
         </div>
     </section>
     
-    <!-- Linha do Tempo: Vertedouro -->
+    <!-- Linha do Tempo: Filtrada -->
     <section class="bg-surface p-5 rounded-lg border border-slate-200 dark:border-slate-800">
-        <h2 class="text-base font-medium text-text-primary mb-1">Linha do Tempo: Vertedouro</h2>
-        <p class="text-xs text-text-muted mb-4">Alarmes Ativos</p>
-        
-        <div class="space-y-3">
-            {% if usina.alarmes_atencao > 0 %}
-            <!-- Alarme Ativo -->
-            <div class="flex items-start gap-3 p-3 rounded-lg border border-warning/30 bg-warning/5">
-                <div class="w-2 h-2 rounded-full bg-warning mt-1.5 flex-shrink-0"></div>
-                <div class="flex-1">
-                    <div class="flex justify-between items-start gap-2 mb-2">
-                        <p class="text-sm font-medium text-text-primary">Perda de comunicação com remota do vertedouro</p>
-                        <span class="px-2 py-0.5 bg-warning/20 text-warning text-xs rounded whitespace-nowrap">Média</span>
-                    </div>
-                    <p class="text-xs text-text-muted">04/08/2025, 17:00:30 por Sistema SCADA</p>
-                    <div class="flex flex-wrap gap-1.5 mt-2">
-                        <span class="px-2 py-0.5 bg-background-alt text-text-muted text-xs rounded">comunicação</span>
-                        <span class="px-2 py-0.5 bg-background-alt text-text-muted text-xs rounded">automação</span>
-                        <span class="px-2 py-0.5 bg-background-alt text-text-muted text-xs rounded">shuttering</span>
-                    </div>
-                    <button class="mt-2 px-3 py-1.5 rounded-lg bg-success text-white text-xs font-medium hover:opacity-90 transition">
-                        Resolver
-                    </button>
-                </div>
+        <div class="flex justify-between items-start mb-4">
+            <div>
+                <h2 class="text-base font-medium text-text-primary mb-1">Linha do Tempo: Filtrada</h2>
+                <p class="text-xs text-text-muted">Filtrar ocorrências por critério</p>
             </div>
+        </div>
+
+        <!-- Filtros -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
+            <!-- Filtro: Tipo -->
+            <div>
+                <label class="block text-xs font-medium text-text-muted mb-1.5">TIPO</label>
+                <select id="filtro-tipo" class="w-full px-3 py-2 bg-background-alt border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-info/50">
+                    <option value="">Todos os tipos</option>
+                    <option value="Trip">Trip</option>
+                    <option value="Alarme">Alarme</option>
+                    <option value="Evento">Evento</option>
+                    <option value="Manutenção">Manutenção</option>
+                    <option value="Comando">Comando</option>
+                </select>
+            </div>
+
+            <!-- Filtro: Categoria -->
+            <div>
+                <label class="block text-xs font-medium text-text-muted mb-1.5">CATEGORIA</label>
+                <select id="filtro-categoria" class="w-full px-3 py-2 bg-background-alt border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-info/50">
+                    <option value="">Todas as categorias</option>
+                    <option value="Operação/Humano">Operação/Humano</option>
+                    <option value="Elétrica">Elétrica</option>
+                    <option value="Hidráulica">Hidráulica</option>
+                    <option value="Mecânica">Mecânica</option>
+                    <option value="Automação">Automação</option>
+                    <option value="Segurança">Segurança</option>
+                    <option value="Ambiental">Ambiental</option>
+                </select>
+            </div>
+
+            <!-- Filtro: Status -->
+            <div>
+                <label class="block text-xs font-medium text-text-muted mb-1.5">STATUS</label>
+                <select id="filtro-status" class="w-full px-3 py-2 bg-background-alt border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-info/50">
+                    <option value="">Todos os status</option>
+                    <option value="aberta">Aberta</option>
+                    <option value="em_andamento">Em Andamento</option>
+                    <option value="resolvida">Resolvida</option>
+                    <option value="cancelada">Cancelada</option>
+                </select>
+            </div>
+
+            <!-- Filtro: Unidade -->
+            <div>
+                <label class="block text-xs font-medium text-text-muted mb-1.5">UNIDADE/SISTEMA</label>
+                <input 
+                    type="text" 
+                    id="filtro-unidade" 
+                    placeholder="Ex: UG-01, Vertedouro" 
+                    class="w-full px-3 py-2 bg-background-alt border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-text-primary placeholder-text-muted focus:outline-none focus:ring-2 focus:ring-info/50"
+                />
+            </div>
+        </div>
+
+        <!-- Botões de Ação -->
+        <div class="flex gap-2 mb-4">
+            <button 
+                onclick="aplicarFiltros()"
+                class="px-4 py-2 bg-info text-white text-xs font-medium rounded-lg hover:opacity-90 transition">
+                Aplicar Filtros
+            </button>
+            <button 
+                onclick="limparFiltros()"
+                class="px-4 py-2 bg-slate-200 dark:bg-slate-700 text-text-primary text-xs font-medium rounded-lg hover:opacity-90 transition">
+                Limpar
+            </button>
+            <span id="contador-filtrados" class="ml-auto self-center text-xs text-text-muted">
+                {{ timeline_filtrada|length }} ocorrências
+            </span>
+        </div>
+        
+        <!-- Container com altura limitada e scroll -->
+        <div id="timeline-filtrada-container" class="space-y-3 max-h-[600px] min-h-[200px] overflow-y-auto pr-2 custom-scrollbar">
+            {% if timeline_filtrada and timeline_filtrada|length > 0 %}
+                {% for alarme in timeline_filtrada %}
+                <!-- Item de Ocorrência (com data-attributes para filtragem) -->
+                <div class="ocorrencia-item flex items-start gap-3 p-3 rounded-lg border 
+                    {% if alarme.severidade == 'alta' or alarme.severidade == 'crítica' %}
+                        border-danger/30 bg-danger/5
+                    {% elif alarme.severidade == 'média' %}
+                        border-warning/30 bg-warning/5
+                    {% else %}
+                        border-info/30 bg-info/5
+                    {% endif %}"
+                    data-tipo="{{ alarme.tipo }}"
+                    data-categoria="{{ alarme.categoria }}"
+                    data-status="{{ alarme.status }}"
+                    data-unidade="{{ alarme.unidade }}"
+                    data-tags="{{ alarme.tags }}"
+                    data-severidade="{{ alarme.severidade }}">
+                    
+                    <div class="w-2 h-2 rounded-full 
+                        {% if alarme.severidade == 'alta' or alarme.severidade == 'crítica' %}
+                            bg-danger
+                        {% elif alarme.severidade == 'média' %}
+                            bg-warning
+                        {% else %}
+                            bg-info
+                        {% endif %} 
+                        mt-1.5 flex-shrink-0"></div>
+                    <div class="flex-1">
+                        <div class="flex justify-between items-start gap-2 mb-2">
+                            <p class="text-sm font-medium text-text-primary">
+                                <span class="font-semibold">{{ alarme.tipo }}</span>: {{ alarme.categoria }} - {{ alarme.unidade }}
+                            </p>
+                            <div class="flex gap-1.5">
+                                <span class="px-2 py-0.5 
+                                    {% if alarme.status == 'resolvida' %}
+                                        bg-success/10 text-success
+                                    {% elif alarme.status == 'em_andamento' %}
+                                        bg-info/10 text-info
+                                    {% elif alarme.status == 'aberta' %}
+                                        bg-warning/10 text-warning
+                                    {% else %}
+                                        bg-slate-100 text-slate-600
+                                    {% endif %}
+                                    text-xs rounded whitespace-nowrap capitalize">{{ alarme.status.replace('_', ' ') }}</span>
+                                <span class="px-2 py-0.5 
+                                    {% if alarme.severidade == 'alta' or alarme.severidade == 'crítica' %}
+                                        bg-danger/20 text-danger
+                                    {% elif alarme.severidade == 'média' %}
+                                        bg-warning/20 text-warning
+                                    {% else %}
+                                        bg-info/20 text-info
+                                    {% endif %}
+                                    text-xs rounded whitespace-nowrap capitalize">{{ alarme.severidade }}</span>
+                            </div>
+                        </div>
+                        <p class="text-xs text-text-primary mt-1 line-clamp-2">{{ alarme.descricao[:150] }}{% if alarme.descricao|length > 150 %}...{% endif %}</p>
+                        <p class="text-xs text-text-muted mt-1">{{ alarme.created_at.strftime('%d/%m/%Y, %H:%M:%S') }} por {{ alarme.origem|capitalize }}</p>
+                        {% if alarme.tags %}
+                        <div class="flex flex-wrap gap-1.5 mt-2">
+                            {% for tag in alarme.tags.split(',') %}
+                                {% if tag.strip() %}
+                                <span class="px-2 py-0.5 bg-background-alt text-text-muted text-xs rounded">{{ tag.strip() }}</span>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        {% if alarme.status != 'resolvida' %}
+                        <button class="mt-2 px-3 py-1.5 rounded-lg bg-success text-white text-xs font-medium hover:opacity-90 transition">
+                            Resolver
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
             {% else %}
-            <p class="text-center text-text-muted text-sm py-6">Nenhum alarme ativo no momento</p>
+            <p id="mensagem-vazia" class="text-center text-text-muted text-sm py-6">Nenhuma ocorrência encontrada</p>
             {% endif %}
         </div>
-    </section>
-    
-    <!-- Linha do Tempo: Geral -->
-    <section class="bg-surface p-5 rounded-lg border border-slate-200 dark:border-slate-800">
-        <h2 class="text-base font-medium text-text-primary mb-1">Linha do Tempo: Geral</h2>
-        <p class="text-xs text-text-muted mb-4">Ocorrências Recentes</p>
-        
-        <div class="space-y-2">
-            <div class="flex items-start gap-3 p-3 rounded-lg border border-slate-200 dark:border-slate-800">
-                <div class="w-2 h-2 rounded-full bg-success mt-1.5 flex-shrink-0"></div>
-                <div class="flex-1">
-                    <p class="text-xs text-text-muted">Geral</p>
-                    <p class="text-sm text-text-primary mt-0.5">Alarme de nível de montante baixo. Verificar affluxão.</p>
-                    <p class="text-xs text-text-muted mt-1">03/08/2025, 14:25:00</p>
-                </div>
-            </div>
-        </div>
+
+        <!-- JavaScript para filtragem -->
+        <script>
+            // Dados originais das ocorrências
+            const ocorrenciasOriginais = document.querySelectorAll('.ocorrencia-item');
+            
+            function aplicarFiltros() {
+                const filtroTipo = document.getElementById('filtro-tipo').value.toLowerCase();
+                const filtroCategoria = document.getElementById('filtro-categoria').value.toLowerCase();
+                const filtroStatus = document.getElementById('filtro-status').value.toLowerCase();
+                const filtroUnidade = document.getElementById('filtro-unidade').value.toLowerCase();
+                
+                let contador = 0;
+                
+                ocorrenciasOriginais.forEach(item => {
+                    const tipo = item.dataset.tipo.toLowerCase();
+                    const categoria = item.dataset.categoria.toLowerCase();
+                    const status = item.dataset.status.toLowerCase();
+                    const unidade = item.dataset.unidade.toLowerCase();
+                    const tags = item.dataset.tags.toLowerCase();
+                    
+                    // Verificar se passa por todos os filtros
+                    const passaTipo = !filtroTipo || tipo.includes(filtroTipo);
+                    const passaCategoria = !filtroCategoria || categoria.includes(filtroCategoria);
+                    const passaStatus = !filtroStatus || status.includes(filtroStatus);
+                    const passaUnidade = !filtroUnidade || unidade.includes(filtroUnidade) || tags.includes(filtroUnidade);
+                    
+                    if (passaTipo && passaCategoria && passaStatus && passaUnidade) {
+                        item.style.display = 'flex';
+                        contador++;
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+                
+                // Atualizar contador
+                document.getElementById('contador-filtrados').textContent = `${contador} ocorrências`;
+                
+                // Mostrar/ocultar mensagem de vazia
+                const mensagemVazia = document.getElementById('mensagem-vazia');
+                if (mensagemVazia) {
+                    mensagemVazia.style.display = contador === 0 ? 'block' : 'none';
+                }
+            }
+            
+            function limparFiltros() {
+                document.getElementById('filtro-tipo').value = '';
+                document.getElementById('filtro-categoria').value = '';
+                document.getElementById('filtro-status').value = '';
+                document.getElementById('filtro-unidade').value = '';
+                aplicarFiltros();
+            }
+            
+            // Aplicar filtros ao pressionar Enter no campo de unidade
+            document.getElementById('filtro-unidade').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    aplicarFiltros();
+                }
+            });
+        </script>
     </section>
     
     <!-- Dados dos Sensores -->
