@@ -100,6 +100,26 @@
                     <input type="text" id="playbook" name="playbook" placeholder="Referência do playbook" class="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-background text-text-primary focus:outline-none focus:ring-2 focus:ring-primary">
                 </div>
             </div>
+            
+            <!-- Campo Requer Ação -->
+            <div class="mt-4 p-4 rounded-lg border-2 border-warning/30 bg-warning/5">
+                <label class="flex items-start gap-3 cursor-pointer group">
+                    <input type="checkbox" id="requer_acao" name="requer_acao" 
+                           class="mt-1 w-5 h-5 rounded border-warning/50 text-warning focus:ring-warning focus:ring-2">
+                    <div class="flex-1">
+                        <div class="flex items-center gap-2">
+                            <span class="material-icons text-warning text-lg">warning</span>
+                            <span class="text-sm font-semibold text-text-primary group-hover:text-warning transition">
+                                Requer Ação Urgente
+                            </span>
+                        </div>
+                        <p class="text-xs text-text-muted mt-1.5 leading-relaxed">
+                            Marque se esta ocorrência necessita de atenção imediata da equipe. 
+                            Operadores serão notificados e um botão de ação aparecerá nas listagens.
+                        </p>
+                    </div>
+                </label>
+            </div>
         </div>
         
         <!-- Botões de Ação -->
@@ -142,7 +162,8 @@
             template_texto: document.getElementById('template_texto').value,
             descricao: document.getElementById('descricao').value,
             severidade: document.getElementById('severidade').value,
-            playbook: document.getElementById('playbook').value
+            playbook: document.getElementById('playbook').value,
+            requer_acao: document.getElementById('requer_acao').checked
         };
         
         try {

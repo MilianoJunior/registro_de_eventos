@@ -196,7 +196,7 @@
                             <p class="text-sm font-medium text-text-primary">
                                 <span class="font-semibold">{{ alarme.tipo }}</span>: {{ alarme.categoria }} - {{ alarme.unidade }}
                             </p>
-                            <div class="flex gap-1.5">
+                            <div class="flex flex-wrap gap-1.5">
                                 <span class="px-2 py-0.5 
                                     {% if alarme.status == 'resolvida' %}
                                         bg-success/10 text-success
@@ -217,6 +217,17 @@
                                         bg-info/20 text-info
                                     {% endif %}
                                     text-xs rounded whitespace-nowrap capitalize">{{ alarme.severidade }}</span>
+                                
+                                {# Badge Requer Ação #}
+                                {% if alarme.metadata %}
+                                    {% set metadata_dict = alarme.metadata if alarme.metadata is mapping else {} %}
+                                    {% if metadata_dict.get('requer_acao') %}
+                                        <span class="px-2 py-0.5 bg-danger/10 text-danger text-xs rounded whitespace-nowrap font-semibold flex items-center gap-1">
+                                            <span class="material-icons text-xs">warning</span>
+                                            REQUER AÇÃO
+                                        </span>
+                                    {% endif %}
+                                {% endif %}
                             </div>
                         </div>
                         <p class="text-xs text-text-primary mt-1 line-clamp-2">{{ alarme.descricao[:150] }}{% if alarme.descricao|length > 150 %}...{% endif %}</p>
@@ -231,9 +242,23 @@
                         </div>
                         {% endif %}
                         {% if alarme.status != 'resolvida' %}
-                        <button class="mt-2 px-3 py-1.5 rounded-lg bg-success text-white text-xs font-medium hover:opacity-90 transition">
-                            Resolver
-                        </button>
+                        <div class="flex gap-2 mt-2">
+                            {# Botão Assumir Responsabilidade (se requer ação e não tem responsável) #}
+                            {% if alarme.metadata %}
+                                {% set metadata_dict = alarme.metadata if alarme.metadata is mapping else {} %}
+                                {% if metadata_dict.get('requer_acao') and not metadata_dict.get('responsavel_id') %}
+                                    <button onclick="assumirResponsabilidade('{{ alarme.id }}')" 
+                                            class="px-3 py-1.5 rounded-lg bg-danger text-white text-xs font-medium hover:opacity-90 transition flex items-center gap-1">
+                                        <span class="material-icons text-xs">assignment_ind</span>
+                                        Assumir Responsabilidade
+                                    </button>
+                                {% endif %}
+                            {% endif %}
+                            
+                            <button class="px-3 py-1.5 rounded-lg bg-success text-white text-xs font-medium hover:opacity-90 transition">
+                                Resolver
+                            </button>
+                        </div>
                         {% endif %}
                     </div>
                 </div>
@@ -293,6 +318,34 @@
                 document.getElementById('filtro-status').value = '';
                 document.getElementById('filtro-unidade').value = '';
                 aplicarFiltros();
+            }
+            
+            // Assumir responsabilidade de uma ocorrência
+            async function assumirResponsabilidade(ocorrenciaId) {
+                if (!confirm('Deseja assumir a responsabilidade por esta ocorrência?')) {
+                    return;
+                }
+                
+                try {
+                    const response = await fetch(`/api/ocorrencias/${ocorrenciaId}/assumir`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        }
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        alert('Responsabilidade assumida com sucesso!');
+                        window.location.reload();
+                    } else {
+                        alert('Erro ao assumir responsabilidade: ' + (result.error || 'Erro desconhecido'));
+                    }
+                } catch (error) {
+                    console.error('Erro:', error);
+                    alert('Erro ao assumir responsabilidade. Tente novamente.');
+                }
             }
             
             // Aplicar filtros ao pressionar Enter no campo de unidade

@@ -4,6 +4,8 @@ from libs.models.read import Read
 from libs.models.create import Create
 from libs.models.mock_data import DEVELOPER_MODE, get_mock_data
 from libs.models.utils.utils import desempenho
+import json
+from datetime import datetime
 
 class EventosController:
     def __init__(self):
@@ -93,6 +95,16 @@ class EventosController:
                 if not data.get(field):
                     return jsonify({"success": False, "error": f"Campo obrigatório: {field}"}), 400
             
+            # Constrói metadata JSON
+            requer_acao = data.get("requer_acao", False)
+            metadata = {
+                "requer_acao": requer_acao,
+                "notificado_em": None,
+                "responsavel_id": None,
+                "assumido_em": None,
+                "observacoes": None
+            }
+            
             # Prepara dados para inserção
             ocorrencia_data = {
                 "usina_id": data["usina_id"],
@@ -106,7 +118,8 @@ class EventosController:
                 "descricao": data["descricao"],
                 "status": "aberta",
                 "severidade": data.get("severidade", "média"),
-                "origem": "humano"
+                "origem": "humano",
+                "metadata": json.dumps(metadata)
             }
             
             # Insere no banco
