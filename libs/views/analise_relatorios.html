@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+{% set active_page = "analise_relatorios" %}
+{% block title %}Análise & Relatórios — EngeSEP O&M{% endblock %}
+
+{% block content %}
+<div class="p-6 space-y-6">
+    <h1 class="text-lg font-medium text-text-primary">Análise & Relatórios</h1>
+    
+    <!-- Comparação de Usinas -->
+    <section class="bg-surface p-5 rounded-lg border border-slate-200 dark:border-slate-800">
+        <h2 class="text-base font-medium text-text-primary mb-3">Comparação de Usinas</h2>
+        
+        <!-- Seleção de Usinas -->
+        <div class="flex flex-wrap gap-2 mb-6">
+            {% if usinas %}
+                {% for usina in usinas %}
+                <label class="flex items-center cursor-pointer px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 hover:bg-background-alt transition">
+                    <input type="radio" name="usina_comparacao" value="{{ usina.id }}" class="mr-2" {% if loop.first %}checked{% endif %}>
+                    <span class="text-xs text-text-primary">{{ usina.nome }}</span>
+                </label>
+                {% endfor %}
+            {% endif %}
+        </div>
+        
+        <!-- Tabela de Métricas -->
+        <div class="overflow-x-auto">
+            <table class="w-full border-collapse">
+                <thead>
+                    <tr class="bg-background">
+                        <th class="px-4 py-3 text-left text-sm font-medium text-text-primary border border-slate-300 dark:border-slate-700">Status</th>
+                        <th class="px-4 py-3 text-left text-sm font-medium text-text-primary border border-slate-300 dark:border-slate-700">Potência</th>
+                        <th class="px-4 py-3 text-left text-sm font-medium text-text-primary border border-slate-300 dark:border-slate-700">Alarmes</th>
+                        <th class="px-4 py-3 text-left text-sm font-medium text-text-primary border border-slate-300 dark:border-slate-700">Energia Não Gerada</th>
+                        <th class="px-4 py-3 text-left text-sm font-medium text-text-primary border border-slate-300 dark:border-slate-700">Disponibilidade</th>
+                        <th class="px-4 py-3 text-left text-sm font-medium text-text-primary border border-slate-300 dark:border-slate-700">Confiabilidade</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="border-t border-slate-300 dark:border-slate-700">
+                        <td class="px-4 py-3 text-sm text-text-muted border border-slate-300 dark:border-slate-700">Online</td>
+                        <td class="px-4 py-3 text-sm text-text-muted border border-slate-300 dark:border-slate-700">15 MW</td>
+                        <td class="px-4 py-3 text-sm text-text-muted border border-slate-300 dark:border-slate-700">0</td>
+                        <td class="px-4 py-3 text-sm text-text-muted border border-slate-300 dark:border-slate-700">0 MWh</td>
+                        <td class="px-4 py-3 text-sm text-text-muted border border-slate-300 dark:border-slate-700">99.8%</td>
+                        <td class="px-4 py-3 text-sm text-text-muted border border-slate-300 dark:border-slate-700">99.9%</td>
+                    </tr>
+                    <tr class="border-t border-slate-300 dark:border-slate-700">
+                        <td class="px-4 py-3 text-sm text-text-muted border border-slate-300 dark:border-slate-700">Offline</td>
+                        <td class="px-4 py-3 text-sm text-text-muted border border-slate-300 dark:border-slate-700">0 MW</td>
+                        <td class="px-4 py-3 text-sm text-text-muted border border-slate-300 dark:border-slate-700">2</td>
+                        <td class="px-4 py-3 text-sm text-text-muted border border-slate-300 dark:border-slate-700">120 MWh</td>
+                        <td class="px-4 py-3 text-sm text-text-muted border border-slate-300 dark:border-slate-700">95.2%</td>
+                        <td class="px-4 py-3 text-sm text-text-muted border border-slate-300 dark:border-slate-700">98.5%</td>
+                    </tr>
+                    <tr class="border-t border-slate-300 dark:border-slate-700">
+                        <td class="px-4 py-3 text-sm text-text-muted border border-slate-300 dark:border-slate-700">Online</td>
+                        <td class="px-4 py-3 text-sm text-text-muted border border-slate-300 dark:border-slate-700">12 MW</td>
+                        <td class="px-4 py-3 text-sm text-text-muted border border-slate-300 dark:border-slate-700">1</td>
+                        <td class="px-4 py-3 text-sm text-text-muted border border-slate-300 dark:border-slate-700">30 MWh</td>
+                        <td class="px-4 py-3 text-sm text-text-muted border border-slate-300 dark:border-slate-700">98.7%</td>
+                        <td class="px-4 py-3 text-sm text-text-muted border border-slate-300 dark:border-slate-700">99.2%</td>
+                    </tr>
+                    <tr class="border-t border-slate-300 dark:border-slate-700">
+                        <td class="px-4 py-3 text-sm text-text-muted border border-slate-300 dark:border-slate-700">Manutenção</td>
+                        <td class="px-4 py-3 text-sm text-text-muted border border-slate-300 dark:border-slate-700">0 MW</td>
+                        <td class="px-4 py-3 text-sm text-text-muted border border-slate-300 dark:border-slate-700">0</td>
+                        <td class="px-4 py-3 text-sm text-text-muted border border-slate-300 dark:border-slate-700">0 MWh</td>
+                        <td class="px-4 py-3 text-sm text-text-muted border border-slate-300 dark:border-slate-700">100%</td>
+                        <td class="px-4 py-3 text-sm text-text-muted border border-slate-300 dark:border-slate-700">100%</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+    
+    <!-- Ocorrências -->
+    <section class="bg-surface p-5 rounded-lg border border-slate-200 dark:border-slate-800">
+        <h2 class="text-base font-medium text-text-primary mb-3">Ocorrências</h2>
+        
+        <!-- Filtro -->
+        <div class="mb-4">
+            <div class="flex items-center border border-slate-300 dark:border-slate-700 rounded-lg overflow-hidden">
+                <span class="material-icons text-text-muted px-3">search</span>
+                <input type="text" placeholder="Filtrar Ocorrências" class="flex-1 px-4 py-2 bg-transparent text-text-primary focus:outline-none">
+            </div>
+        </div>
+        
+        <!-- Tags de Filtro -->
+        <div class="flex flex-wrap gap-2 mb-4">
+            <button class="px-3 py-1.5 rounded-lg bg-background-alt text-text-primary text-xs hover:bg-slate-300 dark:hover:bg-slate-700 transition">
+                Tipo
+            </button>
+            <button class="px-3 py-1.5 rounded-lg bg-background-alt text-text-primary text-xs hover:bg-slate-300 dark:hover:bg-slate-700 transition">
+                Data
+            </button>
+            <button class="px-3 py-1.5 rounded-lg bg-background-alt text-text-primary text-xs hover:bg-slate-300 dark:hover:bg-slate-700 transition">
+                Prioridade
+            </button>
+        </div>
+        
+        <!-- Tabela de Ocorrências -->
+        <div class="overflow-x-auto">
+            <table class="w-full border-collapse">
+                <thead>
+                    <tr class="bg-background">
+                        <th class="px-4 py-3 text-left text-sm font-medium text-text-primary border border-slate-300 dark:border-slate-700">Evento</th>
+                        <th class="px-4 py-3 text-left text-sm font-medium text-text-primary border border-slate-300 dark:border-slate-700">Tags</th>
+                        <th class="px-4 py-3 text-left text-sm font-medium text-text-primary border border-slate-300 dark:border-slate-700">Data</th>
+                        <th class="px-4 py-3 text-left text-sm font-medium text-text-primary border border-slate-300 dark:border-slate-700">Prioridade</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="border-t border-slate-300 dark:border-slate-700">
+                        <td class="px-4 py-3 text-sm text-text-primary border border-slate-300 dark:border-slate-700">Falha no Transformador</td>
+                        <td class="px-4 py-3 border border-slate-300 dark:border-slate-700">
+                            <span class="px-3 py-1 bg-background-alt text-text-primary text-xs font-medium rounded">Elétrica</span>
+                        </td>
+                        <td class="px-4 py-3 text-sm text-text-muted border border-slate-300 dark:border-slate-700">2024-07-26</td>
+                        <td class="px-4 py-3 border border-slate-300 dark:border-slate-700">
+                            <span class="px-3 py-1 bg-danger/20 text-danger text-xs font-medium rounded">Alta</span>
+                        </td>
+                    </tr>
+                    <tr class="border-t border-slate-300 dark:border-slate-700">
+                        <td class="px-4 py-3 text-sm text-text-primary border border-slate-300 dark:border-slate-700">Vazamento na Turbina</td>
+                        <td class="px-4 py-3 border border-slate-300 dark:border-slate-700">
+                            <span class="px-3 py-1 bg-background-alt text-text-primary text-xs font-medium rounded">Mecânica</span>
+                        </td>
+                        <td class="px-4 py-3 text-sm text-text-muted border border-slate-300 dark:border-slate-700">2024-07-25</td>
+                        <td class="px-4 py-3 border border-slate-300 dark:border-slate-700">
+                            <span class="px-3 py-1 bg-warning/20 text-warning text-xs font-medium rounded">Média</span>
+                        </td>
+                    </tr>
+                    <tr class="border-t border-slate-300 dark:border-slate-700">
+                        <td class="px-4 py-3 text-sm text-text-primary border border-slate-300 dark:border-slate-700">Alarme de Temperatura</td>
+                        <td class="px-4 py-3 border border-slate-300 dark:border-slate-700">
+                            <span class="px-3 py-1 bg-background-alt text-text-primary text-xs font-medium rounded">Segurança</span>
+                        </td>
+                        <td class="px-4 py-3 text-sm text-text-muted border border-slate-300 dark:border-slate-700">2024-07-24</td>
+                        <td class="px-4 py-3 border border-slate-300 dark:border-slate-700">
+                            <span class="px-3 py-1 bg-blue-500/20 text-blue-500 text-xs font-medium rounded">Baixa</span>
+                        </td>
+                    </tr>
+                    <tr class="border-t border-slate-300 dark:border-slate-700">
+                        <td class="px-4 py-3 text-sm text-text-primary border border-slate-300 dark:border-slate-700">Parada de Emergência</td>
+                        <td class="px-4 py-3 border border-slate-300 dark:border-slate-700">
+                            <span class="px-3 py-1 bg-background-alt text-text-primary text-xs font-medium rounded">Operação</span>
+                        </td>
+                        <td class="px-4 py-3 text-sm text-text-muted border border-slate-300 dark:border-slate-700">2024-07-23</td>
+                        <td class="px-4 py-3 border border-slate-300 dark:border-slate-700">
+                            <span class="px-3 py-1 bg-danger/20 text-danger text-xs font-medium rounded">Alta</span>
+                        </td>
+                    </tr>
+                    <tr class="border-t border-slate-300 dark:border-slate-700">
+                        <td class="px-4 py-3 text-sm text-text-primary border border-slate-300 dark:border-slate-700">Manutenção Preventiva</td>
+                        <td class="px-4 py-3 border border-slate-300 dark:border-slate-700">
+                            <span class="px-3 py-1 bg-background-alt text-text-primary text-xs font-medium rounded">Manutenção</span>
+                        </td>
+                        <td class="px-4 py-3 text-sm text-text-muted border border-slate-300 dark:border-slate-700">2024-07-22</td>
+                        <td class="px-4 py-3 border border-slate-300 dark:border-slate-700">
+                            <span class="px-3 py-1 bg-blue-500/20 text-blue-500 text-xs font-medium rounded">Baixa</span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+</div>
+{% endblock %}

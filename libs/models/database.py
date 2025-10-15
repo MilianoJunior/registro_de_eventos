@@ -1,6 +1,6 @@
 # libs/models/database.py
 import mysql.connector
-from mysql.connector import Error
+from mysql.connector import Error, pooling
 import os
 import time
 import uuid
@@ -10,6 +10,44 @@ from dotenv import load_dotenv
 load_dotenv()
 
 DB_DEBUG = True
+
+# ============================================================
+# CONNECTION POOL (Singleton Global)
+# ============================================================
+_connection_pool = None
+_pool_lock = Lock()
+
+def get_connection_pool():
+    """Retorna o pool de conexões (singleton)"""
+    global _connection_pool
+    
+    if _connection_pool is None:
+        with _pool_lock:
+            if _connection_pool is None:
+                try:
+                    pool_config = {
+                        'pool_name': 'mypool',
+                        'pool_size': int(os.getenv('MYSQL_POOL_SIZE', 10)),
+                        'pool_reset_session': True,
+                        'host': os.getenv('MYSQLHOST'),
+                        'user': os.getenv('MYSQLUSER'),
+                        'password': os.getenv('MYSQLPASSWORD'),
+                        'database': os.getenv('MYSQLDATABASE'),
+                        'port': int(os.getenv('MYSQLPORT', 3306)),
+                        'connect_timeout': int(os.getenv('MYSQLCONNECTIONTIMEOUT', 10)),
+                        'autocommit': False,
+                        'use_pure': True
+                    }
+                    
+                    _connection_pool = pooling.MySQLConnectionPool(**pool_config)
+                    
+                    if DB_DEBUG:
+                        print(f"[ConnectionPool] ✅ Pool criado com {pool_config['pool_size']} conexões")
+                        
+                except Error as e:
+                    raise Exception(f"Erro ao criar connection pool: {e}")
+    
+    return _connection_pool
 
 class _Singleton(type):
     _instance = None
@@ -38,13 +76,8 @@ class _Singleton(type):
 
 class Database(metaclass=_Singleton):  # <- troque para "object" se NÃO quiser singleton
     def __init__(self):
-        self.host = os.getenv('MYSQLHOST')
-        self.user = os.getenv('MYSQLUSER')
-        self.password = os.getenv('MYSQLPASSWORD')
-        self.database = os.getenv('MYSQLDATABASE')
-        self.port = int(os.getenv('MYSQLPORT', 3306))
-        self.connection_timeout = int(os.getenv('MYSQLCONNECTIONTIMEOUT', 10))
-        self.connection = None
+        self.pool = get_connection_pool()  # Pool global
+        self.connection = None  # Conexão atual do request
 
     # ---- helpers internos ----
     def _is_alive(self) -> bool:
@@ -54,26 +87,20 @@ class Database(metaclass=_Singleton):  # <- troque para "object" se NÃO quiser 
             return False
 
     def connect(self):
-        """Abre a conexão se necessário, senão reusa a existente."""
+        """Obtém uma conexão do pool."""
         if self._is_alive():
             return self.connection
         try:
-            self.connection = mysql.connector.connect(
-                host=self.host,
-                user=self.user,
-                password=self.password,
-                database=self.database,
-                port=self.port,
-                connection_timeout=self.connection_timeout,
-                autocommit=False,
-                pool_name='mypool',
-                pool_size=5,
-                pool_reset_session=True,
-                use_pure=True
-            )
+            start_time = time.time()
+            self.connection = self.pool.get_connection()
+            
+            if DB_DEBUG:
+                elapsed = time.time() - start_time
+                print(f"[Database] 🔌 Conexão obtida do pool em {elapsed:.4f}s")
+            
             return self.connection
         except Error as e:
-            raise Exception(f"Erro ao conectar ao banco de dados: {e}")
+            raise Exception(f"Erro ao obter conexão do pool: {e}")
 
     def _cursor(self):
         if not self._is_alive():
@@ -137,6 +164,7 @@ class Database(metaclass=_Singleton):  # <- troque para "object" se NÃO quiser 
     def fetch_data(self, query, params=None, retries=3):
         """Busca dados com retry automático em caso de perda de conexão."""
         last_error = None
+        query_start = time.time()
         
         for attempt in range(retries):
             try:
@@ -149,10 +177,26 @@ class Database(metaclass=_Singleton):  # <- troque para "object" se NÃO quiser 
                 
                 cur = self._cursor()
                 try:
+                    exec_start = time.time()
                     cur.execute(query, params or ())
+                    exec_time = time.time() - exec_start
+                    
+                    fetch_start = time.time()
                     result = cur.fetchall()
+                    fetch_time = time.time() - fetch_start
+                    
                     columns = [c[0] for c in cur.description]
-                    return [dict(zip(columns, row)) for row in result]
+                    data = [dict(zip(columns, row)) for row in result]
+                    
+                    total_time = time.time() - query_start
+                    
+                    if DB_DEBUG:
+                        print(f"[Database] 📊 Query: {exec_time:.4f}s | Fetch: {fetch_time:.4f}s | Total: {total_time:.4f}s | Rows: {len(data)}")
+                        # Mostra query resumida (primeiros 100 chars)
+                        query_preview = query.strip().replace('\n', ' ')[:100]
+                        print(f"[Database] 📝 {query_preview}...")
+                    
+                    return data
                 finally:
                     cur.close()
                     
@@ -175,12 +219,18 @@ class Database(metaclass=_Singleton):  # <- troque para "object" se NÃO quiser 
         raise Exception(f"Erro ao buscar dados após {retries} tentativas: {last_error}")
 
     def close(self):
+        """Retorna a conexão ao pool (não fecha permanentemente)"""
         try:
             if self.connection and self.connection.is_connected():
+                # Importante: close() em conexão do pool retorna ela ao pool, não fecha
                 self.connection.close()
-        except Error:
-            pass
-        self.connection = None
+                if DB_DEBUG:
+                    print(f"[Database] 🔄 Conexão retornada ao pool")
+        except Error as e:
+            if DB_DEBUG:
+                print(f"[Database] ⚠️ Erro ao retornar conexão ao pool: {e}")
+        finally:
+            self.connection = None
 
     # ---- context manager ----
     def __enter__(self):

@@ -1,71 +1,78 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html class="dark" lang="pt-BR">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
-    <title>{% block title %}{% endblock %}</title>
-    <link rel="icon" href="{{ url_for('static', filename='imgs/engegom.ico') }}">
-
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Dashboard de Ocorrências</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/variables.css') }}">
-    <!-- <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script> -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <script>
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              colors: {
+                primary: 'var(--color-accent)',
+                background: 'var(--color-bg)',
+                'background-alt': 'var(--color-bg-alt)',
+                surface: 'var(--color-surface)',
+                'text-primary': 'var(--color-text)',
+                'text-muted': 'var(--color-text-muted)',
+                success: 'var(--color-success)',
+                warning: 'var(--color-warning)',
+                danger: 'var(--color-danger)'
+              },
+              fontFamily: {
+                sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'sans-serif'],
+              },
+              fontSize: {
+                'xs': ['11px', '16px'],
+                'sm': ['13px', '18px'],
+                'base': ['14px', '20px'],
+                'lg': ['16px', '24px'],
+                'xl': ['18px', '28px'],
+              },
+              borderRadius: {
+                'DEFAULT': '0.5rem',
+                'lg': '0.75rem',
+                'xl': '1rem',
+              },
+            },
+          },
+        };
+      </script>
+    <script defer="" src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
-<body>
-    {% include "components/navbar.html" %}
-    {% block content %}{% endblock %}
-<script>
-    const socket = io();
-    
-    let t;
-  function reloadCSS(){
-    document.querySelectorAll('link[rel="stylesheet"]').forEach(link=>{
-      const u = new URL(link.href);
-      u.searchParams.set('v', Date.now()); // cache-bust
-      link.href = u.toString();
-    });
-  }
-  socket.on('file_changed', (data) => {
-    clearTimeout(t);
-    const p = String(data?.path||"");
-    t = setTimeout(() => p.endsWith('.css') ? reloadCSS() : location.reload(), 120);
-  });
+<body class="font-sans">
+    <div class="flex h-screen bg-background">
+        {% include 'components/_sidebar.html' %}
 
-  // === NAVBAR TOGGLE ===
-  document.addEventListener('DOMContentLoaded', function() {
-    const navbar = document.getElementById('navbar');
-    const navbarToggle = document.getElementById('navbarToggle');
-    const navbarClose = document.getElementById('navbarClose');
-    const navbarOverlay = document.getElementById('navbarOverlay');
-    
-    // Abrir navbar
-    navbarToggle.addEventListener('click', function() {
-      navbar.classList.add('open');
-      navbarOverlay.classList.add('active');
-      document.body.classList.add('navbar-open');
-    });
-    
-    // Fechar navbar
-    function closeNavbar() {
-      navbar.classList.remove('open');
-      navbarOverlay.classList.remove('active');
-      document.body.classList.remove('navbar-open');
-    }
-    
-    navbarClose.addEventListener('click', closeNavbar);
-    navbarOverlay.addEventListener('click', closeNavbar);
-    
-    // Fechar com ESC
-    document.addEventListener('keydown', function(e) {
-      if (e.key === 'Escape' && navbar.classList.contains('open')) {
-        closeNavbar();
-      }
-    });
-  });
-
-</script>
+        <div class="flex-1 overflow-y-auto">
+            {% block content %}
+            {% endblock %}
+        </div>
+    </div>
+    <script>
+        const themeToggle = document.getElementById('theme-toggle');
+        if (themeToggle) { // Garante que o elemento existe antes de adicionar o listener
+            themeToggle.addEventListener('click', () => {
+                if (document.documentElement.classList.contains('dark')) {
+                    document.documentElement.classList.remove('dark');
+                    localStorage.setItem('theme', 'light');
+                } else {
+                    document.documentElement.classList.add('dark');
+                    localStorage.setItem('theme', 'dark');
+                }
+            });
+        }
+        
+        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark')
+        } else {
+            document.documentElement.classList.remove('dark')
+        }
+    </script>
 </body>
-</html> 
+</html>

@@ -91,6 +91,20 @@ def build_where_clause(where: Dict[str, Any]) -> Tuple[str, List[Any]]:
            {col: ('ne', valor)}                   # !=
            {col: ('gt'|'gte'|'lt'|'lte', valor)}
            {col: ('regexp', 'padrão')}
+           
+           OU sintaxe com sufixo (estilo Django ORM):
+           {col__in: [1,2,3]}
+           {col__gt: 10}
+           {col__gte: 10}
+           {col__lt: 100}
+           {col__lte: 100}
+           {col__ne: 'valor'}
+           {col__like: '%texto%'}
+           {col__like_norm: 'texto'}
+           {col__eq_norm: 'texto'}
+           {col__startswith_norm: 'texto'}
+           {col__endswith_norm: 'texto'}
+           {col__regexp: 'padrão'}
     Retorna: (" WHERE ...", [params])
     """
     if not where:
@@ -100,64 +114,77 @@ def build_where_clause(where: Dict[str, Any]) -> Tuple[str, List[Any]]:
     params: List[Any] = []
 
     for key, val in where.items():
-        col = safe_ident(key)
-
-        if isinstance(val, tuple) and val:
+        # Determinar coluna e operador
+        # Suporte para sintaxe com sufixo: col__in, col__gt, etc.
+        if '__' in key:
+            col_name, op_suffix = key.rsplit('__', 1)
+            col = safe_ident(col_name)
+            op = op_suffix.lower()
+            arg = val
+        elif isinstance(val, tuple) and val:
+            # Sintaxe antiga: {col: ('in', [1,2,3])}
+            col = safe_ident(key)
             op = str(val[0]).lower()
             arg = val[1] if len(val) > 1 else None
+        else:
+            # Sintaxe simples: {col: valor}
+            col = safe_ident(key)
+            op = "eq"  # operação padrão
+            arg = val
 
-            if op == "in":
-                seq = list(arg) if isinstance(arg, (list, tuple, set)) else [arg]
-                if not seq:
-                    parts.append("1=0")
-                else:
-                    placeholders = ", ".join(["%s"] * len(seq))
-                    parts.append(f"{col} IN ({placeholders})")
-                    params.extend(seq)
+        # Processar operador
+        if op == "in":
+            seq = list(arg) if isinstance(arg, (list, tuple, set)) else [arg]
+            if not seq:
+                parts.append("1=0")
+            else:
+                placeholders = ", ".join(["%s"] * len(seq))
+                parts.append(f"{col} IN ({placeholders})")
+                params.extend(seq)
 
-            elif op == "like":
-                parts.append(f"{col} LIKE %s")
-                params.append(arg)
+        elif op == "like":
+            parts.append(f"{col} LIKE %s")
+            params.append(arg)
 
-            elif op == "like_norm":
-                expr = norm_sql_expr(col)
-                parts.append(f"{expr} LIKE %s")
-                params.append(normalize_for_search(arg))
+        elif op == "like_norm":
+            expr = norm_sql_expr(col)
+            parts.append(f"{expr} LIKE %s")
+            params.append(normalize_for_search(arg))
 
-            elif op == "eq_norm":
+        elif op == "eq" or op == "eq_norm":
+            if op == "eq_norm":
                 expr = norm_sql_expr(col)
                 parts.append(f"{expr} = %s")
                 params.append(normalize_for_search(arg))
-
-            elif op == "startswith_norm":
-                expr = norm_sql_expr(col)
-                parts.append(f"{expr} LIKE %s")
-                params.append(like_startswith(normalize_for_search(arg)))
-
-            elif op == "endswith_norm":
-                expr = norm_sql_expr(col)
-                parts.append(f"{expr} LIKE %s")
-                params.append(like_endswith(normalize_for_search(arg)))
-
-            elif op == "ne":
-                parts.append(f"{col} <> %s")
-                params.append(arg)
-
-            elif op in ("gt", "gte", "lt", "lte"):
-                cmp_map = {"gt": ">", "gte": ">=", "lt": "<", "lte": "<="}
-                parts.append(f"{col} {cmp_map[op]} %s")
-                params.append(arg)
-
-            elif op == "regexp":
-                parts.append(f"{col} REGEXP %s")
-                params.append(arg)
-
             else:
-                raise ValueError(f"Operador desconhecido em where: {op}")
+                parts.append(f"{col} = %s")
+                params.append(arg)
+
+        elif op == "startswith_norm":
+            expr = norm_sql_expr(col)
+            parts.append(f"{expr} LIKE %s")
+            params.append(like_startswith(normalize_for_search(arg)))
+
+        elif op == "endswith_norm":
+            expr = norm_sql_expr(col)
+            parts.append(f"{expr} LIKE %s")
+            params.append(like_endswith(normalize_for_search(arg)))
+
+        elif op == "ne":
+            parts.append(f"{col} <> %s")
+            params.append(arg)
+
+        elif op in ("gt", "gte", "lt", "lte"):
+            cmp_map = {"gt": ">", "gte": ">=", "lt": "<", "lte": "<="}
+            parts.append(f"{col} {cmp_map[op]} %s")
+            params.append(arg)
+
+        elif op == "regexp":
+            parts.append(f"{col} REGEXP %s")
+            params.append(arg)
 
         else:
-            parts.append(f"{col} = %s")
-            params.append(val)
+            raise ValueError(f"Operador desconhecido em where: {op}")
 
     clause = " WHERE " + " AND ".join(parts)
     return clause, params  # <-- IMPORTANTÍSSIMO
@@ -210,3 +237,14 @@ def json_param(value: Any) -> Tuple[str, str]:
 
     # OU, se preferir máxima compatibilidade:
     # return "JSON_EXTRACT(%s, '$')", json.dumps(value, ensure_ascii=False)
+
+def desempenho(func):
+    import time
+    def wrapper(*args, **kwargs):
+        start_time = time.time()
+        result = func(*args, **kwargs)
+        end_time = time.time()
+        print(f"{func.__name__} - Tempo de execução: {end_time - start_time} segundos")
+        print('-' * 50)
+        return result
+    return wrapper

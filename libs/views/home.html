@@ -1,24 +1,175 @@
 {% extends "base.html" %}
-
-{% block title %}Página Inicial{% endblock %}
+{% set active_page = "home" %}
+{% block title %}Dashboard de Ocorrências — EngeSEP O&M{% endblock %}
 
 {% block content %}
-  <div class="content">
-    <div class="content__header">
-      <div class="list_cards">
-        {% include "components/cards.html" %}
-      </div>
-      <div class="list_incidentes">
-        {% include "components/incidentes.html" %}
-      </div>
+<div class="flex h-screen bg-background">
+
+<div class="flex-1 overflow-y-auto">
+<div class="p-6 space-y-6">
+<div class="flex justify-between items-center">
+<h1 class="text-lg font-medium text-text-primary">Dashboard de Ocorrências</h1>
+<button class="p-2 rounded-lg bg-surface text-text-primary hover:bg-background-alt" id="theme-toggle">
+<span class="material-icons text-base block dark:hidden">dark_mode</span>
+<span class="material-icons text-base hidden dark:block">light_mode</span>
+</button>
+</div>
+<header class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+<div class="bg-surface p-4 rounded-lg border border-slate-200 dark:border-slate-800">
+<p class="text-xs text-text-muted uppercase tracking-wide">Potência Ativa</p>
+<p class="text-2xl font-medium mt-1 text-text-primary">{{ potencia_total_mw }} <span class="text-sm">MW</span></p>
+</div>
+<div class="bg-surface p-4 rounded-lg border border-slate-200 dark:border-slate-800">
+<p class="text-xs text-text-muted uppercase tracking-wide">Ocorrências Abertas</p>
+<p class="text-2xl font-medium text-danger mt-1">{{ por_status.get('aberta', 0) }}</p>
+</div>
+<div class="bg-surface p-4 rounded-lg border border-slate-200 dark:border-slate-800">
+<p class="text-xs text-text-muted uppercase tracking-wide">Em Andamento</p>
+<p class="text-2xl font-medium text-warning mt-1">{{ por_status.get('em_andamento', 0) }}</p>
+</div>
+<div class="bg-surface p-4 rounded-lg border border-slate-200 dark:border-slate-800">
+<p class="text-xs text-text-muted uppercase tracking-wide">Resolvidas</p>
+<p class="text-2xl font-medium text-success mt-1">{{ por_status.get('resolvida', 0) }}</p>
+</div>
+</header>
+<main class="space-y-6">
+{% set ocorrencia_critica = recentes|selectattr('status', 'equalto', 'aberta')|selectattr('severidade', 'equalto', 'alta')|first %}
+{% if ocorrencia_critica %}
+<div class="bg-danger/10 border border-danger/50 p-4 rounded-lg flex items-center justify-between gap-4">
+    <div class="flex items-center gap-3">
+        <span class="material-icons text-danger text-2xl">error</span>
+        <div>
+            <p class="text-sm font-medium text-text-primary">{{ ocorrencia_critica.tipo }}: {{ ocorrencia_critica.unidade }}</p>
+            <p class="text-xs text-text-muted">{{ ocorrencia_critica.categoria }}</p>
+            <p class="text-xs text-text-muted mt-0.5">
+                {{ ocorrencia_critica.created_at.strftime('%d/%m/%Y, %H:%M') if ocorrencia_critica.created_at else 'N/A' }}
+            </p>
+        </div>
     </div>
-    <div class="content__body">
-      <div class="status_usinas">
-        {% include "components/status_usinas.html" %}
-      </div>
-      <div class="events_usinas">
-        {% include "components/registro_ocorrencias.html" %}
-      </div>
+    <button class="bg-danger hover:bg-danger/90 text-white text-xs font-medium py-2 px-3 rounded-lg transition">
+        <span class="material-icons text-sm mr-1">visibility</span>Analisar
+    </button>
+</div>
+{% endif %}
+<div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+<section>
+<h2 class="text-base font-medium mb-3 text-text-primary">Status das Usinas</h2>
+<div class="space-y-3">
+{% if usinas %}
+    {% for usina in usinas %}
+    <a href="{{ url_for('usina_page', sigla=usina.sigla) }}" class="block">
+        <div class="bg-surface p-4 rounded-lg border border-slate-200 dark:border-slate-800 hover:border-primary/50 transition">
+            <div class="flex justify-between items-center mb-3">
+                <h3 class="text-sm font-medium text-text-primary">{{ usina.nome }}</h3>
+                {% if usina.status_operacional == 'operando' %}
+                <span class="bg-success/20 text-success text-xs px-2 py-0.5 rounded flex items-center gap-1">
+                    <span class="w-1.5 h-1.5 rounded-full bg-success"></span>Operando
+                </span>
+                {% elif usina.status_operacional == 'manutencao' %}
+                <span class="bg-warning/20 text-warning text-xs px-2 py-0.5 rounded flex items-center gap-1">
+                    <span class="w-1.5 h-1.5 rounded-full bg-warning"></span>Manutenção
+                </span>
+                {% else %}
+                <span class="bg-slate-500/20 text-slate-500 text-xs px-2 py-0.5 rounded flex items-center gap-1">
+                    <span class="w-1.5 h-1.5 rounded-full bg-slate-500"></span>Parada
+                </span>
+                {% endif %}
+            </div>
+            <div class="grid grid-cols-2 gap-3 text-xs">
+                <div>
+                    <p class="text-text-muted mb-0.5">Potência Ativa</p>
+                    <p class="text-sm text-text-primary">{{ usina.potencia_ativa_mw }} MW</p>
+                </div>
+                <div>
+                    <p class="text-text-muted mb-0.5">MTTR</p>
+                    <p class="text-sm text-text-primary">{{ usina.mttr }}</p>
+                </div>
+                <div>
+                    <p class="text-text-muted mb-0.5">Alarmes/hora</p>
+                    <p class="text-sm text-text-primary">{{ "%.2f"|format(usina.alarmes_por_hora) }}</p>
+                </div>
+                <div>
+                    <p class="text-text-muted mb-0.5">Alarmes Críticos</p>
+                    <p class="text-sm {% if usina.alarmes_criticos > 0 %}text-danger{% else %}text-success{% endif %}">{{ usina.alarmes_criticos }}</p>
+                </div>
+            </div>
+        </div>
+    </a>
+    {% endfor %}
+{% else %}
+    <div class="bg-surface p-6 rounded-lg border border-slate-200 dark:border-slate-800 text-center">
+        <p class="text-text-muted">Nenhuma usina cadastrada no sistema.</p>
     </div>
-  </div>
+{% endif %}
+</div>
+</section>
+<section>
+<div class="flex justify-between items-center mb-3">
+<h2 class="text-base font-medium text-text-primary">Ocorrências Recentes</h2>
+<a href="{{ url_for('registro_eventos') }}" class="bg-primary hover:opacity-90 text-white text-xs font-medium py-2 px-3 rounded-lg transition flex items-center gap-1">
+<span class="material-icons text-sm">add</span>Nova Ocorrência
+</a>
+</div>
+<div class="space-y-2">
+{% if recentes %}
+    {% for ocorrencia in recentes %}
+    <div class="bg-surface p-3 rounded-lg flex items-start gap-3 hover:border-primary/50 transition cursor-pointer border border-slate-200 dark:border-slate-800">
+        <div class="w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center text-white text-xs
+        {% if ocorrencia.severidade == 'alta' %}bg-danger
+        {% elif ocorrencia.severidade == 'média' %}bg-warning
+        {% else %}bg-blue-500{% endif %}">
+            {{ ocorrencia.tipo[0]|upper if ocorrencia.tipo else 'O' }}
+        </div>
+        <div class="flex-1 min-w-0">
+            <div class="flex justify-between items-start gap-2 mb-1">
+                <p class="text-sm text-text-primary truncate">
+                    {{ ocorrencia.descricao[:60] + '...' if ocorrencia.descricao and ocorrencia.descricao|length > 60 else ocorrencia.descricao }}
+                </p>
+                <span class="text-xs px-2 py-0.5 rounded whitespace-nowrap flex-shrink-0
+                {% if ocorrencia.status == 'aberta' %}text-danger bg-danger/20
+                {% elif ocorrencia.status == 'em_andamento' %}text-warning bg-warning/20
+                {% else %}text-success bg-success/20{% endif %}">
+                    {% if ocorrencia.status == 'aberta' %}Aberta
+                    {% elif ocorrencia.status == 'em_andamento' %}Em Andamento
+                    {% elif ocorrencia.status == 'resolvida' %}Resolvida
+                    {% else %}{{ ocorrencia.status }}{% endif %}
+                </span>
+            </div>
+            <p class="text-xs text-text-muted">{{ ocorrencia.unidade }} · {{ ocorrencia.categoria }}</p>
+            <p class="text-xs text-text-muted mt-0.5">
+                {{ ocorrencia.created_at.strftime('%d/%m/%Y %H:%M') if ocorrencia.created_at else 'N/A' }}
+            </p>
+        </div>
+    </div>
+    {% endfor %}
+{% else %}
+    <div class="bg-surface p-6 rounded-lg border border-slate-200 dark:border-slate-800 text-center">
+        <p class="text-text-muted">Nenhuma ocorrência registrada no sistema.</p>
+    </div>
+{% endif %}
+</div>
+</section>
+</div>
+</main>
+</div>
+</div>
+</div>
+<script>
+    const themeToggle = document.getElementById('theme-toggle');
+    themeToggle.addEventListener('click', () => {
+        if (document.documentElement.classList.contains('dark')) {
+            document.documentElement.classList.remove('dark');
+            localStorage.setItem('theme', 'light');
+        } else {
+            document.documentElement.classList.add('dark');
+            localStorage.setItem('theme', 'dark');
+        }
+    });
+    if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.documentElement.classList.add('dark')
+    } else {
+        document.documentElement.classList.remove('dark')
+    }
+  </script>
+
 {% endblock %}

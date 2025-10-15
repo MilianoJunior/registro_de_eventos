@@ -38,12 +38,20 @@ class Read:
         desc: Optional[bool] = None,
     ) -> List[Dict[str, Any]]:
         try:
+            import time
             self.db.connect()
             cols = columns_sql(self.colunas)
             sql = f"SELECT {cols} FROM {safe_ident(self.tabela)}"
             sql += order_sql(order_by or self.default_order_by, self.default_desc if desc is None else bool(desc))
             sql += limit_sql(limit, offset)
-            return self.db.fetch_data(sql)
+            print('##############')
+            print(' '*5,sql)
+            inicio = time.time()
+            dados = self.db.fetch_data(sql)
+            fim = time.time() - inicio
+            print(' '*5,fim)
+            print('##############')
+            return dados
         except Exception as e:
             self._error('Read', 'get_all', e)
 
