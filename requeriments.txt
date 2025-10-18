@@ -1,0 +1,24 @@
+# ============================================================
+# DEPENDÊNCIAS DO PROJETO - Registro de Eventos
+# ============================================================
+
+# Framework Web
+Flask==3.0.0
+Flask-SocketIO==5.3.5
+
+# Variáveis de Ambiente
+python-dotenv==1.0.0
+
+# Banco de Dados MySQL
+mysql-connector-python==8.2.0
+
+# WebSocket e Eventos Assíncronos
+python-socketio==5.10.0
+eventlet==0.33.3
+
+# Monitoramento de Arquivos (Desenvolvimento)
+watchdog==3.0.0
+
+# Utilitários
+python-dateutil==2.8.2
+
