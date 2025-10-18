@@ -9,9 +9,10 @@ from datetime import datetime
 
 class EventosController:
     def __init__(self):
-        self.usinas = Read("op_usina")
-        self.usuarios = Read("op_usuario")
-        self.ocorrencias_create = Create("op_ocorrencia")
+        # Só instancia Read/Create se NÃO estiver em modo desenvolvedor
+        self.usinas = None if DEVELOPER_MODE else Read("op_usina")
+        self.usuarios = None if DEVELOPER_MODE else Read("op_usuario")
+        self.ocorrencias_create = None if DEVELOPER_MODE else Create("op_ocorrencia")
         
     @desempenho
     def registro_page(self):

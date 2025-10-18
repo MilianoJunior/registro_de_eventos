@@ -196,7 +196,8 @@ class OpOcorrencia(Read):
             "op_ocorrencia",
             colunas or [
                 "id","usina_id","operador_id","tipo","categoria","unidade","tags",
-                "status","severidade","origem","created_at","updated_at","resolved_at"
+                "status","severidade","origem","requer_acao","data_ocorrencia",
+                "resolvida_por","resolucao_descricao","created_at","updated_at","resolved_at"
             ],
             default_order_by="created_at",
             default_desc=True,

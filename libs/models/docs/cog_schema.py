@@ -1,10 +1,18 @@
 # criar_schema_5tabelas.py
 # -*- coding: utf-8 -*-
+import sys
+import os
+
+# Adiciona o diretório raiz ao path para imports funcionarem
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+ROOT_DIR = os.path.abspath(os.path.join(SCRIPT_DIR, '..', '..', '..'))
+sys.path.insert(0, ROOT_DIR)
+
 from textwrap import dedent
 from mysql.connector import Error
 
 # Importe sua classe Database
-from libs.models.database import Database  # <<< TROQUE PELO NOME DO ARQUIVO/MÓDULO
+from libs.models.database import Database
 
 
 def schema_statements_5():
@@ -191,5 +199,268 @@ def drop_tabela_sql():
         db.close()
 
 
+# ============================================================
+# MIGRAÇÕES - Campos de Resolução de Ocorrências
+# ============================================================
+
+def add_campos_resolucao():
+    """
+    Adiciona os campos necessários para registro e resolução de ocorrências:
+    - requer_acao: Se a ocorrência requer ação urgente
+    - data_ocorrencia: Data/hora quando a ocorrência aconteceu
+    - resolvida_por: ID do usuário que resolveu
+    - resolucao_descricao: Descrição de como foi resolvida
+    """
+    db = Database()
+    try:
+        conn = db.connect()
+        cur = conn.cursor()
+        
+        print("\n" + "="*60)
+        print("ADICIONANDO CAMPOS DE RESOLUÇÃO")
+        print("="*60)
+        
+        # Lista de campos a adicionar
+        campos = [
+            ('requer_acao', 'TINYINT(1)', 'NOT NULL DEFAULT 0', 'Se requer ação urgente'),
+            ('data_ocorrencia', 'DATETIME(6)', 'NULL', 'Data/hora quando ocorreu'),
+            ('resolvida_por', 'BIGINT', 'NULL', 'Usuário que resolveu'),
+            ('resolucao_descricao', 'LONGTEXT', 'NULL', 'Como foi resolvida')
+        ]
+        
+        for campo, tipo, restricao, descricao in campos:
+            # Verifica se a coluna já existe
+            cur.execute("""
+                SELECT COUNT(*) 
+                FROM INFORMATION_SCHEMA.COLUMNS 
+                WHERE TABLE_SCHEMA = DATABASE() 
+                  AND TABLE_NAME = 'op_ocorrencia' 
+                  AND COLUMN_NAME = %s
+            """, (campo,))
+            
+            exists = cur.fetchone()[0]
+            
+            if not exists:
+                sql = f"ALTER TABLE op_ocorrencia ADD COLUMN {campo} {tipo} {restricao} COMMENT '{descricao}'"
+                cur.execute(sql)
+                print(f"✅ Campo '{campo}' adicionado com sucesso")
+            else:
+                print(f"ℹ️  Campo '{campo}' já existe, pulando...")
+        
+        conn.commit()
+        cur.close()
+        print("\n✅ Todos os campos foram processados!")
+        
+    except Exception as e:
+        print(f"\n❌ Erro ao adicionar campos: {e}")
+        raise
+    finally:
+        db.close()
+
+
+def add_constraints_resolucao():
+    """
+    Adiciona as constraints (foreign keys) para os campos de resolução
+    """
+    db = Database()
+    try:
+        conn = db.connect()
+        cur = conn.cursor()
+        
+        print("\n" + "="*60)
+        print("ADICIONANDO CONSTRAINTS")
+        print("="*60)
+        
+        # Verifica se a constraint já existe
+        cur.execute("""
+            SELECT COUNT(*) 
+            FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS 
+            WHERE CONSTRAINT_SCHEMA = DATABASE() 
+              AND TABLE_NAME = 'op_ocorrencia' 
+              AND CONSTRAINT_NAME = 'fk_oc_resolvedor'
+        """)
+        
+        exists = cur.fetchone()[0]
+        
+        if not exists:
+            cur.execute("""
+                ALTER TABLE op_ocorrencia
+                ADD CONSTRAINT fk_oc_resolvedor 
+                FOREIGN KEY (resolvida_por) REFERENCES op_usuario(id)
+                ON DELETE SET NULL
+            """)
+            conn.commit()
+            print("✅ Constraint 'fk_oc_resolvedor' adicionada com sucesso")
+        else:
+            print("ℹ️  Constraint 'fk_oc_resolvedor' já existe, pulando...")
+        
+        cur.close()
+        print("\n✅ Constraints processadas!")
+        
+    except Exception as e:
+        print(f"\n❌ Erro ao adicionar constraints: {e}")
+        raise
+    finally:
+        db.close()
+
+
+def add_indices_resolucao():
+    """
+    Adiciona índices para melhorar a performance das consultas
+    """
+    db = Database()
+    try:
+        conn = db.connect()
+        cur = conn.cursor()
+        
+        print("\n" + "="*60)
+        print("ADICIONANDO ÍNDICES")
+        print("="*60)
+        
+        # Lista de índices a adicionar
+        indices = [
+            ('ix_requer_acao', ['requer_acao', 'status'], 'Índice para filtrar por ações urgentes'),
+            ('ix_data_ocorrencia', ['data_ocorrencia'], 'Índice para ordenação por data de ocorrência')
+        ]
+        
+        for nome_indice, colunas, descricao in indices:
+            # Verifica se o índice já existe
+            cur.execute("""
+                SELECT COUNT(*) 
+                FROM INFORMATION_SCHEMA.STATISTICS 
+                WHERE TABLE_SCHEMA = DATABASE() 
+                  AND TABLE_NAME = 'op_ocorrencia' 
+                  AND INDEX_NAME = %s
+            """, (nome_indice,))
+            
+            exists = cur.fetchone()[0]
+            
+            if not exists:
+                colunas_str = ', '.join(colunas)
+                sql = f"ALTER TABLE op_ocorrencia ADD INDEX {nome_indice} ({colunas_str})"
+                cur.execute(sql)
+                print(f"✅ Índice '{nome_indice}' criado: {descricao}")
+            else:
+                print(f"ℹ️  Índice '{nome_indice}' já existe, pulando...")
+        
+        conn.commit()
+        cur.close()
+        print("\n✅ Índices processados!")
+        
+    except Exception as e:
+        print(f"\n❌ Erro ao adicionar índices: {e}")
+        raise
+    finally:
+        db.close()
+
+
+def migrate_all_resolucao():
+    """
+    Executa todas as migrações relacionadas à resolução de ocorrências:
+    1. Adiciona campos
+    2. Adiciona constraints
+    3. Adiciona índices
+    """
+    print("\n" + "="*60)
+    print("INICIANDO MIGRAÇÃO COMPLETA - RESOLUÇÃO DE OCORRÊNCIAS")
+    print("="*60 + "\n")
+    
+    try:
+        add_campos_resolucao()
+        add_constraints_resolucao()
+        add_indices_resolucao()
+        
+        print("\n" + "="*60)
+        print("✅ MIGRAÇÃO COMPLETA REALIZADA COM SUCESSO!")
+        print("="*60 + "\n")
+        
+    except Exception as e:
+        print("\n" + "="*60)
+        print("❌ ERRO NA MIGRAÇÃO")
+        print("="*60)
+        print(f"Erro: {e}\n")
+        raise
+
+
+def populate_data_ocorrencia():
+    """
+    (OPCIONAL) Popula o campo data_ocorrencia com created_at para registros existentes
+    """
+    db = Database()
+    try:
+        conn = db.connect()
+        cur = conn.cursor()
+        
+        print("\n" + "="*60)
+        print("POPULANDO DATA DE OCORRÊNCIA")
+        print("="*60)
+        
+        # Conta registros sem data_ocorrencia
+        cur.execute("""
+            SELECT COUNT(*) 
+            FROM op_ocorrencia 
+            WHERE data_ocorrencia IS NULL
+        """)
+        count = cur.fetchone()[0]
+        
+        if count > 0:
+            print(f"\nEncontrados {count} registros sem data_ocorrencia")
+            print("Copiando created_at para data_ocorrencia...")
+            
+            cur.execute("""
+                UPDATE op_ocorrencia 
+                SET data_ocorrencia = created_at 
+                WHERE data_ocorrencia IS NULL
+            """)
+            
+            conn.commit()
+            print(f"✅ {count} registros atualizados com sucesso!")
+        else:
+            print("ℹ️  Todos os registros já possuem data_ocorrencia")
+        
+        cur.close()
+        
+    except Exception as e:
+        print(f"\n❌ Erro ao popular data_ocorrencia: {e}")
+        raise
+    finally:
+        db.close()
+
+
 if __name__ == "__main__":
-    run()
+    import sys
+    
+    if len(sys.argv) > 1:
+        comando = sys.argv[1]
+        
+        if comando == 'migrate':
+            # Migração completa
+            migrate_all_resolucao()
+        elif comando == 'campos':
+            # Apenas campos
+            add_campos_resolucao()
+        elif comando == 'constraints':
+            # Apenas constraints
+            add_constraints_resolucao()
+        elif comando == 'indices':
+            # Apenas índices
+            add_indices_resolucao()
+        elif comando == 'populate':
+            # Popular data_ocorrencia
+            populate_data_ocorrencia()
+        elif comando == 'schema':
+            # Criar schema original
+            run()
+        else:
+            print("Comandos disponíveis:")
+            print("  python cog_schema.py schema      - Cria o schema original")
+            print("  python cog_schema.py migrate     - Executa migração completa")
+            print("  python cog_schema.py campos      - Adiciona apenas os campos")
+            print("  python cog_schema.py constraints - Adiciona apenas as constraints")
+            print("  python cog_schema.py indices     - Adiciona apenas os índices")
+            print("  python cog_schema.py populate    - Popula data_ocorrencia com created_at")
+    else:
+        # Comando padrão: migração completa de resolução
+        print("\n💡 Dica: Use 'python cog_schema.py migrate' para migração completa")
+        print("     ou 'python cog_schema.py schema' para criar schema original\n")
+        migrate_all_resolucao()

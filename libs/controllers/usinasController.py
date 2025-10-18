@@ -13,8 +13,9 @@ import json
 
 class UsinasController:
     def __init__(self):
-        self.usinas = Read("op_usina")
-        self.ocorrencias = Read("op_ocorrencia")
+        # Só instancia Read se NÃO estiver em modo desenvolvedor
+        self.usinas = None if DEVELOPER_MODE else Read("op_usina")
+        self.ocorrencias = None if DEVELOPER_MODE else Read("op_ocorrencia")
     
     def _decode_metadata(self, ocorrencias):
         """Decodifica o campo metadata JSON para cada ocorrência"""

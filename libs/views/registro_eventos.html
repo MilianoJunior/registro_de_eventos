@@ -4,9 +4,24 @@
 
 {% block content %}
 <div class="p-6 space-y-6">
-    <h1 class="text-lg font-medium text-text-primary">Registrar Nova Ocorrência</h1>
+    <h1 class="text-lg font-medium text-text-primary">Gerenciar Ocorrências</h1>
     
-    <form id="form-ocorrencia" class="max-w-[960px] mx-auto space-y-6">
+    <!-- Tabs -->
+    <div class="max-w-[960px] mx-auto border-b border-slate-200 dark:border-slate-800">
+        <nav class="flex gap-6" aria-label="Tabs">
+            <button type="button" id="tab-registrar" class="tab-button active pb-3 px-1 border-b-2 border-primary font-medium text-sm text-primary transition">
+                <span class="material-icons text-base align-middle mr-1">add_circle</span>
+                Registrar Ocorrência
+            </button>
+            <button type="button" id="tab-resolver" class="tab-button pb-3 px-1 border-b-2 border-transparent font-medium text-sm text-text-muted hover:text-text-primary hover:border-slate-300 transition">
+                <span class="material-icons text-base align-middle mr-1">check_circle</span>
+                Resolver Ocorrência
+            </button>
+        </nav>
+    </div>
+    
+    <!-- Conteúdo Tab Registrar -->
+    <form id="form-ocorrencia" class="tab-content max-w-[960px] mx-auto space-y-6">
         <!-- Informações Básicas -->
         <div class="bg-surface p-5 rounded-lg border border-slate-200 dark:border-slate-800 space-y-4">
             <h2 class="text-base font-medium text-text-primary mb-3">Informações Básicas</h2>
@@ -50,6 +65,18 @@
                         <option value="{{ categoria }}">{{ categoria }}</option>
                         {% endfor %}
                     </select>
+                </div>
+                
+                <div class="md:col-span-2">
+                    <label class="block text-xs font-medium text-text-muted uppercase tracking-wide mb-2">Data/Hora da Ocorrência*</label>
+                    <div class="flex gap-2">
+                        <input type="datetime-local" id="data_ocorrencia" name="data_ocorrencia" required class="flex-1 px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-background text-text-primary focus:outline-none focus:ring-2 focus:ring-primary">
+                        <button type="button" id="btn-agora" class="px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-700 text-text-primary hover:bg-background-alt transition flex items-center gap-1.5">
+                            <span class="material-icons text-base">schedule</span>
+                            Agora
+                        </button>
+                    </div>
+                    <p class="text-xs text-text-muted mt-1">Informe quando a ocorrência realmente aconteceu</p>
                 </div>
                 
                 <div class="md:col-span-2">
@@ -134,12 +161,165 @@
         </div>
     </form>
     
+    <!-- Conteúdo Tab Resolver -->
+    <form id="form-resolver" class="tab-content hidden max-w-[960px] mx-auto space-y-6">
+        <!-- Selecionar Ocorrência -->
+        <div class="bg-surface p-5 rounded-lg border border-slate-200 dark:border-slate-800 space-y-4">
+            <h2 class="text-base font-medium text-text-primary mb-3">Selecionar Ocorrência que Requer Ação</h2>
+            <p class="text-sm text-text-muted mb-4">
+                <span class="material-icons text-warning text-sm align-middle">info</span>
+                Apenas ocorrências marcadas como "Requer Ação Urgente" aparecem nesta lista. 
+                As demais são registros de rotina e não necessitam resolução formal.
+            </p>
+            
+            <div>
+                <label class="block text-xs font-medium text-text-muted uppercase tracking-wide mb-2">Ocorrência*</label>
+                <select id="ocorrencia_resolver" name="ocorrencia_id" required class="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-background text-text-primary focus:outline-none focus:ring-2 focus:ring-primary">
+                    <option value="">Selecione uma ocorrência que requer ação</option>
+                    <!-- Aqui serão carregadas as ocorrências que requerem ação via JavaScript -->
+                </select>
+            </div>
+            
+            <!-- Preview da Ocorrência -->
+            <div id="preview-ocorrencia" class="hidden mt-4 p-4 rounded-lg bg-background border border-slate-200 dark:border-slate-800">
+                <h3 class="text-sm font-medium text-text-primary mb-2">Detalhes da Ocorrência</h3>
+                <div class="space-y-1 text-sm text-text-muted">
+                    <p><strong>Usina:</strong> <span id="preview-usina">-</span></p>
+                    <p><strong>Tipo:</strong> <span id="preview-tipo">-</span></p>
+                    <p><strong>Categoria:</strong> <span id="preview-categoria">-</span></p>
+                    <p><strong>Unidade:</strong> <span id="preview-unidade">-</span></p>
+                    <p><strong>Data Ocorrência:</strong> <span id="preview-data">-</span></p>
+                    <p><strong>Descrição:</strong> <span id="preview-descricao">-</span></p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Informações da Resolução -->
+        <div class="bg-surface p-5 rounded-lg border border-slate-200 dark:border-slate-800 space-y-4">
+            <h2 class="text-base font-medium text-text-primary mb-3">Informações da Resolução</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-medium text-text-muted uppercase tracking-wide mb-2">Resolvido Por*</label>
+                    <select id="resolvida_por" name="resolvida_por" required class="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-background text-text-primary focus:outline-none focus:ring-2 focus:ring-primary">
+                        <option value="">Selecione o responsável</option>
+                        {% for usuario in usuarios %}
+                        <option value="{{ usuario.id }}">{{ usuario.nome }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div>
+                    <label class="block text-xs font-medium text-text-muted uppercase tracking-wide mb-2">Data/Hora da Resolução*</label>
+                    <div class="flex gap-2">
+                        <input type="datetime-local" id="data_resolucao" name="data_resolucao" required class="flex-1 px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-background text-text-primary focus:outline-none focus:ring-2 focus:ring-primary">
+                        <button type="button" id="btn-agora-resolucao" class="px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-700 text-text-primary hover:bg-background-alt transition flex items-center gap-1.5">
+                            <span class="material-icons text-base">schedule</span>
+                            Agora
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium text-text-primary mb-2">Descrição da Resolução*</label>
+                <textarea id="resolucao_descricao" name="resolucao_descricao" required rows="6" placeholder="Descreva em detalhes como a ocorrência foi resolvida, ações tomadas, equipamentos verificados, etc..." class="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-background text-text-primary focus:outline-none focus:ring-2 focus:ring-primary resize-none"></textarea>
+            </div>
+        </div>
+        
+        <!-- Botões de Ação -->
+        <div class="flex justify-end gap-4">
+            <a href="{{ url_for('index') }}" class="px-6 py-2 rounded-lg border border-slate-300 dark:border-slate-700 text-text-primary hover:bg-background-alt transition">
+                Cancelar
+            </a>
+            <button type="submit" class="px-4 py-2 rounded-lg bg-success text-white text-sm font-medium hover:opacity-90 transition flex items-center gap-1.5">
+                <span class="material-icons text-base">check_circle</span>
+                Marcar como Resolvida
+            </button>
+        </div>
+    </form>
+    
     <!-- Mensagem de feedback -->
     <div id="mensagem" class="hidden fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50"></div>
 </div>
 
 <script>
-    // Preencher textarea com template selecionado
+    // ============================================================
+    // UTILITÁRIOS
+    // ============================================================
+    function getURLParams() {
+        const params = new URLSearchParams(window.location.search);
+        return {
+            tab: params.get('tab'),
+            ocorrencia_id: params.get('ocorrencia_id')
+        };
+    }
+
+    // ============================================================
+    // GERENCIAMENTO DE TABS
+    // ============================================================
+    const tabButtons = document.querySelectorAll('.tab-button');
+    const formOcorrencia = document.getElementById('form-ocorrencia');
+    const formResolver = document.getElementById('form-resolver');
+    
+    function switchToTab(tabId) {
+        // Remove active de todos
+        tabButtons.forEach(btn => {
+            btn.classList.remove('active', 'border-primary', 'text-primary');
+            btn.classList.add('border-transparent', 'text-text-muted');
+        });
+        
+        // Encontra e ativa a tab específica
+        const targetTab = document.getElementById(`tab-${tabId}`);
+        if (targetTab) {
+            targetTab.classList.add('active', 'border-primary', 'text-primary');
+            targetTab.classList.remove('border-transparent', 'text-text-muted');
+        }
+        
+        // Mostra/esconde forms
+        if (tabId === 'registrar') {
+            formOcorrencia.classList.remove('hidden');
+            formResolver.classList.add('hidden');
+        } else if (tabId === 'resolver') {
+            formOcorrencia.classList.add('hidden');
+            formResolver.classList.remove('hidden');
+            return carregarOcorrenciasAbertas(); // Retorna a promise
+        }
+    }
+    
+    tabButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const tabId = this.id.replace('tab-', '');
+            switchToTab(tabId);
+        });
+    });
+    
+    // ============================================================
+    // BOTÕES "AGORA" PARA DATA/HORA
+    // ============================================================
+    function formatarDataTimeLocal(date) {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        return `${year}-${month}-${day}T${hours}:${minutes}`;
+    }
+    
+    document.getElementById('btn-agora').addEventListener('click', function() {
+        document.getElementById('data_ocorrencia').value = formatarDataTimeLocal(new Date());
+    });
+    
+    document.getElementById('btn-agora-resolucao').addEventListener('click', function() {
+        document.getElementById('data_resolucao').value = formatarDataTimeLocal(new Date());
+    });
+    
+    // Inicializar com data atual
+    document.getElementById('data_ocorrencia').value = formatarDataTimeLocal(new Date());
+    
+    // ============================================================
+    // TEMPLATE DE TEXTO
+    // ============================================================
     document.getElementById('template_texto').addEventListener('change', function() {
         const selectedOption = this.options[this.selectedIndex];
         const textoTemplate = selectedOption.getAttribute('data-texto');
@@ -148,7 +328,69 @@
         }
     });
     
-    // Enviar formulário
+    // ============================================================
+    // CARREGAR OCORRÊNCIAS QUE REQUEREM AÇÃO
+    // ============================================================
+    async function carregarOcorrenciasAbertas() {
+        try {
+            // Busca apenas ocorrências que requerem ação e ainda não foram resolvidas
+            const response = await fetch('/api/ocorrencias?status=aberta,em_andamento&requer_acao=true');
+            const result = await response.json();
+            
+            const select = document.getElementById('ocorrencia_resolver');
+            select.innerHTML = '<option value="">Selecione uma ocorrência que requer ação</option>';
+            
+            if (result.success && result.data) {
+                // Filtra apenas ocorrências com requer_acao=true
+                const ocorrenciasComAcao = result.data.filter(oc => oc.requer_acao === true || oc.requer_acao === 1);
+                
+                if (ocorrenciasComAcao.length === 0) {
+                    const option = document.createElement('option');
+                    option.value = '';
+                    option.textContent = 'Nenhuma ocorrência requer ação no momento';
+                    option.disabled = true;
+                    select.appendChild(option);
+                } else {
+                    ocorrenciasComAcao.forEach(oc => {
+                        const option = document.createElement('option');
+                        option.value = oc.id;
+                        option.textContent = `#${oc.id} - ${oc.tipo} - ${oc.unidade} (${oc.status})`;
+                        option.dataset.ocorrencia = JSON.stringify(oc);
+                        select.appendChild(option);
+                    });
+                }
+            }
+        } catch (error) {
+            console.error('Erro ao carregar ocorrências:', error);
+        }
+    }
+    
+    // ============================================================
+    // PREVIEW DA OCORRÊNCIA SELECIONADA
+    // ============================================================
+    document.getElementById('ocorrencia_resolver').addEventListener('change', function() {
+        const selectedOption = this.options[this.selectedIndex];
+        const preview = document.getElementById('preview-ocorrencia');
+        
+        if (selectedOption.value) {
+            const ocorrencia = JSON.parse(selectedOption.dataset.ocorrencia);
+            
+            document.getElementById('preview-usina').textContent = ocorrencia.usina_nome || '-';
+            document.getElementById('preview-tipo').textContent = ocorrencia.tipo || '-';
+            document.getElementById('preview-categoria').textContent = ocorrencia.categoria || '-';
+            document.getElementById('preview-unidade').textContent = ocorrencia.unidade || '-';
+            document.getElementById('preview-data').textContent = ocorrencia.data_ocorrencia || ocorrencia.created_at || '-';
+            document.getElementById('preview-descricao').textContent = ocorrencia.descricao || '-';
+            
+            preview.classList.remove('hidden');
+        } else {
+            preview.classList.add('hidden');
+        }
+    });
+    
+    // ============================================================
+    // ENVIAR FORMULÁRIO DE REGISTRO
+    // ============================================================
     document.getElementById('form-ocorrencia').addEventListener('submit', async function(e) {
         e.preventDefault();
         
@@ -157,6 +399,7 @@
             operador_id: document.getElementById('operador_id').value,
             tipo: document.getElementById('tipo').value,
             categoria: document.getElementById('categoria').value,
+            data_ocorrencia: document.getElementById('data_ocorrencia').value,
             unidade: document.getElementById('unidade').value,
             tags: document.getElementById('tags').value,
             template_texto: document.getElementById('template_texto').value,
@@ -185,6 +428,7 @@
                 
                 // Limpar formulário
                 this.reset();
+                document.getElementById('data_ocorrencia').value = formatarDataTimeLocal(new Date());
                 
                 // Redirecionar após 2 segundos
                 setTimeout(() => {
@@ -196,7 +440,6 @@
                 mensagem.classList.remove('hidden');
             }
             
-            // Esconder mensagem após 5 segundos
             setTimeout(() => {
                 mensagem.classList.add('hidden');
             }, 5000);
@@ -210,6 +453,108 @@
             setTimeout(() => {
                 mensagem.classList.add('hidden');
             }, 5000);
+        }
+    });
+    
+    // ============================================================
+    // ENVIAR FORMULÁRIO DE RESOLUÇÃO
+    // ============================================================
+    document.getElementById('form-resolver').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const ocorrenciaId = document.getElementById('ocorrencia_resolver').value;
+        
+        const formData = {
+            resolvida_por: document.getElementById('resolvida_por').value,
+            data_resolucao: document.getElementById('data_resolucao').value,
+            resolucao_descricao: document.getElementById('resolucao_descricao').value
+        };
+        
+        try {
+            const response = await fetch(`/api/ocorrencias/${ocorrenciaId}/resolver`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData)
+            });
+            
+            const result = await response.json();
+            
+            const mensagem = document.getElementById('mensagem');
+            if (result.success) {
+                mensagem.className = 'fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 bg-success text-white';
+                mensagem.textContent = result.message || 'Ocorrência resolvida com sucesso!';
+                mensagem.classList.remove('hidden');
+                
+                // Limpar formulário
+                this.reset();
+                document.getElementById('preview-ocorrencia').classList.add('hidden');
+                
+                // Redirecionar após 2 segundos
+                setTimeout(() => {
+                    window.location.href = "{{ url_for('index') }}";
+                }, 2000);
+            } else {
+                mensagem.className = 'fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 bg-danger text-white';
+                mensagem.textContent = result.error || 'Erro ao resolver ocorrência';
+                mensagem.classList.remove('hidden');
+            }
+            
+            setTimeout(() => {
+                mensagem.classList.add('hidden');
+            }, 5000);
+            
+        } catch (error) {
+            const mensagem = document.getElementById('mensagem');
+            mensagem.className = 'fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 bg-danger text-white';
+            mensagem.textContent = 'Erro ao conectar com o servidor';
+            mensagem.classList.remove('hidden');
+            
+            setTimeout(() => {
+                mensagem.classList.add('hidden');
+            }, 5000);
+        }
+    });
+    
+    // ============================================================
+    // INICIALIZAÇÃO COM PARÂMETROS DA URL
+    // ============================================================
+    document.addEventListener('DOMContentLoaded', async function() {
+        const params = getURLParams();
+        
+        // Se foi requisitado abrir a aba resolver
+        if (params.tab === 'resolver') {
+            // Carrega as ocorrências e depois seleciona a específica
+            await switchToTab('resolver');
+            
+            // Se foi passado um ID de ocorrência específica
+            if (params.ocorrencia_id) {
+                // Aguarda um pouco para garantir que as ocorrências foram carregadas
+                setTimeout(() => {
+                    const select = document.getElementById('ocorrencia_resolver');
+                    const option = Array.from(select.options).find(opt => opt.value === params.ocorrencia_id);
+                    
+                    if (option) {
+                        select.value = params.ocorrencia_id;
+                        // Dispara o evento change para carregar o preview
+                        select.dispatchEvent(new Event('change'));
+                        
+                        // Scroll suave até o formulário
+                        formResolver.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    } else {
+                        // Se a ocorrência não foi encontrada, mostra mensagem
+                        const mensagem = document.getElementById('mensagem');
+                        mensagem.className = 'fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 bg-warning text-white';
+                        mensagem.textContent = 'Ocorrência não encontrada na lista de ações pendentes.';
+                        mensagem.classList.remove('hidden');
+                        
+                        setTimeout(() => {
+                            mensagem.classList.add('hidden');
+                        }, 5000);
+                    }
+                }, 500);
+            }
         }
     });
 </script>

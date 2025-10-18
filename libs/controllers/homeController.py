@@ -7,8 +7,9 @@ from libs.models.utils.utils import desempenho
 
 class HomeController:
     def __init__(self):
-        self.ocorrencias = Read("op_ocorrencia")
-        self.usinas = Read("op_usina")
+        # Só instancia Read se NÃO estiver em modo desenvolvedor
+        self.ocorrencias = None if DEVELOPER_MODE else Read("op_ocorrencia")
+        self.usinas = None if DEVELOPER_MODE else Read("op_usina")
         self._cache = {}  # cache para dados do banco
         self.developer = True
 

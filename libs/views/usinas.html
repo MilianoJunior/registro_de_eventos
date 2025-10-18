@@ -241,7 +241,7 @@
                             {% endfor %}
                         </div>
                         {% endif %}
-                        {% if alarme.status != 'resolvida' %}
+                        {% if alarme.status != 'resolvida' and alarme.requer_acao %}
                         <div class="flex gap-2 mt-2">
                             {# Botão Assumir Responsabilidade (se requer ação e não tem responsável) #}
                             {% if alarme.metadata %}
@@ -255,9 +255,11 @@
                                 {% endif %}
                             {% endif %}
                             
-                            <button class="px-3 py-1.5 rounded-lg bg-success text-white text-xs font-medium hover:opacity-90 transition">
+                            <a href="{{ url_for('registro_eventos') }}?tab=resolver&ocorrencia_id={{ alarme.id }}" 
+                               class="px-3 py-1.5 rounded-lg bg-success text-white text-xs font-medium hover:opacity-90 transition inline-flex items-center gap-1">
+                                <span class="material-icons text-xs">check_circle</span>
                                 Resolver
-                            </button>
+                            </a>
                         </div>
                         {% endif %}
                     </div>
