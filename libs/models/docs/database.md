@@ -421,6 +421,11 @@ erDiagram
       DATETIME updated_at
     }
 
+    op_leituras {
+        BIGINT id PK
+
+    }
+
     op_usuario {
       BIGINT id PK
       VARCHAR nome

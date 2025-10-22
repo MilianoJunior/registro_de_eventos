@@ -60,5 +60,5 @@ async def get_data(config, data):
         except (httpx.TimeoutException, Exception) as e:
             print('Erro: ', e)
             fim = time.time() - inicio
-            gerar_dados = generate_data(body)
+            gerar_dados = {}
             return gerar_dados, fim

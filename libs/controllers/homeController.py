@@ -4,6 +4,9 @@ from flask import render_template
 from libs.models.read import Read
 from libs.models.mock_data import DEVELOPER_MODE, get_estatisticas_home
 from libs.models.utils.utils import desempenho
+from libs.models.readRT import get_data
+from libs.models.usinas import leituras
+
 
 class HomeController:
     def __init__(self):
@@ -23,6 +26,7 @@ class HomeController:
     @desempenho
     def home(self):
         """Renderiza a página home com estatísticas"""
+        
         if DEVELOPER_MODE:
             # Usa dados mock do arquivo mock_data.py
             stats = get_estatisticas_home()
@@ -41,8 +45,11 @@ class HomeController:
             status = Counter((r.get("status") or "-") for r in rows)
             unidades = Counter((r.get("unidade") or "-") for r in rows)
             por_unidade = sorted(unidades.items(), key=lambda x: (-x[1], x[0]))[:8]
+
+
             for usina in usinas:
-                usina['status_operacional'] = 'operando' 
+                dados = self.get_data_rt(usina)
+                usina['status_operacional'] = self.get_status_usinas(usina['id'])
                 usina['potencia_ativa_mw'] = 1200
                 usina['mttr'] = '13h min'
                 usina['alarmes_por_hora'] = 8.0
@@ -59,26 +66,30 @@ class HomeController:
             # Calcula a potência ativa total das usinas operando
             potencia_total_mw = sum(u.get('potencia_ativa_mw', 0) for u in usinas if u.get('status_operacional') == 'operando')
 
-        print('--------------------------------')
-        print('1. usinas')
-        print(' '*5,usinas)
-        print('-'*50)
-        print('2. total_ocorrencias')
-        print(' '*5,total_ocorrencias)
-        print('-'*50)
-        print('3. recentes')
-        print(' '*5,recentes)
-        print('-'*50)
-        print('4. status')
-        print(' '*5,status)
-        print('-'*50)
-        print('5. por_unidade')
-        print(' '*5,por_unidade)
-        print('-'*50)
-        print('6. potencia_total_mw')
-        print(' '*5,potencia_total_mw)
-        print('-'*50)
-        print('--------------------------------')
+        # print('--------------------------------')
+        # print('1. usinas')
+        # print(' '*5,usinas)
+        # print('-'*50)
+        # print('2. total_ocorrencias')
+        # print(' '*5,total_ocorrencias)
+        # print('-'*50)
+        # print('3. recentes')
+        # print(' '*5,recentes)
+        # print('-'*50)
+        # print('4. status')
+        # print(' '*5,status)
+        # print('-'*50)
+        # print('5. por_unidade')
+        # print(' '*5,por_unidade)
+        # print('-'*50)
+        # print('6. potencia_total_mw')
+        # print(' '*5,potencia_total_mw)
+        # print('-'*50)
+        # print('--------------------------------')
+        for usina in usinas:
+            dados = self.get_data_rt(usina)
+
+        
 
         return render_template("home.html",
             usinas=usinas,
@@ -88,6 +99,24 @@ class HomeController:
             por_unidade=por_unidade,
             potencia_total_mw=potencia_total_mw,
         )
+    def get_data_rt(self, usina):
+        '''centraliza a conexão com a api em tempo real para obter os dados de todas as usinas
+        e otimzar a conexão com a api em tempo real'''
+        # print(usina)
+        # print(leituras)
+        name = usina['nome'].replace('-', ' ')
+        print('name: ', name)
+        for dtusina in leituras[name]:
+            print('usina: ', dtusina)
+        # dados = get_data(config, data)
+        # print('config: ', config)
+        # print('#'*50)
+        # print('data: ', data)
+        # print('-'*50)
+        # print('dados: ', dados)
+        # print('#'*50)
+        return {}
+
     def get_status_usinas(self):
         ''' Conexão com a api em tempo real para obter o status operacional de cada UG '''
         return 'operando'

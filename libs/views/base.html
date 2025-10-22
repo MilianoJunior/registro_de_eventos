@@ -55,6 +55,13 @@
         </div>
     </div>
     <script>
+        // Configurar o socketio para atualizar a página quando o arquivo for modificado
+        const socket = io();
+        socket.on('file_changed', (data) => {
+            console.log('Arquivo modificado:', data.path);
+            location.reload();
+        });
+
         const themeToggle = document.getElementById('theme-toggle');
         if (themeToggle) { // Garante que o elemento existe antes de adicionar o listener
             themeToggle.addEventListener('click', () => {

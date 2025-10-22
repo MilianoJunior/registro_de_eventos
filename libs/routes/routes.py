@@ -4,6 +4,7 @@ from libs.controllers.homeController import HomeController
 from libs.controllers.usinasController import UsinasController
 from libs.controllers.eventosController import EventosController
 # from libs.controllers.analiseController import AnaliseController
+from libs.controllers.configController import ConfigController
 
 from flask import render_template
 
@@ -11,6 +12,7 @@ homeController = HomeController()
 usinasController = UsinasController()
 eventosController = EventosController()
 # analiseController = AnaliseController()
+configController = ConfigController()
 
 @app.route("/")
 def index():
@@ -32,6 +34,11 @@ def registro_eventos():
 def criar_ocorrencia():
     print('6- criar_ocorrencia')
     return eventosController.criar_ocorrencia()
+
+@app.route("/configuracoes")
+def configuracoes():
+    print('7- configuracoes')
+    return configController.config_page()
 
 # @app.route("/analise-relatorios")
 # def analise_relatorios():
