@@ -26,6 +26,69 @@ from libs.routes.routes import *  # noqa
 # dev: threading; prod: gunicorn -k eventlet (não precisa mudar aqui)
 socketio = SocketIO(app, cors_allowed_origins="*", async_mode="threading")
 
+# --- Socket.IO event handlers ---
+from libs.controllers.configController import ConfigController
+from libs.models.readRT import get_data
+import asyncio
+
+@socketio.on('testar_leitura')
+def handle_testar_leitura(payload):
+    """Handler para testar leitura de variável do CLP"""
+    config = payload.get('config', {})
+    data = payload.get('data', {})
+    entrada_id = payload.get('entrada_id')
+    
+    print(f"🧪 Recebido pedido de teste:")
+    print(f"   Unidade: {config.get('unidade')}")
+    print(f"   Tipo: {config.get('tipo')}")
+    
+    try:
+        # Executar função async em thread separada
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        resultado, tempo = loop.run_until_complete(get_data(config, data))
+        loop.close()
+        
+        print(f"📊 Resultado da API: {resultado}")
+        
+        # Extrair o valor da resposta
+        tipo_secao = config.get('tipo')  # leituras, temperaturas, etc
+        
+        if resultado:
+            # Navegar pela estrutura de resposta para pegar o valor
+            for tipo_dado, valores in resultado.items():  # REAL, INT, BOOLEAN
+                for nome_var, valor in valores.items():
+                    # Emitir sucesso
+                    emit('resultado_teste_leitura', {
+                        'entrada_id': entrada_id,
+                        'status': 'success',
+                        'nome': nome_var,
+                        'tipo': tipo_dado,
+                        'valor': valor,
+                        'tempo': f"{tempo:.3f}s",
+                        'message': 'Leitura realizada com sucesso'
+                    })
+                    return
+        
+        # Se não encontrou valor
+        emit('resultado_teste_leitura', {
+            'entrada_id': entrada_id,
+            'status': 'error',
+            'nome': 'desconhecida',
+            'message': 'Nenhum valor retornado pela API'
+        })
+        
+    except Exception as e:
+        print(f"❌ Erro ao testar leitura: {e}")
+        import traceback
+        traceback.print_exc()
+        emit('resultado_teste_leitura', {
+            'entrada_id': entrada_id,
+            'status': 'error',
+            'nome': 'desconhecida',
+            'message': f'Erro: {str(e)}'
+        })
+
 # --- watcher só em DEV ---
 DEV_RELOAD = os.getenv("DEV_RELOAD", "0") == "1"
 if DEV_RELOAD:

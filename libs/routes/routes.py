@@ -40,6 +40,16 @@ def configuracoes():
     print('7- configuracoes')
     return configController.config_page()
 
+@app.route("/configuracoes/salvar", methods=["POST"])
+def salvar_configuracao():
+    print('8- salvar_configuracao')
+    return configController.salvar_configuracao()
+
+@app.route("/configuracoes/carregar", methods=["GET"])
+def carregar_configuracao():
+    print('9- carregar_configuracao')
+    return configController.carregar_configuracao()
+
 # @app.route("/analise-relatorios")
 # def analise_relatorios():
 #     print('7- analise_relatorios')

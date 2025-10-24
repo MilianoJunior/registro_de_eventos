@@ -8,6 +8,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.4/socket.io.min.js"></script>
     <script>
         tailwind.config = {
           darkMode: "class",
@@ -55,11 +56,94 @@
         </div>
     </div>
     <script>
+
         // Configurar o socketio para atualizar a página quando o arquivo for modificado
         const socket = io();
+        
+        // Log de conexão
+        socket.on('connect', () => {
+            console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+            console.log('🔌 SOCKET.IO CONECTADO');
+            console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+            console.log('   Socket ID:', socket.id);
+            console.log('   Status: ✅ Pronto para testar leituras');
+            console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
+        });
+        
+        socket.on('disconnect', () => {
+            console.warn('⚠️ Socket.IO desconectado');
+        });
+        
+        socket.on('connect_error', (error) => {
+            console.error('❌ Erro ao conectar Socket.IO:', error);
+        });
+        
         socket.on('file_changed', (data) => {
             console.log('Arquivo modificado:', data.path);
             location.reload();
+        });
+
+        // Listener para resposta do teste de leitura
+        socket.on('resultado_teste_leitura', (data) => {
+            console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+            console.log('📡 RESPOSTA DO SERVIDOR');
+            console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+            
+            const statusDiv = document.getElementById(`${data.entrada_id}_status`);
+            if (!statusDiv) {
+                console.error('❌ Status div não encontrado:', data.entrada_id);
+                return;
+            }
+            
+            if (data.status === 'success') {
+                // Formatar valor baseado no tipo
+                let valorFormatado = data.valor;
+                if (data.tipo === 'REAL') {
+                    valorFormatado = parseFloat(data.valor).toFixed(2);
+                } else if (data.tipo === 'BOOLEAN') {
+                    valorFormatado = data.valor ? 'TRUE' : 'FALSE';
+                }
+                
+                // Obter data e hora atual
+                const agora = new Date();
+                const data_hora = agora.toLocaleString('pt-BR');
+                const tempo_resposta = data.tempo || 'N/A';
+                
+                console.log(`✅ SUCESSO: ${data.nome} = ${valorFormatado} (${tempo_resposta})`);
+                
+                statusDiv.innerHTML = `
+                    <div class="flex flex-col gap-0.5">
+                        <div class="flex items-center gap-1">
+                            <span class="material-icons text-sm text-success">check_circle</span>
+                            <span class="text-xs font-mono text-success font-medium">${valorFormatado}</span>
+                        </div>
+                        <span class="text-xs text-text-muted ml-5">${data_hora} • ${tempo_resposta}</span>
+                    </div>
+                `;
+                
+                if (typeof showToast === 'function') {
+                    showToast(`${data.nome}: ${valorFormatado}`, 'success');
+                }
+                
+            } else {
+                console.error(`❌ ERRO: ${data.message}`);
+                
+                // Obter data e hora atual
+                const agora = new Date();
+                const data_hora = agora.toLocaleString('pt-BR');
+                
+                statusDiv.innerHTML = `
+                    <div class="flex flex-col gap-0.5">
+                        <span class="material-icons text-sm text-danger">error</span>
+                        <span class="text-xs text-text-muted ml-5">${data_hora}</span>
+                    </div>
+                `;
+                
+                if (typeof showToast === 'function') {
+                    showToast(data.message || 'Erro ao testar leitura', 'error');
+                }
+            }
+            console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
         });
 
         const themeToggle = document.getElementById('theme-toggle');

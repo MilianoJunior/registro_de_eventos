@@ -3,7 +3,1183 @@
 {% block title %}Configurações — EngeSEP O&M{% endblock %}
 
 {% block content %}
-<div class="p-6 space-y-6">
-    <h1 class="text-lg font-medium text-text-primary">Configurações</h1>
+<div class="p-6 space-y-6 custom-scrollbar" style="max-height: calc(100vh - 2rem);">
+    <div class="flex items-center justify-between mb-6">
+        <h1 class="text-xl font-medium text-text-primary">Configuração de Usinas e Dispositivos</h1>
+        <div class="flex gap-2">
+            <button type="button" onclick="limparTudo()" class="flex items-center gap-2 px-4 py-2 border border-gray-600 text-text-primary rounded-lg hover:bg-surface transition-colors">
+                <span class="material-icons text-sm">delete_sweep</span>
+                Limpar Tudo
+            </button>
+            <button type="button" onclick="addUsina()" class="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-600 transition-colors">
+                <span class="material-icons text-sm">add</span>
+                Nova Usina
+            </button>
+        </div>
+    </div>
+    
+    <!-- Toast de notificação -->
+    <div id="toast" class="hidden fixed top-4 right-4 z-50 px-6 py-3 rounded-lg shadow-lg transition-all duration-300 transform translate-x-full">
+        <div class="flex items-center gap-2">
+            <span id="toastIcon" class="material-icons"></span>
+            <span id="toastMessage"></span>
+        </div>
+    </div>
+
+    <form id="configForm" class="space-y-4">
+        <div id="usinasContainer" class="space-y-4">
+            <!-- Usinas serão adicionadas aqui dinamicamente -->
+        </div>
+
+        <div class="flex justify-end gap-3 pt-6 border-t border-gray-700">
+            <button type="button" onclick="previewConfig()" class="px-6 py-2 border border-gray-600 text-text-primary rounded-lg hover:bg-surface transition-colors">
+                Visualizar JSON
+            </button>
+            <button type="submit" class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-600 transition-colors">
+                Salvar Configuração
+            </button>
+        </div>
+    </form>
 </div>
+
+<!-- Modal para visualização do JSON -->
+<div id="jsonModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onclick="closeModal(event)">
+    <div class="bg-surface rounded-xl p-6 max-w-4xl w-full mx-4 max-h-[80vh] overflow-y-auto custom-scrollbar" onclick="event.stopPropagation()">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-lg font-medium text-text-primary">Visualização da Configuração</h2>
+            <button type="button" onclick="closeModal()" class="text-text-muted hover:text-text-primary">
+                <span class="material-icons">close</span>
+            </button>
+        </div>
+        <pre id="jsonPreview" class="bg-background p-4 rounded-lg text-sm text-text-primary overflow-x-auto"></pre>
+        <div class="flex justify-end gap-3 mt-4">
+            <button type="button" onclick="copyToClipboard()" class="px-4 py-2 border border-gray-600 text-text-primary rounded-lg hover:bg-surface transition-colors">
+                Copiar JSON
+            </button>
+            <button type="button" onclick="closeModal()" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-600 transition-colors">
+                Fechar
+            </button>
+        </div>
+    </div>
+</div>
+
+<style>
+.accordion-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out;
+}
+
+.accordion-content.active {
+    max-height: 5000px;
+    transition: max-height 0.5s ease-in;
+}
+
+.section-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out;
+}
+
+.section-content.active {
+    max-height: 500px;
+    transition: max-height 0.3s ease-in;
+}
+
+.section-icon {
+    transition: transform 0.3s ease;
+}
+
+.section-content.active .section-icon {
+    transform: rotate(180deg);
+}
+
+.input-field {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    background-color: var(--color-bg);
+    border: 1px solid rgba(100, 116, 139, 0.3);
+    border-radius: 0.5rem;
+    color: var(--color-text);
+    font-size: 14px;
+}
+
+.input-field:focus {
+    outline: none;
+    border-color: var(--color-accent);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.section-card {
+    background-color: var(--color-surface);
+    border: 1px solid rgba(100, 116, 139, 0.2);
+    border-radius: 0.75rem;
+    padding: 1rem;
+}
+
+.sub-section {
+    background-color: var(--color-bg);
+    border: 1px solid rgba(100, 116, 139, 0.15);
+    border-radius: 0.5rem;
+    padding: 0.75rem;
+}
+</style>
+
+<script>
+let usinaCounter = 0;
+let dispositivoCounters = {};
+let entradaCounters = {};
+
+// Inicializar ao carregar a página
+document.addEventListener('DOMContentLoaded', async () => {
+    try {
+        const response = await fetch('/configuracoes/carregar');
+        if (response.ok) {
+            const config = await response.json();
+            loadConfiguration(config);
+        } else {
+            // Se não houver configuração, adicionar uma usina vazia
+            addUsina();
+        }
+    } catch (error) {
+        console.error('Erro ao carregar configuração:', error);
+        // Em caso de erro, adicionar uma usina vazia
+        addUsina();
+    }
+});
+
+function addUsina() {
+    const usinaId = `usina_${usinaCounter++}`;
+    dispositivoCounters[usinaId] = 0;
+    
+    const usinaHTML = `
+        <div id="${usinaId}" class="section-card">
+            <div class="flex items-center justify-between mb-4 cursor-pointer" onclick="toggleAccordion('${usinaId}_content')">
+                <div class="flex items-center gap-3 flex-1">
+                    <span class="material-icons text-primary">factory</span>
+                    <input type="text" 
+                           placeholder="Nome da Usina" 
+                           class="input-field flex-1 font-medium"
+                           data-usina-id="${usinaId}"
+                           data-field="nome"
+                           onclick="event.stopPropagation()"
+                           required>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button type="button" onclick="event.stopPropagation(); toggleAccordion('${usinaId}_content')" class="text-text-muted hover:text-text-primary">
+                        <span class="material-icons accordion-icon">expand_more</span>
+                    </button>
+                    <button type="button" onclick="event.stopPropagation(); removeUsina('${usinaId}')" class="text-danger hover:text-red-600">
+                        <span class="material-icons">delete</span>
+                    </button>
+                </div>
+            </div>
+
+            <div id="${usinaId}_content" class="accordion-content">
+                <div class="space-y-4">
+                    <!-- Conexão da Usina -->
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="text-label text-text-muted mb-1 block">IP da Usina*</label>
+                            <input type="text" 
+                                   placeholder="192.168.1.100" 
+                                   class="input-field"
+                                   data-usina-id="${usinaId}"
+                                   data-field="ip"
+                                   required>
+                        </div>
+                        <div>
+                            <label class="text-label text-text-muted mb-1 block">Porta*</label>
+                            <input type="number" 
+                                   placeholder="502" 
+                                   class="input-field"
+                                   data-usina-id="${usinaId}"
+                                   data-field="port"
+                                   required>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="text-label text-text-muted mb-1 block">Nome da Tabela</label>
+                        <input type="text" 
+                               placeholder="nome_tabela_banco" 
+                               class="input-field"
+                               data-usina-id="${usinaId}"
+                               data-field="table">
+                    </div>
+
+                    <!-- Dispositivos -->
+                    <div class="border-t border-gray-700 pt-4 mt-4">
+                        <div class="flex items-center justify-between mb-3">
+                            <h3 class="text-sm font-medium text-text-primary flex items-center gap-2">
+                                <span class="material-icons text-sm">devices</span>
+                                Dispositivos
+                            </h3>
+                            <button type="button" onclick="addDispositivo('${usinaId}')" class="flex items-center gap-1 px-3 py-1 bg-gray-700 text-text-primary rounded hover:bg-gray-600 transition-colors text-sm">
+                                <span class="material-icons text-sm">add</span>
+                                Dispositivo
+                            </button>
+                        </div>
+                        <div id="${usinaId}_dispositivos" class="space-y-3">
+                            <!-- Dispositivos serão adicionados aqui -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.getElementById('usinasContainer').insertAdjacentHTML('beforeend', usinaHTML);
+    // Adicionar um dispositivo por padrão
+    addDispositivo(usinaId);
+}
+
+function addDispositivo(usinaId) {
+    const dispositivoId = `${usinaId}_disp_${dispositivoCounters[usinaId]++}`;
+    entradaCounters[dispositivoId] = { leituras: 0, temperaturas: 0, alarmes: 0, comandos: 0 };
+    
+    const dispositivoHTML = `
+        <div id="${dispositivoId}" class="sub-section">
+            <div class="flex items-center justify-between mb-3">
+                <input type="text" 
+                       placeholder="Nome do Dispositivo (ex: Unidade 1)" 
+                       class="input-field flex-1 mr-3"
+                       data-dispositivo-id="${dispositivoId}"
+                       data-field="nome"
+                       required>
+                <button type="button" onclick="removeDispositivo('${dispositivoId}')" class="text-danger hover:text-red-600">
+                    <span class="material-icons text-sm">delete</span>
+                </button>
+            </div>
+
+            <div class="space-y-3">
+                <!-- Conexão do Dispositivo -->
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="text-label text-text-muted mb-1 block">IP do Dispositivo*</label>
+                        <input type="text" 
+                               placeholder="192.168.1.101" 
+                               class="input-field"
+                               data-dispositivo-id="${dispositivoId}"
+                               data-field="ip"
+                               required>
+                    </div>
+                    <div>
+                        <label class="text-label text-text-muted mb-1 block">Porta*</label>
+                        <input type="number" 
+                               placeholder="502" 
+                               class="input-field"
+                               data-dispositivo-id="${dispositivoId}"
+                               data-field="port"
+                               required>
+                    </div>
+                </div>
+
+                <!-- Características -->
+                <div class="border-t border-gray-600 pt-3">
+                    <div class="flex items-center justify-between mb-2 cursor-pointer" onclick="toggleSection('${dispositivoId}_caracteristicas_content')">
+                        <h4 class="text-xs font-medium text-text-primary uppercase flex items-center gap-2">
+                            <span class="material-icons text-sm">tune</span>
+                            Características
+                        </h4>
+                        <span class="material-icons text-sm text-text-muted section-icon">expand_more</span>
+                    </div>
+                    <div id="${dispositivoId}_caracteristicas_content" class="section-content">
+                        <div class="space-y-3 max-h-[300px] overflow-y-auto custom-scrollbar pr-2" id="${dispositivoId}_caracteristicas">
+                            <div>
+                                <label class="text-label text-text-muted mb-1 block">Potência Máxima</label>
+                                <input type="number" 
+                                       step="0.01" 
+                                       placeholder="100.5" 
+                                       class="input-field"
+                                       data-dispositivo-id="${dispositivoId}"
+                                       data-field="caracteristica">
+                            </div>
+                            <button type="button" onclick="addCaracteristica('${dispositivoId}')" class="flex items-center justify-center gap-1 px-3 py-1 bg-gray-700 text-text-primary rounded hover:bg-gray-600 transition-colors text-xs w-full">
+                                <span class="material-icons text-xs">add</span>
+                                Característica
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Busca de Variáveis -->
+                <div class="border-t border-gray-600 pt-3">
+                    <div class="relative">
+                        <span class="material-icons absolute text-text-muted" style="left: 0.625rem; top: 50%; transform: translateY(-50%); font-size: 18px; pointer-events: none;">search</span>
+                        <input type="text" 
+                               id="${dispositivoId}_search"
+                               placeholder="Buscar variáveis configuradas..." 
+                               class="input-field"
+                               style="padding-left: 2.25rem;"
+                               oninput="searchVariaveis('${dispositivoId}', this.value)">
+                    </div>
+                    <div id="${dispositivoId}_search_results" class="mt-2 space-y-1.5 max-h-[300px] overflow-y-auto custom-scrollbar hidden">
+                        <!-- Resultados da busca aparecerão aqui -->
+                    </div>
+                </div>
+
+                <!-- Seções de Entradas -->
+                <div id="${dispositivoId}_secoes_entradas" class="space-y-2 border-t border-gray-600 pt-3">
+                    ${createEntradaSection(dispositivoId, 'leituras', 'Leituras', 'bar_chart', ['REAL', 'INT'])}
+                    ${createEntradaSection(dispositivoId, 'temperaturas', 'Temperaturas', 'thermostat', ['REAL', 'INT'])}
+                    ${createEntradaSection(dispositivoId, 'alarmes', 'Alarmes', 'warning', ['BOOLEAN'])}
+                    ${createEntradaSection(dispositivoId, 'comandos', 'Comandos', 'settings_input_antenna', ['BOOLEAN'])}
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.getElementById(`${usinaId}_dispositivos`).insertAdjacentHTML('beforeend', dispositivoHTML);
+}
+
+function createEntradaSection(dispositivoId, tipo, titulo, icon, tipos) {
+    return `
+        <div class="bg-background rounded p-3">
+            <div class="flex items-center justify-between mb-2 cursor-pointer" onclick="toggleSection('${dispositivoId}_${tipo}_content')">
+                <h5 class="text-xs font-medium text-text-primary flex items-center gap-1">
+                    <span class="material-icons text-xs">${icon}</span>
+                    ${titulo}
+                </h5>
+                <span class="material-icons text-xs text-text-muted section-icon">expand_more</span>
+            </div>
+            <div id="${dispositivoId}_${tipo}_content" class="section-content">
+                <div class="mb-2">
+                    <button type="button" onclick="addEntrada('${dispositivoId}', '${tipo}', ${JSON.stringify(tipos).replace(/"/g, '&quot;')})" class="flex items-center gap-1 px-3 py-1 bg-gray-700 text-text-primary rounded hover:bg-gray-600 transition-colors text-xs w-full">
+                        <span class="material-icons" style="font-size: 14px;">add</span>
+                        Adicionar
+                    </button>
+                </div>
+                <div id="${dispositivoId}_${tipo}" class="space-y-2 min-h-[40px] max-h-[300px] overflow-y-auto custom-scrollbar pr-2">
+                    <div class="text-xs text-text-muted italic text-center py-2">Nenhuma entrada configurada</div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function addCaracteristica(dispositivoId) {
+    const container = document.getElementById(`${dispositivoId}_caracteristicas`);
+    const caracteristicaHTML = `
+        <div class="flex gap-2">
+            <input type="text" 
+                   placeholder="Nome da característica" 
+                   class="input-field w-20"
+                   data-dispositivo-id="${dispositivoId}"
+                   data-field="caracteristica_nome">
+            <input type="number" 
+                   step="0.01" 
+                   placeholder="Valor" 
+                   class="input-field w-32"
+                   data-dispositivo-id="${dispositivoId}"
+                   data-field="caracteristica_valor">
+        </div>
+    `;
+    
+    // Inserir antes do botão
+    const button = container.querySelector('button');
+    button.insertAdjacentHTML('beforebegin', caracteristicaHTML);
+}
+
+function addEntrada(dispositivoId, tipo, tipos) {
+    const entradaId = `${dispositivoId}_${tipo}_${entradaCounters[dispositivoId][tipo]++}`;
+    const container = document.getElementById(`${dispositivoId}_${tipo}`);
+    
+    // Remover mensagem de "Nenhuma entrada configurada" se existir
+    const emptyMessage = container.querySelector('.text-text-muted.italic');
+    if (emptyMessage) {
+        emptyMessage.remove();
+    }
+    
+    let tipoOptions = tipos.map(t => `<option value="${t}">${t}</option>`).join('');
+    
+    const entradaHTML = `
+        <div id="${entradaId}" class="grid grid-cols-12 gap-2 items-center bg-surface p-2 rounded">
+            <div class="col-span-3">
+                <label class="text-label text-text-muted block mb-1" style="font-size: 10px;">Tipo</label>
+                <select class="input-field w-full text-xs" 
+                        data-entrada-id="${entradaId}"
+                        data-field="tipo"
+                        required>
+                    <option value="">Selecione</option>
+                    ${tipoOptions}
+                </select>
+            </div>
+            <div class="col-span-4">
+                <label class="text-label text-text-muted block mb-1" style="font-size: 10px;">Nome da Variável</label>
+                <input type="text" 
+                       placeholder="Ex: potencia_ativa" 
+                       class="input-field w-full text-xs"
+                       data-entrada-id="${entradaId}"
+                       data-field="nome"
+                       required>
+            </div>
+            <div class="col-span-3">
+                <label class="text-label text-text-muted block mb-1" style="font-size: 10px;">Endereço Modbus</label>
+                <input type="number" 
+                       placeholder="Ex: 13407" 
+                       class="input-field w-full text-xs"
+                       data-entrada-id="${entradaId}"
+                       data-field="endereco"
+                       required>
+            </div>
+            <div class="col-span-2 flex items-end pb-1 gap-1">
+                <button type="button" 
+                        onclick="coletarDadosETeste('${entradaId}', '${tipo}')" 
+                        class="flex items-center gap-1 px-3 py-1.5 bg-primary text-white rounded hover:bg-blue-600 transition-colors text-xs font-medium"
+                        title="Testar leitura">
+                    <span class="material-icons text-sm">play_circle</span>
+                    <span>Teste</span>
+                </button>
+                <div id="${entradaId}_status" class="flex items-center gap-1">
+                    <!-- Status do teste aparecerá aqui -->
+                </div>
+                <button type="button" 
+                        onclick="removeEntrada('${entradaId}')" 
+                        class="text-danger hover:text-red-600 p-1"
+                        title="Remover">
+                    <span class="material-icons text-sm">delete</span>
+                </button>
+            </div>
+        </div>
+    `;
+    
+    container.insertAdjacentHTML('beforeend', entradaHTML);
+}
+
+function removeUsina(usinaId) {
+    if (confirm('Deseja realmente remover esta usina e todos os seus dispositivos?')) {
+        document.getElementById(usinaId).remove();
+    }
+}
+
+function removeDispositivo(dispositivoId) {
+    if (confirm('Deseja realmente remover este dispositivo?')) {
+        document.getElementById(dispositivoId).remove();
+    }
+}
+
+function removeEntrada(entradaId) {
+    const entradaEl = document.getElementById(entradaId);
+    const container = entradaEl.parentElement;
+    entradaEl.remove();
+    
+    // Se não houver mais entradas, adicionar mensagem de vazio
+    const remainingEntries = container.querySelectorAll('[id*="_leituras_"], [id*="_temperaturas_"], [id*="_alarmes_"], [id*="_comandos_"]');
+    if (remainingEntries.length === 0) {
+        container.innerHTML = '<div class="text-xs text-text-muted italic text-center py-2">Nenhuma entrada configurada</div>';
+    }
+}
+
+function toggleAccordion(contentId) {
+    const content = document.getElementById(contentId);
+    const icon = content.previousElementSibling.querySelector('.accordion-icon');
+    
+    content.classList.toggle('active');
+    icon.style.transform = content.classList.contains('active') ? 'rotate(180deg)' : 'rotate(0deg)';
+}
+
+function toggleSection(contentId) {
+    const content = document.getElementById(contentId);
+    const header = content.previousElementSibling;
+    const icon = header.querySelector('.section-icon');
+    
+    content.classList.toggle('active');
+    
+    // Atualizar ícone
+    if (icon) {
+        if (content.classList.contains('active')) {
+            icon.style.transform = 'rotate(180deg)';
+        } else {
+            icon.style.transform = 'rotate(0deg)';
+        }
+    }
+}
+
+function searchVariaveis(dispositivoId, searchTerm) {
+    // Debug: descomente a linha abaixo se precisar debugar
+    // console.log('🔍 Busca:', dispositivoId, searchTerm);
+    
+    const resultsContainer = document.getElementById(`${dispositivoId}_search_results`);
+    
+    if (!resultsContainer) {
+        console.error('❌ Container de resultados não encontrado:', `${dispositivoId}_search_results`);
+        return;
+    }
+    
+    const searchInput = searchTerm.trim();
+    
+    // Limpar resultados anteriores
+    resultsContainer.innerHTML = '';
+    
+    if (searchInput.length < 1) {
+        resultsContainer.classList.add('hidden');
+        return;
+    }
+    
+    // Função para normalizar texto (remover acentos e converter para minúsculas)
+    const normalizeText = (text) => {
+        return text
+            .toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '');
+    };
+    
+    const searchNormalized = normalizeText(searchInput);
+    const results = [];
+    const secoesContainer = document.getElementById(`${dispositivoId}_secoes_entradas`);
+    
+    if (!secoesContainer) {
+        console.error('❌ Container de seções não encontrado:', `${dispositivoId}_secoes_entradas`);
+        return;
+    }
+    
+    // Mapeamento de nomes de seções para português
+    const secaoNomesMap = {
+        'leituras': 'Leitura',
+        'temperaturas': 'Temperatura',
+        'alarmes': 'Alarme',
+        'comandos': 'Comando',
+        'vibrações': 'Vibração',
+        'pressões': 'Pressão',
+        'vazões': 'Vazão',
+        'alarmes_reset_automatico': 'Alarme Reset Automático'
+    };
+    
+    // Buscar em todas as seções
+    const allSections = secoesContainer.querySelectorAll('.bg-background.rounded.p-3');
+    
+    allSections.forEach(sectionWrapper => {
+        // Encontrar o container real de entradas dentro desta seção
+        const containers = sectionWrapper.querySelectorAll('[id*="_leituras"], [id*="_temperaturas"], [id*="_alarmes"], [id*="_comandos"], [id*="_vibrações"], [id*="_pressões"], [id*="_vazões"]');
+        
+        containers.forEach(container => {
+            const containerId = container.id;
+            
+            // Verificar se este container pertence ao dispositivo atual
+            if (!containerId.startsWith(dispositivoId)) {
+                return;
+            }
+            
+            // Extrair tipo de entrada
+            const tipoMatch = containerId.match(/_([^_]+)$/);
+            if (!tipoMatch) return;
+            
+            const tipoEntrada = tipoMatch[1];
+            
+            // Buscar todas as entradas nesta seção
+            const entradas = container.querySelectorAll('[id^="' + dispositivoId + '_' + tipoEntrada + '_"]');
+            
+            entradas.forEach(entradaEl => {
+                // Pular o container principal
+                if (entradaEl.id === containerId) return;
+                
+                const entradaId = entradaEl.id;
+                const nomeInput = entradaEl.querySelector('input[data-field="nome"]');
+                const tipoInput = entradaEl.querySelector('select[data-field="tipo"]');
+                const enderecoInput = entradaEl.querySelector('input[data-field="endereco"]');
+                
+                if (nomeInput && nomeInput.value && nomeInput.value.trim()) {
+                    const nomeOriginal = nomeInput.value;
+                    const nomeNormalizado = normalizeText(nomeOriginal);
+                    const tipo = tipoInput?.value || '';
+                    const endereco = enderecoInput?.value || '';
+                    
+                    // Busca case-insensitive, sem acentos e com palavras incompletas
+                    if (nomeNormalizado.includes(searchNormalized)) {
+                        results.push({
+                            nome: nomeOriginal,
+                            tipo: tipo,
+                            endereco: endereco,
+                            secao: tipoEntrada,
+                            secaoNome: secaoNomesMap[tipoEntrada] || tipoEntrada.charAt(0).toUpperCase() + tipoEntrada.slice(1).replace(/_/g, ' '),
+                            sectionContentId: `${dispositivoId}_${tipoEntrada}_content`,
+                            entradaId: entradaId
+                        });
+                    }
+                }
+            });
+        });
+    });
+    
+    // Exibir resultados
+    if (results.length > 0) {
+        resultsContainer.classList.remove('hidden');
+        
+        results.forEach(result => {
+            // Determinar cor do badge baseado no tipo de seção
+            const badgeColors = {
+                'Leitura': 'bg-blue-500',
+                'Temperatura': 'bg-orange-500',
+                'Alarme': 'bg-red-500',
+                'Comando': 'bg-purple-500',
+                'Vibração': 'bg-yellow-500',
+                'Pressão': 'bg-green-500',
+                'Vazão': 'bg-cyan-500'
+            };
+            
+            const badgeColor = badgeColors[result.secaoNome] || 'bg-gray-500';
+            
+            // Escapar caracteres especiais no nome para evitar problemas no HTML
+            const nomeEscapado = result.nome.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+            
+            const resultHTML = `
+                <div class="bg-surface p-2.5 rounded hover:bg-gray-700 cursor-pointer transition-colors border border-gray-700 hover:border-gray-600" 
+                     onclick="highlightVariavel('${result.sectionContentId}', '${result.entradaId}')">
+                    <div class="flex items-start justify-between gap-2">
+                        <div class="flex-1 min-w-0">
+                            <div class="text-sm font-medium text-text-primary mb-1 truncate" title="${nomeEscapado}">
+                                ${nomeEscapado}
+                            </div>
+                            <div class="flex flex-wrap items-center gap-2 text-xs">
+                                <span class="${badgeColor} text-white px-2 py-0.5 rounded font-medium">
+                                    ${result.secaoNome}
+                                </span>
+                                <span class="bg-gray-700 text-text-primary px-2 py-0.5 rounded font-medium">
+                                    ${result.tipo}
+                                </span>
+                                <span class="text-text-muted">
+                                    End: <span class="font-mono font-medium text-text-primary">${result.endereco}</span>
+                                </span>
+                            </div>
+                        </div>
+                        <span class="material-icons text-sm text-text-muted flex-shrink-0 mt-1">arrow_forward</span>
+                    </div>
+                </div>
+            `;
+            resultsContainer.insertAdjacentHTML('beforeend', resultHTML);
+        });
+        
+        // Adicionar contador de resultados
+        const countHTML = `
+            <div class="text-xs text-text-muted text-center py-1 border-t border-gray-700 mt-1">
+                ${results.length} variável${results.length !== 1 ? 'eis' : ''} encontrada${results.length !== 1 ? 's' : ''}
+            </div>
+        `;
+        resultsContainer.insertAdjacentHTML('beforeend', countHTML);
+        
+        // Log simplificado
+        console.log(`✅ Busca "${searchTerm}": ${results.length} resultado(s)`);
+    } else {
+        resultsContainer.classList.remove('hidden');
+        resultsContainer.innerHTML = '<div class="text-xs text-text-muted italic text-center py-3">Nenhuma variável encontrada</div>';
+        
+        console.log(`❌ Busca "${searchTerm}": nenhum resultado`);
+    }
+}
+
+function highlightVariavel(sectionContentId, entradaId) {
+    // Expandir a seção se estiver fechada
+    const sectionContent = document.getElementById(sectionContentId);
+    if (sectionContent && !sectionContent.classList.contains('active')) {
+        toggleSection(sectionContentId);
+    }
+    
+    // Scroll até a variável e destacá-la
+    const entradaEl = document.getElementById(entradaId);
+    if (entradaEl) {
+        entradaEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        
+        // Adicionar efeito de destaque temporário
+        entradaEl.style.transition = 'all 0.3s ease';
+        entradaEl.style.backgroundColor = 'rgba(59, 130, 246, 0.3)';
+        entradaEl.style.boxShadow = '0 0 0 2px rgba(59, 130, 246, 0.5)';
+        
+        setTimeout(() => {
+            entradaEl.style.backgroundColor = '';
+            entradaEl.style.boxShadow = '';
+        }, 2000);
+    }
+}
+
+function coletarDadosETeste(entradaId, tipoSecao) {
+    console.log('📋 Coletando dados para teste...');
+    
+    const entradaEl = document.getElementById(entradaId);
+    if (!entradaEl) {
+        console.error('❌ Entrada não encontrada:', entradaId);
+        return;
+    }
+    
+    // Coletar dados da variável
+    const nomeInput = entradaEl.querySelector('input[data-field="nome"]');
+    const tipoInput = entradaEl.querySelector('select[data-field="tipo"]');
+    const enderecoInput = entradaEl.querySelector('input[data-field="endereco"]');
+    
+    const nome = nomeInput?.value.trim();
+    const tipo = tipoInput?.value;
+    const endereco = parseInt(enderecoInput?.value);
+    
+    if (!nome || !tipo || !endereco) {
+        showToast('Preencha todos os campos da variável', 'warning');
+        return;
+    }
+    
+    // Extrair dispositivo e usina
+    const dispositivoEl = entradaEl.closest('[id*="_disp_"]');
+    let usinaEl = null;
+    
+    if (dispositivoEl) {
+        const match = dispositivoEl.id.match(/^(usina_\d+)_disp_/);
+        if (match) {
+            usinaEl = document.getElementById(match[1]);
+        }
+    }
+    
+    if (!usinaEl || !dispositivoEl) {
+        showToast('Não foi possível identificar usina/dispositivo', 'error');
+        return;
+    }
+    
+    // Coletar dados da usina
+    const unidadeInput = usinaEl.querySelector(`input[data-usina-id][data-field="nome"]`);
+    const ipInput = usinaEl.querySelector(`input[data-usina-id][data-field="ip"]`);
+    const portInput = usinaEl.querySelector(`input[data-usina-id][data-field="port"]`);
+    
+    const unidade = unidadeInput?.value.trim();
+    const ip = ipInput?.value.trim();
+    const port = parseInt(portInput?.value);
+    
+    if (!unidade || !ip || !port) {
+        showToast('Preencha os dados da usina', 'warning');
+        return;
+    }
+    
+    // Coletar dados do dispositivo
+    const dispositivoIdMatch = entradaId.match(/^(usina_\d+_disp_\d+)/);
+    const dispositivoId = dispositivoIdMatch ? dispositivoIdMatch[1] : null;
+    
+    const conexao_ipInput = document.querySelector(`#${dispositivoId} input[data-dispositivo-id][data-field="ip"]`);
+    const conexao_portInput = document.querySelector(`#${dispositivoId} input[data-dispositivo-id][data-field="port"]`);
+    
+    const conexao_ip = conexao_ipInput?.value.trim();
+    const conexao_port = parseInt(conexao_portInput?.value);
+    
+    if (!conexao_ip || !conexao_port) {
+        showToast('Preencha os dados do dispositivo', 'warning');
+        return;
+    }
+    
+    // Montar config e data
+    const config = {
+        entrada_id: entradaId,
+        unidade,
+        ip,
+        port,
+        tipo: tipoSecao,
+        nome,
+        tipo_variavel: tipo,
+        endereco
+    };
+    
+    const data = {
+        conexao: {
+            ip: conexao_ip,
+            port: conexao_port
+        },
+        [tipoSecao]: {
+            [tipo]: {
+                [nome]: endereco
+            }
+        }
+    };
+    
+    // Chamar teste
+    testarLeitura(config, data);
+}
+
+function testarLeitura(config, data) {
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    console.log('🧪 INICIANDO TESTE DE LEITURA');
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    
+    console.log('🔍 CONFIG:', config);
+    console.log('🔍 DATA:', data);
+    
+    const entradaId = config.entrada_id;
+    const statusDiv = document.getElementById(`${entradaId}_status`);
+    
+    if (!statusDiv) {
+        console.error('❌ Status div não encontrado:', entradaId);
+        return;
+    }
+    
+    // Mostrar status de carregando
+    statusDiv.innerHTML = '<span class="material-icons text-sm text-yellow-500 animate-spin">refresh</span>';
+    
+    // Preparar payload para Socket.IO (seguindo o formato exato)
+    const testData = {
+        entrada_id: entradaId,
+        config: {
+            unidade: config.unidade,
+            ip: config.ip,
+            port: config.port,
+            tipo: config.tipo
+        },
+        data: data
+    };
+    
+    console.log('📤 ENVIANDO PARA SOCKET.IO:', testData);
+    
+    if (typeof socket !== 'undefined') {
+        socket.emit('testar_leitura', testData);
+        console.log('✅ Evento emitido!');
+    } else {
+        console.error('❌ Socket.IO não disponível');
+        showToast('Socket.IO não está conectado', 'error');
+        statusDiv.innerHTML = '';
+    }
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
+}
+
+function loadConfiguration(config) {
+    // Limpar o container
+    document.getElementById('usinasContainer').innerHTML = '';
+    
+    // Carregar cada usina
+    Object.entries(config).forEach(([usinaName, usinaData]) => {
+        addUsina();
+        const usinaId = `usina_${usinaCounter - 1}`;
+        const usinaEl = document.getElementById(usinaId);
+        
+        // Preencher dados da usina
+        usinaEl.querySelector(`[data-usina-id="${usinaId}"][data-field="nome"]`).value = usinaName;
+        usinaEl.querySelector(`[data-usina-id="${usinaId}"][data-field="ip"]`).value = usinaData.ip || '';
+        usinaEl.querySelector(`[data-usina-id="${usinaId}"][data-field="port"]`).value = usinaData.port || '';
+        usinaEl.querySelector(`[data-usina-id="${usinaId}"][data-field="table"]`).value = usinaData.table || '';
+        
+        // Remover o dispositivo padrão
+        const defaultDisp = usinaEl.querySelector('[id$="_disp_0"]');
+        if (defaultDisp) defaultDisp.remove();
+        
+        // Carregar dispositivos
+        if (usinaData.dispositivos) {
+            Object.entries(usinaData.dispositivos).forEach(([dispNome, dispData]) => {
+                addDispositivo(usinaId);
+                const dispId = `${usinaId}_disp_${dispositivoCounters[usinaId] - 1}`;
+                const dispEl = document.getElementById(dispId);
+                
+                // Preencher dados do dispositivo
+                dispEl.querySelector(`[data-dispositivo-id="${dispId}"][data-field="nome"]`).value = dispNome;
+                dispEl.querySelector(`[data-dispositivo-id="${dispId}"][data-field="ip"]`).value = dispData.conexao?.ip || '';
+                dispEl.querySelector(`[data-dispositivo-id="${dispId}"][data-field="port"]`).value = dispData.conexao?.port || '';
+                
+                // Carregar características
+                if (dispData.caracteristicas) {
+                    const caracteristicasContainer = document.getElementById(`${dispId}_caracteristicas`);
+                    const firstCarInput = caracteristicasContainer.querySelector('[data-field="caracteristica"]');
+                    const entries = Object.entries(dispData.caracteristicas);
+                    
+                    if (entries.length > 0) {
+                        // Preencher a primeira característica
+                        const [firstKey, firstValue] = entries[0];
+                        if (firstCarInput) {
+                            firstCarInput.value = firstValue;
+                            firstCarInput.previousElementSibling.textContent = firstKey;
+                        }
+                        
+                        // Adicionar características adicionais
+                        for (let i = 1; i < entries.length; i++) {
+                            const [carNome, carValor] = entries[i];
+                            addCaracteristica(dispId);
+                            const inputs = caracteristicasContainer.querySelectorAll('[data-field="caracteristica_nome"]');
+                            const lastNomeInput = inputs[inputs.length - 1];
+                            const lastValorInput = lastNomeInput.nextElementSibling;
+                            lastNomeInput.value = carNome;
+                            lastValorInput.value = carValor;
+                        }
+                    }
+                }
+                
+                // Carregar leituras, temperaturas, alarmes, comandos e outras seções
+                const secoesBase = ['leituras', 'temperaturas', 'alarmes', 'comandos'];
+                const secoesExtras = Object.keys(dispData).filter(key => 
+                    !['conexao', 'caracteristicas', ...secoesBase].includes(key) && 
+                    typeof dispData[key] === 'object' && 
+                    dispData[key] !== null
+                );
+                
+                // Adicionar seções extras dinamicamente
+                secoesExtras.forEach(secaoNome => {
+                    const iconMap = {
+                        'vibrações': 'vibration',
+                        'pressões': 'compress',
+                        'vazões': 'water_drop',
+                        'alarmes_reset_automatico': 'auto_fix_high'
+                    };
+                    const icon = iconMap[secaoNome] || 'sensors';
+                    const titulo = secaoNome.charAt(0).toUpperCase() + secaoNome.slice(1).replace(/_/g, ' ');
+                    
+                    // Adicionar seção se não existir
+                    if (!entradaCounters[dispId][secaoNome]) {
+                        entradaCounters[dispId][secaoNome] = 0;
+                        const secoesContainer = document.getElementById(`${dispId}_secoes_entradas`);
+                        const secaoHTML = createEntradaSection(dispId, secaoNome, titulo, icon, ['REAL', 'INT', 'BOOLEAN']);
+                        secoesContainer.insertAdjacentHTML('beforeend', secaoHTML);
+                    }
+                });
+                
+                // Carregar todas as seções (base + extras)
+                [...secoesBase, ...secoesExtras].forEach(tipoEntrada => {
+                    if (dispData[tipoEntrada]) {
+                        Object.entries(dispData[tipoEntrada]).forEach(([tipo, entradas]) => {
+                            Object.entries(entradas).forEach(([nomeEntrada, endereco]) => {
+                                addEntrada(dispId, tipoEntrada, tipo === 'BOOLEAN' ? ['BOOLEAN'] : ['REAL', 'INT']);
+                                const entradaCount = entradaCounters[dispId][tipoEntrada] - 1;
+                                const entradaId = `${dispId}_${tipoEntrada}_${entradaCount}`;
+                                const entradaEl = document.getElementById(entradaId);
+                                
+                                if (entradaEl) {
+                                    entradaEl.querySelector(`[data-entrada-id="${entradaId}"][data-field="tipo"]`).value = tipo;
+                                    entradaEl.querySelector(`[data-entrada-id="${entradaId}"][data-field="nome"]`).value = nomeEntrada;
+                                    entradaEl.querySelector(`[data-entrada-id="${entradaId}"][data-field="endereco"]`).value = endereco;
+                                }
+                            });
+                        });
+                    }
+                });
+            });
+        }
+    });
+}
+
+function collectFormData() {
+    const config = {};
+    
+    // Coletar usinas
+    const usinas = document.querySelectorAll('[id^="usina_"]');
+    usinas.forEach(usinaEl => {
+        const usinaId = usinaEl.id;
+        const nomeInput = usinaEl.querySelector(`[data-usina-id="${usinaId}"][data-field="nome"]`);
+        const nome = nomeInput ? nomeInput.value.trim() : '';
+        
+        if (!nome) return;
+        
+        config[nome] = {
+            ip: usinaEl.querySelector(`[data-usina-id="${usinaId}"][data-field="ip"]`)?.value || '',
+            port: parseInt(usinaEl.querySelector(`[data-usina-id="${usinaId}"][data-field="port"]`)?.value) || 0,
+            table: usinaEl.querySelector(`[data-usina-id="${usinaId}"][data-field="table"]`)?.value || '',
+            dispositivos: {}
+        };
+        
+        // Coletar dispositivos
+        const dispositivos = usinaEl.querySelectorAll(`[id^="${usinaId}_disp_"]`);
+        dispositivos.forEach(dispEl => {
+            const dispId = dispEl.id;
+            const dispNome = dispEl.querySelector(`[data-dispositivo-id="${dispId}"][data-field="nome"]`)?.value.trim() || '';
+            
+            if (!dispNome) return;
+            
+            const dispositivoData = {
+                conexao: {
+                    ip: dispEl.querySelector(`[data-dispositivo-id="${dispId}"][data-field="ip"]`)?.value || '',
+                    port: parseInt(dispEl.querySelector(`[data-dispositivo-id="${dispId}"][data-field="port"]`)?.value) || 0
+                },
+                caracteristicas: {},
+                leituras: { REAL: {}, INT: {} },
+                temperaturas: { REAL: {}, INT: {} },
+                alarmes: { BOOLEAN: {} },
+                comandos: { BOOLEAN: {} }
+            };
+            
+            config[nome].dispositivos[dispNome] = dispositivoData;
+            
+            // Coletar características
+            const caracteristicas = dispEl.querySelectorAll(`[data-dispositivo-id="${dispId}"][data-field="caracteristica"]`);
+            caracteristicas.forEach(car => {
+                const label = car.previousElementSibling?.textContent || car.placeholder;
+                const value = parseFloat(car.value) || parseInt(car.value) || 0;
+                if (car.value) {
+                    config[nome].dispositivos[dispNome].caracteristicas[label] = value;
+                }
+            });
+            
+            // Características personalizadas
+            const carNomes = dispEl.querySelectorAll(`[data-dispositivo-id="${dispId}"][data-field="caracteristica_nome"]`);
+            carNomes.forEach(nomeEl => {
+                const valorEl = nomeEl.nextElementSibling;
+                const carNome = nomeEl.value.trim();
+                const carValor = parseFloat(valorEl.value) || parseInt(valorEl.value) || 0;
+                if (carNome && valorEl.value) {
+                    config[nome].dispositivos[dispNome].caracteristicas[carNome] = carValor;
+                }
+            });
+            
+            // Descobrir todas as seções de entradas (base + extras)
+            const secoesContainer = dispEl.querySelector(`[id="${dispId}_secoes_entradas"]`);
+            const todasSecoes = [];
+            if (secoesContainer) {
+                // Encontrar todas as divs de seção
+                secoesContainer.querySelectorAll('[id$="_leituras"], [id$="_temperaturas"], [id$="_alarmes"], [id$="_comandos"]').forEach(secaoEl => {
+                    const secaoId = secaoEl.id;
+                    const tipoEntrada = secaoId.replace(`${dispId}_`, '');
+                    if (!todasSecoes.includes(tipoEntrada)) {
+                        todasSecoes.push(tipoEntrada);
+                    }
+                });
+                
+                // Também buscar seções extras
+                secoesContainer.querySelectorAll('[id*="_"]').forEach(el => {
+                    const match = el.id.match(new RegExp(`${dispId.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}_([^_]+)$`));
+                    if (match && match[1]) {
+                        const tipoEntrada = match[1];
+                        if (!todasSecoes.includes(tipoEntrada) && 
+                            !['dispositivos', 'caracteristicas', 'secoes', 'entradas'].includes(tipoEntrada)) {
+                            todasSecoes.push(tipoEntrada);
+                        }
+                    }
+                });
+            }
+            
+            // Coletar entradas de todas as seções encontradas
+            todasSecoes.forEach(tipoEntrada => {
+                const entradas = dispEl.querySelectorAll(`[id^="${dispId}_${tipoEntrada}_"]`);
+                if (entradas.length > 0) {
+                    // Inicializar a seção se não existir
+                    if (!dispositivoData[tipoEntrada]) {
+                        dispositivoData[tipoEntrada] = { REAL: {}, INT: {}, BOOLEAN: {} };
+                    }
+                    
+                    entradas.forEach(entradaEl => {
+                        const entradaId = entradaEl.id;
+                        // Pular se for o container da seção
+                        if (entradaId === `${dispId}_${tipoEntrada}`) return;
+                        
+                        const tipo = entradaEl.querySelector(`[data-entrada-id="${entradaId}"][data-field="tipo"]`)?.value;
+                        const nomeEntrada = entradaEl.querySelector(`[data-entrada-id="${entradaId}"][data-field="nome"]`)?.value.trim();
+                        const endereco = parseInt(entradaEl.querySelector(`[data-entrada-id="${entradaId}"][data-field="endereco"]`)?.value);
+                        
+                        if (tipo && nomeEntrada && endereco) {
+                            if (!dispositivoData[tipoEntrada][tipo]) {
+                                dispositivoData[tipoEntrada][tipo] = {};
+                            }
+                            dispositivoData[tipoEntrada][tipo][nomeEntrada] = endereco;
+                        }
+                    });
+                    
+                    // Remover tipos vazios
+                    Object.keys(dispositivoData[tipoEntrada]).forEach(tipo => {
+                        if (Object.keys(dispositivoData[tipoEntrada][tipo]).length === 0) {
+                            delete dispositivoData[tipoEntrada][tipo];
+                        }
+                    });
+                    
+                    // Remover seção se estiver vazia
+                    if (Object.keys(dispositivoData[tipoEntrada]).length === 0) {
+                        delete dispositivoData[tipoEntrada];
+                    }
+                }
+            });
+        });
+    });
+    
+    return config;
+}
+
+function previewConfig() {
+    const config = collectFormData();
+    document.getElementById('jsonPreview').textContent = JSON.stringify(config, null, 2);
+    document.getElementById('jsonModal').classList.remove('hidden');
+}
+
+function closeModal(event) {
+    if (!event || event.target === event.currentTarget) {
+        document.getElementById('jsonModal').classList.add('hidden');
+    }
+}
+
+function copyToClipboard() {
+    const text = document.getElementById('jsonPreview').textContent;
+    navigator.clipboard.writeText(text).then(() => {
+        showToast('JSON copiado para a área de transferência!', 'success');
+    });
+}
+
+function showToast(message, type = 'info') {
+    const toast = document.getElementById('toast');
+    const toastIcon = document.getElementById('toastIcon');
+    const toastMessage = document.getElementById('toastMessage');
+    
+    // Definir ícone e cor baseado no tipo
+    const types = {
+        success: { icon: 'check_circle', class: 'bg-success text-white' },
+        error: { icon: 'error', class: 'bg-danger text-white' },
+        warning: { icon: 'warning', class: 'bg-warning text-white' },
+        info: { icon: 'info', class: 'bg-primary text-white' }
+    };
+    
+    const config = types[type] || types.info;
+    toastIcon.textContent = config.icon;
+    toastMessage.textContent = message;
+    
+    // Remover classes anteriores e adicionar novas
+    toast.className = `fixed top-4 right-4 z-50 px-6 py-3 rounded-lg shadow-lg transition-all duration-300 ${config.class}`;
+    
+    // Mostrar toast
+    toast.classList.remove('hidden', 'translate-x-full');
+    
+    // Esconder após 3 segundos
+    setTimeout(() => {
+        toast.classList.add('translate-x-full');
+        setTimeout(() => {
+            toast.classList.add('hidden');
+        }, 300);
+    }, 3000);
+}
+
+function limparTudo() {
+    if (confirm('Deseja realmente limpar todas as configurações? Esta ação não pode ser desfeita.')) {
+        document.getElementById('usinasContainer').innerHTML = '';
+        usinaCounter = 0;
+        dispositivoCounters = {};
+        entradaCounters = {};
+        addUsina();
+        showToast('Todas as configurações foram limpas', 'info');
+    }
+}
+
+// Submit do formulário
+document.getElementById('configForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const config = collectFormData();
+    
+    // Validação básica
+    if (Object.keys(config).length === 0) {
+        showToast('Por favor, adicione pelo menos uma usina.', 'warning');
+        return;
+    }
+    
+    // Validar se cada usina tem pelo menos um dispositivo
+    for (const [usinaName, usinaData] of Object.entries(config)) {
+        if (!usinaData.dispositivos || Object.keys(usinaData.dispositivos).length === 0) {
+            showToast(`A usina "${usinaName}" precisa ter pelo menos um dispositivo.`, 'warning');
+            return;
+        }
+    }
+    
+    try {
+        showToast('Salvando configuração...', 'info');
+        
+        const response = await fetch('/configuracoes/salvar', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(config)
+        });
+        
+        if (response.ok) {
+            const result = await response.json();
+            showToast(`Configuração salva com sucesso! ${result.usinas_count} usina(s) configurada(s).`, 'success');
+        } else {
+            const error = await response.json();
+            showToast('Erro ao salvar: ' + (error.error || 'Erro desconhecido'), 'error');
+        }
+    } catch (error) {
+        console.error('Erro:', error);
+        showToast('Erro ao salvar configuração: ' + error.message, 'error');
+    }
+});
+</script>
 {% endblock %}

@@ -62,3 +62,91 @@ async def get_data(config, data):
             fim = time.time() - inicio
             gerar_dados = {}
             return gerar_dados, fim
+
+'''
+## Rotas Disponíveis
+
+### 1. `POST /readCLP/{tipo}`
+- **Descrição:** Lê valores de registradores do CLP.
+- **Parâmetro de rota:**
+  - `tipo`: `leituras` ou `alarmes`
+- **Body (JSON):**
+  ```json
+  {
+    "conexao": {
+      "ip": "192.168.0.10",
+      "port": 502,
+      "timeout": 10.0
+    },
+    "registers": {
+      "REAL": {"nome1": 1001},
+      "INT": {"nome2": 2001},
+      "BOOLEAN": {"nome3": 3001}
+    }
+  }
+  ```
+- **Resposta (sucesso):**
+  ```json
+  {
+    "data": {
+      "REAL": {"nome1": 12.34},
+      "INT": {"nome2": 42},
+      "BOOLEAN": {"nome3": true}
+    },
+    "status": "success",
+    "message": null
+  }
+  ```
+- **Resposta (erro):**
+  ```json
+  {
+    "data": null,
+    "status": "error",
+    "message": "Mensagem de erro"
+  }
+  ```
+
+### 2. `POST /writeCLP/{tipo}`
+- **Descrição:** Escreve valores em registradores do CLP (atualmente apenas para reset de alarmes automáticos).
+- **Parâmetro de rota:**
+  - `tipo`: `reset_alarmes_automatico`
+- **Body (JSON):**
+  ```json
+  {
+    "conexao": {
+      "ip": "192.168.0.10",
+      "port": 502,
+      "timeout": 10.0
+    },
+    "registers": {
+      "BOOLEAN": {"reset_alarme": [3001, true]}
+    }
+  }
+  ```
+- **Resposta (sucesso):**
+  ```json
+  {
+    "data": {
+      "BOOLEAN": {"reset_alarme": null}
+    },
+    "status": "success",
+    "message": null
+  }
+  ```
+- **Resposta (erro):**
+  ```json
+  {
+    "data": null,
+    "status": "error",
+    "message": "Mensagem de erro"
+  }
+  ```
+
+---
+
+## Observações
+- Os campos de conexão (`ip`, `port`, `timeout`) são obrigatórios.
+- Os nomes dos registradores (`nome1`, `nome2`, etc.) são livres e servem apenas para identificar os dados no retorno.
+- O tipo de dado deve ser especificado corretamente em `registers` (`REAL`, `INT`, `BOOLEAN`).
+- Em caso de erro de conexão ou leitura/escrita, a resposta terá `status: error` e uma mensagem explicativa.
+'''
