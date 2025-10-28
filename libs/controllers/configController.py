@@ -2,9 +2,9 @@
 from flask import render_template, request, jsonify
 from datetime import datetime
 from libs.models.read import Read
-from libs.models.mock_data import DEVELOPER_MODE, get_mock_data
+from libs.models.utils.mock_data import DEVELOPER_MODE, get_mock_data
 from libs.models.utils.utils import desempenho
-from libs.models.readRT import get_data
+from libs.servicos.readRT import get_data
 import json
 import os
 import asyncio

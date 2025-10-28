@@ -2,10 +2,9 @@
 from collections import Counter
 from flask import render_template
 from libs.models.read import Read
-from libs.models.mock_data import DEVELOPER_MODE, get_estatisticas_home
+from libs.models.utils.mock_data import DEVELOPER_MODE, get_estatisticas_home
 from libs.models.utils.utils import desempenho
-from libs.models.readRT import get_data
-from libs.models.usinas import leituras
+from libs.servicos.readRT import get_data
 
 
 class HomeController:
@@ -86,9 +85,6 @@ class HomeController:
         # print(' '*5,potencia_total_mw)
         # print('-'*50)
         # print('--------------------------------')
-        for usina in usinas:
-            dados = self.get_data_rt(usina)
-
         
 
         return render_template("home.html",
@@ -99,23 +95,6 @@ class HomeController:
             por_unidade=por_unidade,
             potencia_total_mw=potencia_total_mw,
         )
-    def get_data_rt(self, usina):
-        '''centraliza a conexão com a api em tempo real para obter os dados de todas as usinas
-        e otimzar a conexão com a api em tempo real'''
-        # print(usina)
-        # print(leituras)
-        name = usina['nome'].replace('-', ' ')
-        print('name: ', name)
-        for dtusina in leituras[name]:
-            print('usina: ', dtusina)
-        # dados = get_data(config, data)
-        # print('config: ', config)
-        # print('#'*50)
-        # print('data: ', data)
-        # print('-'*50)
-        # print('dados: ', dados)
-        # print('#'*50)
-        return {}
 
     def get_status_usinas(self):
         ''' Conexão com a api em tempo real para obter o status operacional de cada UG '''

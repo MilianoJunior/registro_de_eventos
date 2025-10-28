@@ -1,7 +1,7 @@
 # libs/controllers/usinasController.py
 from flask import render_template
 from libs.models.read import Read
-from libs.models.mock_data import (
+from libs.models.utils.mock_data import (
     DEVELOPER_MODE, 
     get_usina_by_sigla, 
     get_mock_data,

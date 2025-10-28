@@ -16,7 +16,7 @@ print("Diretório raiz:", ROOT_DIR)
 print("\nTestando imports...")
 
 try:
-    from libs.models.mock_data import DEVELOPER_MODE
+    from libs.models.utils.mock_data import DEVELOPER_MODE
     print("OK - Import mock_data: SUCESSO (DEVELOPER_MODE = {})".format(DEVELOPER_MODE))
 except Exception as e:
     print("ERRO - Import mock_data: {}".format(e))
