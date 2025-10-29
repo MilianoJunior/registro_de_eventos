@@ -142,6 +142,37 @@ estrutura_pastas_arquivos(path, "", imprimir=True)
 # contador:  57 tempo_atual:  0.22269940376281738 tempo_total:  12.99897837638855  erros:  47 api versão 1
 # contador:  57 tempo_atual:  0.12067461013793945 tempo_total:  7.112741470336914  erros:  1 api versão 2
 # contador:  57 tempo_atual:  0.1147918701171875 tempo_total:  6.785559177398682 conta:  1 api versão 3
+'''
+Preciso criar um socket na pasta libs/sockets/ para ler o status operacional de cada usina em tempo real, e atualizar o status operacional de cada usina na
+interface web. Devo usar o mesmo caminho do testar_leitura.py para ler o status operacional de cada usina em tempo real.
+o endereço do status operacional é registrado na pasta config/usinas_dispositivos.json, de oncde devem ser lidos os endereços para leitura.
+em leituras:BOOLEAN:
+    "BOOLEAN": {
+                "Status U.P. (parada)": 20326,
+                "Status U.P.G.M. (pronta para giro mecânico)": 20327,
+                "Status U.P.S.(pronta para sincronização)": 20328,
+                "Status U.M.D.(sincronizado)": 20329,
+                "Status sincronizado": 20330
+            }
+
+o status operacional, será atualizada na pagina home.html, na seção Status das Usinas, deve ser atualizado o status operacional de cada usina.
+<span class="bg-success/20 text-success text-xs px-2 py-0.5 rounded flex items-center gap-1">
+    <span class="w-1.5 h-1.5 rounded-full bg-success"></span>Operando
+</span>
+{% elif usina.status_operacional == 'manutencao' %}
+<span class="bg-warning/20 text-warning text-xs px-2 py-0.5 rounded flex items-center gap-1">
+    <span class="w-1.5 h-1.5 rounded-full bg-warning"></span>Manutenção
+</span>
+{% else %}
+<span class="bg-slate-500/20 text-slate-500 text-xs px-2 py-0.5 rounded flex items-center gap-1">
+    <span class="w-1.5 h-1.5 rounded-full bg-slate-500"></span>Parada
+</span>
+{% endif %}
+
+criei o arquivo libs/sockets/status_usina.py para ler o status operacional de cada usina em tempo real, mas precisar ser vinculado ao home.html
+
+
+'''
 
 '''
 Preciso separar o código abaixo em arquivos separados em componentes reutilizáveis mantendo a estilização com fidelidade máxima, a ideia é

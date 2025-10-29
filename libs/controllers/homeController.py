@@ -2,14 +2,16 @@
 from collections import Counter
 from flask import render_template
 from libs.models.read import Read
+from libs.models.utils.filters import slugify_filter
 from libs.models.utils.mock_data import DEVELOPER_MODE, get_estatisticas_home
 from libs.models.utils.utils import desempenho
 from libs.servicos.readRT import get_data
+from libs.sockets.status_usina import coletar_status_usinas
 
 
 class HomeController:
     def __init__(self):
-        # Só instancia Read se NÃO estiver em modo desenvolvedor
+        # SÃ³ instancia Read se NÃO estiver em modo desenvolvedor
         self.ocorrencias = None if DEVELOPER_MODE else Read("op_ocorrencia")
         self.usinas = None if DEVELOPER_MODE else Read("op_usina")
         self._cache = {}  # cache para dados do banco
@@ -17,14 +19,14 @@ class HomeController:
 
     @desempenho
     def _get_or_set(self, key, loader):
-        """Método auxiliar para cache de dados"""
+        """MÃ©todo auxiliar para cache de dados"""
         if key not in self._cache:
             self._cache[key] = loader()
         return self._cache[key]
 
     @desempenho
     def home(self):
-        """Renderiza a página home com estatísticas"""
+        """Renderiza a pÃ¡gina home com estatÃ­sticas"""
         
         if DEVELOPER_MODE:
             # Usa dados mock do arquivo mock_data.py
@@ -35,6 +37,47 @@ class HomeController:
             por_unidade = stats['por_unidade']
             total_ocorrencias = stats['total_ocorrencias']
             potencia_total_mw = stats['potencia_total_mw']
+
+            status_operacional_por_usina = {}
+            detalhes_status_por_usina = {}
+            status_texto_por_usina = {}
+            try:
+                status_coletados = coletar_status_usinas()
+                print(f"[HOME] Status coletados no socket (DEV): {status_coletados}")
+                status_operacional_por_usina = {
+                    item.get("slug"): item.get("status")
+                    for item in status_coletados
+                }
+                detalhes_status_por_usina = {
+                    item.get("slug"): item.get("dispositivos", [])
+                    for item in status_coletados
+                }
+                status_texto_por_usina = {
+                    item.get("slug"): item.get("status_texto")
+                    for item in status_coletados
+                }
+            except Exception as exc:
+                print(f"[HOME] Erro ao coletar status operacional (DEV): {exc}")
+
+            for usina in usinas:
+                slug = slugify_filter(usina.get('nome') or usina.get('sigla'))
+                status_atual = status_operacional_por_usina.get(
+                    slug,
+                    usina.get('status_operacional', 'parada'),
+                )
+                detalhes = detalhes_status_por_usina.get(slug, [])
+                texto_status = status_texto_por_usina.get(slug)
+                if not texto_status and detalhes:
+                    texto_status = detalhes[0].get("descricao")
+                if not texto_status:
+                    texto_status = "Status nÃ£o disponÃ­vel"
+                usina['status_operacional'] = status_atual
+                usina['status_operacional_dispositivos'] = detalhes
+                usina['status_operacional_texto'] = texto_status
+                print(
+                    f"[HOME] (DEV) Aplicando status '{usina['status_operacional']}' "
+                    f"para usina '{usina.get('nome')}' (slug='{slug}')"
+                )
         else:
             # Usa dados reais do banco de dados
             usinas = self._get_or_set("usinas", lambda: self.usinas.get_all())
@@ -45,10 +88,43 @@ class HomeController:
             unidades = Counter((r.get("unidade") or "-") for r in rows)
             por_unidade = sorted(unidades.items(), key=lambda x: (-x[1], x[0]))[:8]
 
+            status_operacional_por_usina = {}
+            detalhes_status_por_usina = {}
+            status_texto_por_usina = {}
+            try:
+                status_coletados = coletar_status_usinas()
+                print(f"[HOME] Status coletados no socket: {status_coletados}")
+                status_operacional_por_usina = {
+                    item.get("slug"): item.get("status")
+                    for item in status_coletados
+                }
+                detalhes_status_por_usina = {
+                    item.get("slug"): item.get("dispositivos", [])
+                    for item in status_coletados
+                }
+                status_texto_por_usina = {
+                    item.get("slug"): item.get("status_texto")
+                    for item in status_coletados
+                }
+            except Exception as exc:
+                print(f"[HOME] Erro ao coletar status operacional: {exc}")
 
             for usina in usinas:
                 dados = self.get_data_rt(usina)
-                usina['status_operacional'] = self.get_status_usinas(usina['id'])
+                slug = slugify_filter(usina.get('nome') or usina.get('sigla'))
+                usina['status_operacional'] = status_operacional_por_usina.get(slug, 'parada')
+                detalhes = detalhes_status_por_usina.get(slug, [])
+                texto_status = status_texto_por_usina.get(slug)
+                if not texto_status and detalhes:
+                    texto_status = detalhes[0].get("descricao")
+                if not texto_status:
+                    texto_status = "Status nÃ£o disponÃ­vel"
+                usina['status_operacional_dispositivos'] = detalhes
+                usina['status_operacional_texto'] = texto_status
+                print(
+                    f"[HOME] Aplicando status '{usina['status_operacional']}' "
+                    f"para usina '{usina.get('nome')}' (slug='{slug}')"
+                )
                 usina['potencia_ativa_mw'] = 1200
                 usina['mttr'] = '13h min'
                 usina['alarmes_por_hora'] = 8.0
@@ -59,10 +135,9 @@ class HomeController:
                 usina['alarmes_oscilantes'] = 2
                 usina['energia_nao_gerada_mwh'] = 0
                 usina['distribuicao_prioridade'] = {'alta': 0, 'media': 100, 'baixa': 0}
-                
             total_ocorrencias = len(rows)
             
-            # Calcula a potência ativa total das usinas operando
+            # Calcula a potÃªncia ativa total das usinas operando
             potencia_total_mw = sum(u.get('potencia_ativa_mw', 0) for u in usinas if u.get('status_operacional') == 'operando')
 
         # print('--------------------------------')
@@ -97,10 +172,10 @@ class HomeController:
         )
 
     def get_status_usinas(self):
-        ''' Conexão com a api em tempo real para obter o status operacional de cada UG '''
-        return 'operando'
+        ''' ConexÃ£o com a api em tempo real para obter o status operacional de cada UG '''
+        return 'parada'
     def get_potencia_usinas(self):
-        ''' Conexão com a api em tempo real para obter a potencia ativa de cada UG '''
+        ''' ConexÃ£o com a api em tempo real para obter a potencia ativa de cada UG '''
         return 1200
 
     def get_mttr_usinas(self):
@@ -116,7 +191,7 @@ class HomeController:
         ''' Consulta a tabela op_ocorrencia_hist para obter o numero de incidentes abertos '''
         return 0
     def get_alarmes_atencao_usinas(self):
-        ''' Consulta a tabela op_ocorrencia_hist para obter o numero de alarmes de atencao e definir uma classificação de atencao '''
+        ''' Consulta a tabela op_ocorrencia_hist para obter o numero de alarmes de atencao e definir uma classificaÃ§Ã£o de atencao '''
         return 3
     def get_alarmes_inundantes_usinas(self):
         ''' Consulta a tabela op_ocorrencia_hist para obter o numero de alarmes inundantes '''
@@ -139,7 +214,7 @@ class HomeController:
 4. alarmes_por_hora: cria um metodo para consultar a tabela op_ocorrencia_hist para obter o numero de alarmes por hora de cada UG
 5. alarmes_criticos: cria um metodo para consultar a tabela op_ocorrencia_hist para obter o numero de alarmes criticos de cada UG
 6. incidentes_abertos: cria um metodo para consultar a tabela op_ocorrencia_hist para obter o numero de incidentes abertos
-7. alarmes_atencao: cria um metodo para consultar a tabela op_ocorrencia_hist para obter o numero de alarmes de atencao e definir uma classificação de atencao
+7. alarmes_atencao: cria um metodo para consultar a tabela op_ocorrencia_hist para obter o numero de alarmes de atencao e definir uma classificaÃ§Ã£o de atencao
 8. alarmes_inundantes: cria um metodo para consultar a tabela op_ocorrencia_hist para obter o numero de alarmes inundantes
 9. alarmes_oscilantes: cria um metodo para consultar a tabela op_ocorrencia_hist para obter o numero de alarmes oscilantes
 10. energia_nao_gerada_mwh: cria um metodo para consultar a tabela op_ocorrencia_hist para obter a energia nao gerada de cada UG em mwh

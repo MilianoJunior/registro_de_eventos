@@ -16,6 +16,13 @@
         "leituras": {
           "INT": {
             "Potência Ativa": 13407
+          },
+          "BOOLEAN": {
+            "Status U.P. (parada)": 20326,
+            "Status U.P.G.M. (pronta para giro mecânico)": 20327,
+            "Status U.P.S.(pronta para sincronização)": 20328,
+            "Status U.M.D.(sincronizado)": 20329,
+            "Status sincronizado": 20330
           }
         },
         "temperaturas": {
@@ -112,6 +119,13 @@
         "leituras": {
           "REAL": {
             "Potência Ativa": 13407
+          },
+          "BOOLEAN": {
+            "Status U.P. (parada)": 20326,
+            "Status U.P.G.M. (pronta para giro mecânico)": 20327,
+            "Status U.P.S.(pronta para sincronização)": 20328,
+            "Status U.M.D.(sincronizado)": 20329,
+            "Status sincronizado": 20330
           }
         },
         "temperaturas": {
@@ -189,6 +203,13 @@
         "leituras": {
           "REAL": {
             "Potência Ativa": 13407
+          },
+          "BOOLEAN": {
+            "Status U.P. (parada)": 20326,
+            "Status U.P.G.M. (pronta para giro mecânico)": 20327,
+            "Status U.P.S.(pronta para sincronização)": 20328,
+            "Status U.M.D.(sincronizado)": 20329,
+            "Status sincronizado": 20330
           }
         },
         "temperaturas": {
@@ -260,6 +281,13 @@
         "leituras": {
           "REAL": {
             "Potência Ativa": 13407
+          },
+          "BOOLEAN": {
+            "Status U.P. (parada)": 20326,
+            "Status U.P.G.M. (pronta para giro mecânico)": 20327,
+            "Status U.P.S.(pronta para sincronização)": 20328,
+            "Status U.M.D.(sincronizado)": 20329,
+            "Status sincronizado": 20330
           }
         },
         "temperaturas": {
@@ -336,6 +364,13 @@
         "leituras": {
           "REAL": {
             "Potência Ativa": 13407
+          },
+          "BOOLEAN": {
+            "Status U.P. (parada)": 20326,
+            "Status U.P.G.M. (pronta para giro mecânico)": 20327,
+            "Status U.P.S.(pronta para sincronização)": 20328,
+            "Status U.M.D.(sincronizado)": 20329,
+            "Status sincronizado": 20330
           }
         },
         "temperaturas": {
@@ -419,6 +454,13 @@
         "leituras": {
           "REAL": {
             "Potência Ativa": 13407
+          },
+          "BOOLEAN": {
+            "Status U.P. (parada)": 20326,
+            "Status U.P.G.M. (pronta para giro mecânico)": 20327,
+            "Status U.P.S.(pronta para sincronização)": 20328,
+            "Status U.M.D.(sincronizado)": 20329,
+            "Status sincronizado": 20330
           }
         },
         "temperaturas": {
@@ -480,6 +522,13 @@
         "leituras": {
           "REAL": {
             "Potência Ativa": 13407
+          },
+          "BOOLEAN": {
+            "Status U.P. (parada)": 20326,
+            "Status U.P.G.M. (pronta para giro mecânico)": 20327,
+            "Status U.P.S.(pronta para sincronização)": 20328,
+            "Status U.M.D.(sincronizado)": 20329,
+            "Status sincronizado": 20330
           }
         },
         "temperaturas": {
@@ -548,6 +597,13 @@
         "leituras": {
           "REAL": {
             "Potência Ativa": 13407
+          },
+          "BOOLEAN": {
+            "Status U.P. (parada)": 20326,
+            "Status U.P.G.M. (pronta para giro mecânico)": 20327,
+            "Status U.P.S.(pronta para sincronização)": 20328,
+            "Status U.M.D.(sincronizado)": 20329,
+            "Status sincronizado": 20330
           }
         },
         "temperaturas": {
@@ -618,6 +674,13 @@
         "leituras": {
           "REAL": {
             "Potência Ativa": 13407
+          },
+          "BOOLEAN": {
+            "Status U.P. (parada)": 20326,
+            "Status U.P.G.M. (pronta para giro mecânico)": 20327,
+            "Status U.P.S.(pronta para sincronização)": 20328,
+            "Status U.M.D.(sincronizado)": 20329,
+            "Status sincronizado": 20330
           }
         },
         "temperaturas": {

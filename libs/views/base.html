@@ -59,6 +59,7 @@
 
         // Configurar o socketio para atualizar a página quando o arquivo for modificado
         const socket = io();
+        window.socket = socket;
         
         // Log de conexão
         socket.on('connect', () => {
