@@ -2,6 +2,7 @@
 
 import asyncio
 import json
+import os
 import re
 import time
 import unicodedata
@@ -14,17 +15,21 @@ except ImportError:  # pragma: no cover
     emit = None  # type: ignore
 
 from libs.servicos.readRT import get_data
+from libs.controllers.decorador import desempenho
 
 DEBUG_PREFIX = "[DEBUG][status_usina]"
+
+LOGS_LEVEL = int(os.getenv("LOGS", "1"))
 
 CONFIG_PATH = Path("config/usinas_dispositivos.json")
 DEFAULT_TIMEOUT = 3.0
 
 # prioridade para consolidar status vindos de diferentes dispositivos
 STATUS_PRIORITY = {
-    "operando": 3,
-    "manutencao": 2,
-    "parada": 1,
+    "operando": 4,
+    "manutencao": 3,
+    "parada": 2,
+    "sem_conexao": 1,
 }
 
 # ordem de prioridade para definir a descrição textual enviada ao front
@@ -42,6 +47,35 @@ MANUTENCAO_TAGS = ("prontaparasincronizacao", "prontaparagiro")
 PARADA_TAGS = ("parada",)
 
 
+def _detalhar_exception(exc: BaseException) -> str:
+    """Gera string com informações do arquivo e linha do erro."""
+
+    tb = exc.__traceback__
+    if tb is None:
+        return f"{type(exc).__name__}: {exc}"
+
+    ultimo_tb = tb
+    while ultimo_tb.tb_next:
+        ultimo_tb = ultimo_tb.tb_next
+
+    frame = ultimo_tb.tb_frame
+    caminho = Path(frame.f_code.co_filename)
+
+    try:
+        caminho_relativo = caminho.relative_to(Path.cwd())
+    except ValueError:
+        caminho_relativo = caminho
+
+    caminho_formatado = caminho_relativo.as_posix()
+    funcao = frame.f_code.co_name
+    linha = ultimo_tb.tb_lineno
+
+    return (
+        f"{type(exc).__name__}: {exc} "
+        f"(arquivo {caminho_formatado}, função {funcao}, linha {linha})"
+    )
+
+
 def register_status_usina_handler(socketio):
     """Registra o handler responsável por atualizar o status operacional das usinas."""
     
@@ -51,7 +85,7 @@ def register_status_usina_handler(socketio):
     def handle_status_usinas(_payload=None):
         """Lê o status operacional no CLP e envia o resultado para os clientes conectados."""
         if emit is None:
-            print("[SOCKET][status_usina] flask_socketio não disponível; ignorando emissão.")  # noqa: T201
+            print("[SOCKET][status_usina] flask_socketio não disponível; ignorando emissão.")
             return
 
         # Verificar frequência de solicitações
@@ -60,17 +94,22 @@ def register_status_usina_handler(socketio):
         diferenca = agora - contador_solicitacoes["ultima_timestamp"] if contador_solicitacoes["ultima_timestamp"] > 0 else 0
         contador_solicitacoes["ultima_timestamp"] = agora
         
-        print(f"\n{DEBUG_PREFIX} Evento 'solicitar_status_usinas' recebido.")
-        print(f"{DEBUG_PREFIX} Solicitação #{contador_solicitacoes['total']} | Intervalo desde última: {diferenca:.2f}s")
-        
-        if diferenca > 0 and diferenca < 5:
-            print(f"{DEBUG_PREFIX} ⚠️ ALERTA: Solicitações muito próximas ({diferenca:.2f}s)! Possível duplicação.")
+        if LOGS_LEVEL >= 2:
+            print(f"\n{DEBUG_PREFIX} Evento 'solicitar_status_usinas' recebido.")
+            print(f"{DEBUG_PREFIX} Solicitação #{contador_solicitacoes['total']} | Intervalo desde última: {diferenca:.2f}s")
+            
+            if diferenca > 0 and diferenca < 5:
+                print(f"{DEBUG_PREFIX} ⚠️ ALERTA: Solicitações muito próximas ({diferenca:.2f}s)! Possível duplicação.")
         
         payload = build_status_payload()
-        _imprimir_payload_organizado(payload)
+        
+        if LOGS_LEVEL >= 2:
+            _imprimir_payload_organizado(payload)
+        
         emit("status_usinas_dados", payload, broadcast=True)
 
 
+@desempenho
 def build_status_payload() -> Dict[str, Any]:
     """Monta o payload enviado para o front-end com os status operacionais."""
     try:
@@ -81,29 +120,38 @@ def build_status_payload() -> Dict[str, Any]:
             "usinas": usinas,
         }
     except FileNotFoundError as exc:
-        print(f"{DEBUG_PREFIX} Arquivo de configuração não encontrado: {exc}")
+        detalhe_erro = _detalhar_exception(exc)
+        if LOGS_LEVEL >= 2:
+            print(f"{DEBUG_PREFIX} Arquivo de configuração não encontrado: {detalhe_erro}")
         return {
             "success": False,
             "error": str(exc),
+            "error_details": detalhe_erro,
             "usinas": [],
         }
     except Exception as exc:  # pragma: no cover - log auxiliar
-        print(f"[SOCKET][status_usina] Erro ao montar payload: {exc}")  # noqa: T201
+        detalhe_erro = _detalhar_exception(exc)
+        if LOGS_LEVEL >= 2:
+            print(f"[SOCKET][status_usina] Erro ao montar payload: {detalhe_erro}")
         return {
             "success": False,
             "error": str(exc),
+            "error_details": detalhe_erro,
             "usinas": [],
         }
 
 
+@desempenho
 def coletar_status_usinas() -> List[Dict[str, Any]]:
     """Obtém o status operacional consolidado de todas as usinas configuradas."""
     configuracoes = _carregar_configuracoes()
     if not configuracoes:
-        print(f"{DEBUG_PREFIX} Nenhuma configuração encontrada.")
+        if LOGS_LEVEL >= 2:
+            print(f"{DEBUG_PREFIX} Nenhuma configuração encontrada.")
         return []
 
-    print(f"{DEBUG_PREFIX} Configurações carregadas: {list(configuracoes.keys())}")
+    if LOGS_LEVEL >= 2:
+        print(f"{DEBUG_PREFIX} Configurações carregadas: {list(configuracoes.keys())}")
     loop = asyncio.new_event_loop()
     try:
         asyncio.set_event_loop(loop)
@@ -121,7 +169,8 @@ def _carregar_configuracoes() -> Dict[str, Any]:
 
     with CONFIG_PATH.open("r", encoding="utf-8") as config_file:
         configuracoes = json.load(config_file)
-        print(f"{DEBUG_PREFIX} Conteúdo do arquivo de configuração carregado.")
+        if LOGS_LEVEL >= 2:
+            print(f"{DEBUG_PREFIX} Conteúdo do arquivo de configuração carregado.")
         return configuracoes
 
 
@@ -130,7 +179,14 @@ async def _coletar_status_async(configuracoes: Dict[str, Any]) -> List[Dict[str,
 
     for nome_usina, dados_usina in configuracoes.items():
         dispositivos = (dados_usina or {}).get("dispositivos") or {}
+        if LOGS_LEVEL >= 2:
+            print(f"{DEBUG_PREFIX} Usina '{nome_usina}' possui {len(dispositivos)} dispositivo(s)")
+        
         for nome_dispositivo, dados_dispositivo in dispositivos.items():
+            if LOGS_LEVEL >= 2:
+                conexao = (dados_dispositivo or {}).get("conexao") or {}
+                print(f"{DEBUG_PREFIX} Criando tarefa para '{nome_usina}' - '{nome_dispositivo}' (IP: {conexao.get('ip', 'N/A')})")
+            
             tarefas.append(
                 _ler_status_dispositivo(
                     nome_usina,
@@ -143,12 +199,17 @@ async def _coletar_status_async(configuracoes: Dict[str, Any]) -> List[Dict[str,
     if not tarefas:
         return []
 
+    if LOGS_LEVEL >= 2:
+        print(f"{DEBUG_PREFIX} Total de tarefas criadas: {len(tarefas)}")
+
     resultados = await asyncio.gather(*tarefas, return_exceptions=True)
     consolidados: Dict[str, Dict[str, Any]] = {}
 
     for resultado in resultados:
         if isinstance(resultado, Exception):
-            print(f"[SOCKET][status_usina] Erro ao ler dispositivo: {resultado}")  # noqa: T201
+            detalhe_erro = _detalhar_exception(resultado)
+            if LOGS_LEVEL >= 2:
+                print(f"[SOCKET][status_usina] Erro ao ler dispositivo: {detalhe_erro}")
             continue
 
         slug = resultado["usina_slug"]
@@ -194,31 +255,35 @@ async def _ler_status_dispositivo(
     conexao = (dados_dispositivo or {}).get("conexao") or {}
 
     if not conexao.get("ip") or not conexao.get("port"):
-        print(
-            f"{DEBUG_PREFIX} Conexão ausente para usina='{nome_usina}', dispositivo='{nome_dispositivo}'."
-        )
+        if LOGS_LEVEL >= 2:
+            print(
+                f"{DEBUG_PREFIX} Conexão ausente para usina='{nome_usina}', dispositivo='{nome_dispositivo}'."
+            )
         return {
             "usina_nome": nome_usina,
             "usina_slug": slug_usina,
             "dispositivo_nome": nome_dispositivo,
-            "status": "parada",
+            "status": "sem_conexao",
             "valores": {},
+            "descricao": "Sem conexão",
             "tempo_leitura": 0.0,
             "erro": "Dados de conexão ausentes.",
         }
 
     registradores_boolean = _extrair_registradores_boolean(dados_dispositivo)
     if not registradores_boolean:
-        print(
-            f"{DEBUG_PREFIX} Nenhum registrador BOOLEAN configurado para "
-            f"usina='{nome_usina}', dispositivo='{nome_dispositivo}'."
-        )
+        if LOGS_LEVEL >= 2:
+            print(
+                f"{DEBUG_PREFIX} Nenhum registrador BOOLEAN configurado para "
+                f"usina='{nome_usina}', dispositivo='{nome_dispositivo}'."
+            )
         return {
             "usina_nome": nome_usina,
             "usina_slug": slug_usina,
             "dispositivo_nome": nome_dispositivo,
             "status": "parada",
             "valores": {},
+            "descricao": "Status não disponível",
             "tempo_leitura": 0.0,
             "erro": "Nenhum registrador BOOLEAN configurado.",
         }
@@ -229,36 +294,63 @@ async def _ler_status_dispositivo(
         "tipo": "leituras",
     }
 
+    # Novo formato da API: registers é um dicionário plano
     dados_leitura = {
         "conexao": {
             "ip": conexao.get("ip"),
             "port": conexao.get("port"),
             "timeout": conexao.get("timeout", DEFAULT_TIMEOUT),
         },
-        "leituras": {
-            "BOOLEAN": registradores_boolean,
-        },
+        "registers": registradores_boolean,
     }
 
     try:
-        resultado, tempo = await get_data(config_api, dados_leitura)
+        resultado, tempo = await get_data(config_api, dados_leitura, nome_usina, nome_dispositivo)
+        
+        if LOGS_LEVEL >= 3:
+            print(f"{DEBUG_PREFIX} Resultado da leitura para '{nome_usina} - {nome_dispositivo}': {resultado}")
     except Exception as exc:
+        # Detecta se é erro de conexão baseado na mensagem de erro
+        erro_str = str(exc)
+        detalhe_erro = _detalhar_exception(exc)
+        if LOGS_LEVEL >= 2:
+            print(
+                f"{DEBUG_PREFIX} Erro ao ler dispositivo '{nome_dispositivo}' "
+                f"da usina '{nome_usina}': {detalhe_erro}"
+            )
+        if "Falha ao conectar" in erro_str or "Timeout" in erro_str or "ConnectError" in erro_str:
+            status_erro = "sem_conexao"
+            descricao_erro = "Sem conexão"
+        else:
+            status_erro = "parada"
+            descricao_erro = "Erro de comunicação"
+        
         return {
             "usina_nome": nome_usina,
             "usina_slug": slug_usina,
             "dispositivo_nome": nome_dispositivo,
-            "status": "parada",
+            "status": status_erro,
             "valores": {},
+            "descricao": descricao_erro,
             "tempo_leitura": 0.0,
-            "erro": str(exc),
+            "erro": detalhe_erro,
         }
 
     valores_boolean = {}
     if isinstance(resultado, dict):
+        # O readRT.py retorna no formato {TIPO: {nome: valor}}
+        # Extrair os valores BOOLEAN
         valores_boolean = resultado.get("BOOLEAN") or {}
+        
+        if LOGS_LEVEL >= 2:
+            print(f"{DEBUG_PREFIX} Resultado completo para '{nome_usina} - {nome_dispositivo}': {resultado}")
+            print(f"{DEBUG_PREFIX} Valores BOOLEAN extraídos: {valores_boolean}")
 
     status = _determinar_status(valores_boolean)
     descricao = _obter_label_status(valores_boolean)
+    
+    if LOGS_LEVEL >= 2:
+        print(f"{DEBUG_PREFIX} Status determinado para '{nome_usina} - {nome_dispositivo}': {status} - {descricao}")
 
     return {
         "usina_nome": nome_usina,
@@ -273,9 +365,19 @@ async def _ler_status_dispositivo(
 
 
 def _extrair_registradores_boolean(dados_dispositivo: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Extrai apenas os registradores BOOLEAN das leituras do dispositivo.
+    Formato esperado no JSON: {"nome_var": [endereco, "TIPO", {opts}]}
+    """
     leituras = (dados_dispositivo or {}).get("leituras") or {}
-    booleanos = leituras.get("BOOLEAN") or {}
-    return dict(booleanos)
+    
+    # Filtrar apenas registradores que são BOOLEAN
+    booleanos = {}
+    for nome_var, config in leituras.items():
+        if isinstance(config, list) and len(config) >= 2 and config[1] == "BOOLEAN":
+            booleanos[nome_var] = config
+    
+    return booleanos
 
 
 def _priorizar_status(atual: str, novo: str) -> str:

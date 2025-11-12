@@ -8,7 +8,7 @@ from libs.models.utils.mock_data import (
     get_ocorrencias_por_usina,
     get_timeline_vertedouro
 )
-from libs.models.utils.utils import desempenho
+from libs.controllers.decorador import desempenho
 import json
 
 class UsinasController:
@@ -17,6 +17,7 @@ class UsinasController:
         self.usinas = None if DEVELOPER_MODE else Read("op_usina")
         self.ocorrencias = None if DEVELOPER_MODE else Read("op_ocorrencia")
     
+    @desempenho
     def _decode_metadata(self, ocorrencias):
         """Decodifica o campo metadata JSON para cada ocorrência"""
         for ocorrencia in ocorrencias:

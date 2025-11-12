@@ -3,7 +3,7 @@ from flask import render_template, request, jsonify
 from libs.models.read import Read
 from libs.models.create import Create
 from libs.models.utils.mock_data import DEVELOPER_MODE, get_mock_data
-from libs.models.utils.utils import desempenho
+from libs.controllers.decorador import desempenho
 import json
 from datetime import datetime
 

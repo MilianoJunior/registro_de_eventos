@@ -22,7 +22,63 @@ Reduzir paradas e custo operacional em CGHs/PCHs transformando sinais e registro
 
 ### 🏠 Página - Home
 
-**Descrição:** Página principal que mostra uma visão geral e contém no máximo 6 usinas, divididas em 2 linhas e 3 colunas de forma responsiva. Será feito um roteamento dessa página home para mostrar mais usinas em outras páginas pelo navegador.
+**Descrição:** Página principal que mostra uma visão geral e contém no máximo 6 usinas, divididas em 2 linhas e 3 colunas de forma responsiva. Será feito um roteamento dessa página home para mostrar mais usinas em outras páginas pelo navegador. É composta
+
+#### Componentes que Compoem a página Home
+
+##### 1 Sidebar Lateral
+**Descrição:** Possibilita o acesso as paginas de Visão geral(Home), Registro de Eventos, Configurar Usinas e página individual de cada usina.
+
+##### 2 Menu Superior
+
+##### 3 Lista Cards Gerais
+
+##### 4 Alerta de ocorrências críticas
+
+##### 4 Status das Usinas
+
+##### 5 Ocorrências
+
+#### Funções em Javascript usadas na página Home
+
+##### Funções herdadas de base.html (Socket.IO Core)
+
+1. **`socket.on('connect')`** - Event listener que dispara quando Socket.IO estabelece conexão com o servidor. Registra log detalhado com Socket ID e status de conexão no console
+
+2. **`socket.on('disconnect')`** - Event listener que dispara quando Socket.IO perde conexão com o servidor. Emite warning no console para monitoramento de desconexões
+
+3. **`socket.on('connect_error')`** - Event listener que captura erros durante tentativas de conexão Socket.IO. Registra erro detalhado no console para debugging
+
+4. **`socket.on('file_changed')`** - Event listener para hot-reload em desenvolvimento. Recarrega a página automaticamente quando detecta mudanças em arquivos do servidor
+
+5. **`socket.on('resultado_teste_leitura')`** - Event listener que processa respostas de testes de leitura de dispositivos Modbus TCP. Atualiza DOM com valores lidos (REAL, BOOLEAN) e exibe timestamp, tratando sucesso e erro de forma diferenciada
+
+6. **`themeToggle.addEventListener('click')`** - Event listener do botão de alternância de tema (dark/light mode). Toggle de classes CSS e persistência da preferência em localStorage
+
+##### Funções específicas de home.html (Status das Usinas)
+
+7. **`initStatusUsinas()`** - Função principal que inicializa todo o módulo de atualização de status das usinas. Define constantes, registra funções auxiliares e orquestra o fluxo de execução
+
+8. **`getColorByDescription(descricao)`** - Recebe uma string de descrição de status e retorna o objeto de cores correspondente (background, text, dot) do mapeamento STATUS_COLORS_MAP. Faz matching case-insensitive com palavras-chave
+
+9. **`renderBadge(dispositivos)`** - Renderiza badges visuais de status dos dispositivos. Recebe array de dispositivos e retorna HTML string com spans estilizados (Tailwind) para cada dispositivo, mostrando nome e descrição com cores apropriadas
+
+10. **`renderStatusDetalhes(dispositivos)`** - Gera HTML detalhado para exibição de status dos dispositivos. Formata informações de nome e descrição de cada dispositivo em divs com classes de texto, incluindo logs de debug
+
+11. **`applyStatus(slug, dispositivos)`** - Aplica os dados de status recebidos aos elementos DOM correspondentes. Localiza elementos pelo atributo data-usina-key e atualiza tanto os badges quanto os detalhes de status
+
+12. **`handleStatusPayload(payload)`** - Processa os dados recebidos do evento Socket.IO 'status_usinas_dados'. Valida o payload, extrai array de usinas, coleta métricas de status e chama applyStatus para cada usina
+
+13. **`solicitarStatus(socketInstance)`** - Envia solicitação de atualização de status ao servidor via Socket.IO. Implementa throttle de 5 segundos (THROTTLE_MS) para evitar requisições excessivas e registra logs detalhados
+
+14. **`setup()`** - Configura todo o sistema Socket.IO após garantir que o socket está disponível. Registra event listeners, cria intervalo automático de 30 segundos, implementa cleanup de recursos e faz solicitação inicial
+
+15. **`verificarSocket()`** - Função aninhada dentro de setup() que tenta localizar window.socket com retry automático. Executa até 50 tentativas com intervalo de 400ms entre cada tentativa antes de abortar
+
+16. **`solicitar(tipo)`** - Função arrow anônima que serve como wrapper para solicitarStatus(). Registra log com timestamp e tipo de solicitação (manual, automático, inicial) antes de executar a solicitação
+
+
+
 
 #### KPI - Key Performance Indicator (Indicador chave de desempenho)
 

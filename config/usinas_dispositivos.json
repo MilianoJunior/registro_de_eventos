@@ -14,90 +14,80 @@
           "velocidade máxima": 450
         },
         "leituras": {
-          "INT": {
-            "Potência Ativa": 13407
-          },
-          "BOOLEAN": {
-            "Status U.P. (parada)": 20326,
-            "Status U.P.G.M. (pronta para giro mecânico)": 20327,
-            "Status U.P.S.(pronta para sincronização)": 20328,
-            "Status U.M.D.(sincronizado)": 20329,
-            "Status sincronizado": 20330
-          }
+          "Potência Ativa": [13407,"INT"],
+          "Status U.P. (parada)": [20326,"BOOLEAN",{"offset": -1}],
+          "Status U.P.G.M. (pronta para giro mecânico)": [20327,"BOOLEAN",{"offset": -1}],
+          "Status U.P.S.(pronta para sincronização)": [20328,"BOOLEAN",{"offset": -1}],
+          "Status U.M.D.(sincronizado)": [20329,"BOOLEAN",{"offset": -1}],
+          "Status sincronizado": [20330,"BOOLEAN",{"offset": -1}]
         },
         "temperaturas": {
-          "REAL": {
-            "Enrolamento Fase A alarmes": 13989,
-            "Enrolamento Fase A trip": 13925,
-            "Enrolamento Fase A value": 13469,
-            "Enrolamento Fase B alarmes": 13991,
-            "Enrolamento Fase B trip": 13927,
-            "Enrolamento Fase B value": 13471,
-            "Enrolamento Fase C alarmes": 13993,
-            "Enrolamento Fase C trip": 13929,
-            "Enrolamento Fase C value": 13473,
-            "Manc. Casq. Rad. Guia alarmes": 14001,
-            "Manc. Casq. Rad. Guia trip": 13937,
-            "Manc. Casq. Rad. Guia value": 13481,
-            "Mancal Comb. Casq alarmes": 14003,
-            "Mancal Comb. Casq trip": 13939,
-            "Mancal Comb. Casq value": 13483,
-            "Mancal Comb. Contra Esc. alarmes": 14007,
-            "Mancal Comb. Contra Esc. trip": 13943,
-            "Mancal Comb. Contra Esc. value": 13487,
-            "Mancal Comb. Esc. alarmes": 14005,
-            "Mancal Comb. Esc. trip": 13941,
-            "Mancal Comb. Esc. value": 13485,
-            "Mancal Guia Casq. Turb. alarmes": 14009,
-            "Mancal Guia Casq. Turb. trip": 13945,
-            "Mancal Guia Casq. Turb. value": 13489,
-            "Nucleo Estator 1 alarmes": 13995,
-            "Nucleo Estator 1 trip": 13931,
-            "Nucleo Estator 1 value": 13475,
-            "Nucleo Estator 2 alarmes": 13997,
-            "Nucleo Estator 2 trip": 13933,
-            "Nucleo Estator 2 value": 13477,
-            "Nucleo Estator 3 alarmes": 13999,
-            "Nucleo Estator 3 trip": 13935,
-            "Nucleo Estator 3 value": 13479,
-            "Resistor Crowbar 1 alarmes": 13983,
-            "Resistor Crowbar 1 trip": 13919,
-            "Resistor Crowbar 1 value": 13461,
-            "Resistor Crowbar 2 alarmes": 13411,
-            "Resistor Crowbar 2 trip": 13497,
-            "Resistor Crowbar 2 value": 13491,
-            "Tiristor 1 alarmes": 13975,
-            "Tiristor 1 trip": 13911,
-            "Tiristor 1 value": 13455,
-            "Tiristor 2 alarmes": 13977,
-            "Tiristor 2 trip": 13913,
-            "Tiristor 2 value": 13457,
-            "Tiristor 3 alarmes": 13979,
-            "Tiristor 3 trip": 13915,
-            "Tiristor 3 value": 13459,
-            "Transf. Exitação alarmes": 13983,
-            "Transf. Exitação trip": 13919,
-            "Transf. Exitação value": 13463,
-            "Óleo U.H.L.M. alarmes": 13987,
-            "Óleo U.H.L.M. trip": 13923,
-            "Óleo U.H.L.M. value": 13467,
-            "Óleo U.H.R.V. alarmes": 13985,
-            "Óleo U.H.R.V. trip": 13921,
-            "Óleo U.H.R.V. value": 13465
-          }
+          "Enrolamento Fase A alarmes": [13989,"REAL",{"offset": -1}],
+          "Enrolamento Fase A trip": [13925,"REAL",{"offset": -1}],
+          "Enrolamento Fase A value": [13469,"REAL",{"offset": -1}],
+          "Enrolamento Fase B alarmes": [13991,"REAL",{"offset": -1}],
+          "Enrolamento Fase B trip": [13927,"REAL",{"offset": -1}],
+          "Enrolamento Fase B value": [13471,"REAL",{"offset": -1}],
+          "Enrolamento Fase C alarmes": [13993,"REAL",{"offset": -1}],
+          "Enrolamento Fase C trip": [13929,"REAL",{"offset": -1}],
+          "Enrolamento Fase C value": [13473,"REAL",{"offset": -1}],
+          "Manc. Casq. Rad. Guia alarmes": [14001,"REAL",{"offset": -1}],
+          "Manc. Casq. Rad. Guia trip": [13937,"REAL",{"offset": -1}],
+          "Manc. Casq. Rad. Guia value": [13481,"REAL",{"offset": -1}],
+          "Mancal Comb. Casq alarmes": [14003,"REAL",{"offset": -1}],
+          "Mancal Comb. Casq trip": [13939,"REAL",{"offset": -1}],
+          "Mancal Comb. Casq value": [13483,"REAL",{"offset": -1}],
+          "Mancal Comb. Contra Esc. alarmes": [14007,"REAL",{"offset": -1}],
+          "Mancal Comb. Contra Esc. trip": [13943,"REAL",{"offset": -1}],
+          "Mancal Comb. Contra Esc. value": [13487,"REAL",{"offset": -1}],
+          "Mancal Comb. Esc. alarmes": [14005,"REAL",{"offset": -1}],
+          "Mancal Comb. Esc. trip": [13941,"REAL",{"offset": -1}],
+          "Mancal Comb. Esc. value": [13485,"REAL",{"offset": -1}],
+          "Mancal Guia Casq. Turb. alarmes": [14009,"REAL",{"offset": -1}],
+          "Mancal Guia Casq. Turb. trip": [13945,"REAL",{"offset": -1}],
+          "Mancal Guia Casq. Turb. value": [13489,"REAL",{"offset": -1}],
+          "Nucleo Estator 1 alarmes": [13995,"REAL",{"offset": -1}],
+          "Nucleo Estator 1 trip": [13931,"REAL",{"offset": -1}],
+          "Nucleo Estator 1 value": [13475,"REAL",{"offset": -1}],
+          "Nucleo Estator 2 alarmes": [13997,"REAL",{"offset": -1}],
+          "Nucleo Estator 2 trip": [13933,"REAL",{"offset": -1}],
+          "Nucleo Estator 2 value": [13477,"REAL",{"offset": -1}],
+          "Nucleo Estator 3 alarmes": [13999,"REAL",{"offset": -1}],
+          "Nucleo Estator 3 trip": [13935,"REAL",{"offset": -1}],
+          "Nucleo Estator 3 value": [13479,"REAL",{"offset": -1}],
+          "Resistor Crowbar 1 alarmes": [13983,"REAL",{"offset": -1}],
+          "Resistor Crowbar 1 trip": [13919,"REAL",{"offset": -1}],
+          "Resistor Crowbar 1 value": [13461,"REAL",{"offset": -1}],
+          "Resistor Crowbar 2 alarmes": [13411,"REAL",{"offset": -1}],
+          "Resistor Crowbar 2 trip": [13497,"REAL",{"offset": -1}],
+          "Resistor Crowbar 2 value": [13491,"REAL",{"offset": -1}],
+          "Tiristor 1 alarmes": [13975,"REAL",{"offset": -1}],
+          "Tiristor 1 trip": [13911,"REAL",{"offset": -1}],
+          "Tiristor 1 value": [13455,"REAL",{"offset": -1}],
+          "Tiristor 2 alarmes": [13977,"REAL",{"offset": -1}],
+          "Tiristor 2 trip": [13913,"REAL",{"offset": -1}],
+          "Tiristor 2 value": [13457,"REAL",{"offset": -1}],
+          "Tiristor 3 alarmes": [13979,"REAL",{"offset": -1}],
+          "Tiristor 3 trip": [13915,"REAL",{"offset": -1}],
+          "Tiristor 3 value": [13459,"REAL",{"offset": -1}],
+          "Transf. Exitação alarmes": [13983,"REAL",{"offset": -1}],
+          "Transf. Exitação trip": [13919,"REAL",{"offset": -1}],
+          "Transf. Exitação value": [13463,"REAL",{"offset": -1}],
+          "Óleo U.H.L.M. alarmes": [13987,"REAL",{"offset": -1}],
+          "Óleo U.H.L.M. trip": [13923,"REAL",{"offset": -1}],
+          "Óleo U.H.L.M. value": [13467,"REAL",{"offset": -1}],
+          "Óleo U.H.R.V. alarmes": [13985,"REAL",{"offset": -1}],
+          "Óleo U.H.R.V. trip": [13921,"REAL",{"offset": -1}],
+          "Óleo U.H.R.V. value": [13465,"REAL",{"offset": -1}]
         },
         "alarmes": {
-          "BOOLEAN": {
-            "[01.00] - PCP-U1 - Botão de Emergência Acionado": 24289,
-            "[01.01] - PCP-U1 - Botão de Emergência Acionado - SuperSEP": 24290
-          }
+          "[01.00] - PCP-U1 - Botão de Emergência Acionado": [24289,"BOOLEAN",{"offset": -1}],
+          "[01.01] - PCP-U1 - Botão de Emergência Acionado - SuperSEP": [24290,"BOOLEAN",{"offset": -1}]
         },
         "comandos": {
-          "BOOLEAN": {
-            "CalaSirene SuperSEP": 12852,
-            "Reset SuperSEP": 12850,
-            "Reset local": 12849
-          }
+          "CalaSirene SuperSEP": [12852,"BOOLEAN",{"offset": -1}],
+          "Reset SuperSEP": [12850,"BOOLEAN",{"offset": -1}],
+          "Reset local": [12849,"BOOLEAN",{"offset": -1}]
         }
       }
     }
@@ -117,78 +107,66 @@
           "velocidade máxima": 415
         },
         "leituras": {
-          "REAL": {
-            "Potência Ativa": 13407
-          },
-          "BOOLEAN": {
-            "Status U.P. (parada)": 20326,
-            "Status U.P.G.M. (pronta para giro mecânico)": 20327,
-            "Status U.P.S.(pronta para sincronização)": 20328,
-            "Status U.M.D.(sincronizado)": 20329,
-            "Status sincronizado": 20330
-          }
+          "Potência Ativa": [13407,"REAL",{"offset": -1}],
+          "Status U.P. (parada)": [20326,"BOOLEAN",{"offset": -1}],
+          "Status U.P.G.M. (pronta para giro mecânico)": [20327,"BOOLEAN",{"offset": -1}],
+          "Status U.P.S.(pronta para sincronização)": [20328,"BOOLEAN",{"offset": -1}],
+          "Status U.M.D.(sincronizado)": [20329,"BOOLEAN",{"offset": -1}],
+          "Status sincronizado": [20330,"BOOLEAN",{"offset": -1}]
         },
         "temperaturas": {
-          "REAL": {
-            "Enrolamento Fase A alarmes": 13975,
-            "Enrolamento Fase A trip": 13911,
-            "Enrolamento Fase A value": 13455,
-            "Enrolamento Fase B alarmes": 13977,
-            "Enrolamento Fase B trip": 13913,
-            "Enrolamento Fase B value": 13457,
-            "Enrolamento Fase C alarmes": 13979,
-            "Enrolamento Fase C trip": 13915,
-            "Enrolamento Fase C value": 13459,
-            "Mancal Combinado alarmes": 13985,
-            "Mancal Combinado trip": 13921,
-            "Mancal Combinado value": 13465,
-            "Mancal Escora alarmes": 13987,
-            "Mancal Escora trip": 13923,
-            "Mancal Escora value": 13467,
-            "Mancal Guia alarmes": 13983,
-            "Mancal Guia trip": 13919,
-            "Mancal Guia value": 13463,
-            "Nucleo do estator alarmes": 13981,
-            "Nucleo do estator trip": 13917,
-            "Nucleo do estator value": 13461,
-            "Óleo U.H.L.M. alarmes": 13991,
-            "Óleo U.H.L.M. trip": 13927,
-            "Óleo U.H.L.M. value": 13471,
-            "Óleo U.H.R.V. alarmes": 13989,
-            "Óleo U.H.R.V. trip": 13925,
-            "Óleo U.H.R.V. value": 13469
-          }
+          "Enrolamento Fase A alarmes": [13975,"REAL",{"offset": -1}],
+          "Enrolamento Fase A trip": [13911,"REAL",{"offset": -1}],
+          "Enrolamento Fase A value": [13455,"REAL",{"offset": -1}],
+          "Enrolamento Fase B alarmes": [13977,"REAL",{"offset": -1}],
+          "Enrolamento Fase B trip": [13913,"REAL",{"offset": -1}],
+          "Enrolamento Fase B value": [13457,"REAL",{"offset": -1}],
+          "Enrolamento Fase C alarmes": [13979,"REAL",{"offset": -1}],
+          "Enrolamento Fase C trip": [13915,"REAL",{"offset": -1}],
+          "Enrolamento Fase C value": [13459,"REAL",{"offset": -1}],
+          "Mancal Combinado alarmes": [13985,"REAL",{"offset": -1}],
+          "Mancal Combinado trip": [13921,"REAL",{"offset": -1}],
+          "Mancal Combinado value": [13465,"REAL",{"offset": -1}],
+          "Mancal Escora alarmes": [13987,"REAL",{"offset": -1}],
+          "Mancal Escora trip": [13923,"REAL",{"offset": -1}],
+          "Mancal Escora value": [13467,"REAL",{"offset": -1}],
+          "Mancal Guia alarmes": [13983,"REAL",{"offset": -1}],
+          "Mancal Guia trip": [13919,"REAL",{"offset": -1}],
+          "Mancal Guia value": [13463,"REAL",{"offset": -1}],
+          "Nucleo do estator alarmes": [13981,"REAL",{"offset": -1}],
+          "Nucleo do estator trip": [13917,"REAL",{"offset": -1}],
+          "Nucleo do estator value": [13461,"REAL",{"offset": -1}],
+          "Óleo U.H.L.M. alarmes": [13991,"REAL",{"offset": -1}],
+          "Óleo U.H.L.M. trip": [13927,"REAL",{"offset": -1}],
+          "Óleo U.H.L.M. value": [13471,"REAL",{"offset": -1}],
+          "Óleo U.H.R.V. alarmes": [13989,"REAL",{"offset": -1}],
+          "Óleo U.H.R.V. trip": [13925,"REAL",{"offset": -1}],
+          "Óleo U.H.R.V. value": [13469,"REAL",{"offset": -1}]
         },
         "alarmes": {
-          "BOOLEAN": {
-            "[01.00] - PCP-U1 - Botão de Emergência Acionado": 24289,
-            "[01.01] - PCP-U1 - Botão de Emergência Acionado - SuperSEP": 24290
-          }
+          "[01.00] - PCP-U1 - Botão de Emergência Acionado": [24289,"BOOLEAN",{"offset": -1}],
+          "[01.01] - PCP-U1 - Botão de Emergência Acionado - SuperSEP": [24290,"BOOLEAN",{"offset": -1}]
         },
         "comandos": {
-          "BOOLEAN": {
-            "CalaSirene SuperSEP": 12532,
-            "Reset SuperSEP": 12529
-          }
+          "CalaSirene SuperSEP": [12532,"BOOLEAN",{"offset": -1}],
+          "Reset SuperSEP": [12529,"BOOLEAN",{"offset": -1}]
         },
         "vibrações": {
-          "REAL": {
-            "Vib. Mancal Comb. X alarmes": 13987,
-            "Vib. Mancal Comb. X trip": 13923,
-            "Vib. Mancal Comb. X value": 13467,
-            "Vib. Mancal Comb. Y alarmes": 13989,
-            "Vib. Mancal Comb. Y trip": 13925,
-            "Vib. Mancal Comb. Y value": 13469,
-            "Vib. Mancal Comb. Z alarmes": 13991,
-            "Vib. Mancal Comb. Z trip": 13927,
-            "Vib. Mancal Comb. Z value": 13471,
-            "Vib. Mancal Guia X alarmes": 13983,
-            "Vib. Mancal Guia X trip": 13919,
-            "Vib. Mancal Guia X value": 13463,
-            "Vib. Mancal Guia Y alarmes": 13985,
-            "Vib. Mancal Guia Y trip": 13921,
-            "Vib. Mancal Guia Y value": 13465
-          }
+          "Vib. Mancal Comb. X alarmes": [13987,"REAL",{"offset": -1}],
+          "Vib. Mancal Comb. X trip": [13923,"REAL",{"offset": -1}],
+          "Vib. Mancal Comb. X value": [13467,"REAL",{"offset": -1}],
+          "Vib. Mancal Comb. Y alarmes": [13989,"REAL",{"offset": -1}],
+          "Vib. Mancal Comb. Y trip": [13925,"REAL",{"offset": -1}],
+          "Vib. Mancal Comb. Y value": [13469,"REAL",{"offset": -1}],
+          "Vib. Mancal Comb. Z alarmes": [13991,"REAL",{"offset": -1}],
+          "Vib. Mancal Comb. Z trip": [13927,"REAL",{"offset": -1}],
+          "Vib. Mancal Comb. Z value": [13471,"REAL",{"offset": -1}],
+          "Vib. Mancal Guia X alarmes": [13983,"REAL",{"offset": -1}],
+          "Vib. Mancal Guia X trip": [13919,"REAL",{"offset": -1}],
+          "Vib. Mancal Guia X value": [13463,"REAL",{"offset": -1}],
+          "Vib. Mancal Guia Y alarmes": [13985,"REAL",{"offset": -1}],
+          "Vib. Mancal Guia Y trip": [13921,"REAL",{"offset": -1}],
+          "Vib. Mancal Guia Y value": [13465,"REAL",{"offset": -1}]
         }
       },
       "UG-02": {
@@ -201,65 +179,55 @@
           "velocidade máxima": 800
         },
         "leituras": {
-          "REAL": {
-            "Potência Ativa": 13407
-          },
-          "BOOLEAN": {
-            "Status U.P. (parada)": 20326,
-            "Status U.P.G.M. (pronta para giro mecânico)": 20327,
-            "Status U.P.S.(pronta para sincronização)": 20328,
-            "Status U.M.D.(sincronizado)": 20329,
-            "Status sincronizado": 20330
-          }
+          "Potência Ativa": [13407,"REAL",{"offset": -1}],
+          "Status U.P. (parada)": [20326,"BOOLEAN",{"offset": -1}],
+          "Status U.P.G.M. (pronta para giro mecânico)": [20327,"BOOLEAN",{"offset": -1}],
+          "Status U.P.S.(pronta para sincronização)": [20328,"BOOLEAN",{"offset": -1}],
+          "Status U.M.D.(sincronizado)": [20329,"BOOLEAN",{"offset": -1}],
+          "Status sincronizado": [20330,"BOOLEAN",{"offset": -1}]
         },
         "temperaturas": {
-          "REAL": {
-            "CSS-U1 alarmes": 13995,
-            "CSS-U1 trip": 13931,
-            "CSS-U1 value": 13475,
-            "ENGEXC alarmes": 13997,
-            "ENGEXC trip": 13933,
-            "ENGEXC value": 13475,
-            "Enrolamento Fase A alarmes": 13975,
-            "Enrolamento Fase A trip": 13911,
-            "Enrolamento Fase A value": 13455,
-            "Enrolamento Fase B alarmes": 13977,
-            "Enrolamento Fase B trip": 13913,
-            "Enrolamento Fase B value": 13457,
-            "Enrolamento Fase C alarmes": 13979,
-            "Enrolamento Fase C trip": 13915,
-            "Enrolamento Fase C value": 13459,
-            "Mancal Combinado alarmes": 13985,
-            "Mancal Combinado trip": 13921,
-            "Mancal Combinado value": 13465,
-            "Mancal Escora alarmes": 13987,
-            "Mancal Escora trip": 13923,
-            "Mancal Escora value": 13467,
-            "Mancal Guia alarmes": 13983,
-            "Mancal Guia trip": 13919,
-            "Mancal Guia value": 13463,
-            "Nucleo do estator alarmes": 13981,
-            "Nucleo do estator trip": 13917,
-            "Nucleo do estator value": 13461,
-            "Óleo U.H.L.M. alarmes": 13991,
-            "Óleo U.H.L.M. trip": 13927,
-            "Óleo U.H.L.M. value": 13471,
-            "Óleo U.H.R.V. alarmes": 13989,
-            "Óleo U.H.R.V. trip": 13925,
-            "Óleo U.H.R.V. value": 13469
-          }
+          "CSS-U1 alarmes": [13995,"REAL",{"offset": -1}],
+          "CSS-U1 trip": [13931,"REAL",{"offset": -1}],
+          "CSS-U1 value": [13475,"REAL",{"offset": -1}],
+          "ENGEXC alarmes": [13997,"REAL",{"offset": -1}],
+          "ENGEXC trip": [13933,"REAL",{"offset": -1}],
+          "ENGEXC value": [13475,"REAL",{"offset": -1}],
+          "Enrolamento Fase A alarmes": [13975,"REAL",{"offset": -1}],
+          "Enrolamento Fase A trip": [13911,"REAL",{"offset": -1}],
+          "Enrolamento Fase A value": [13455,"REAL",{"offset": -1}],
+          "Enrolamento Fase B alarmes": [13977,"REAL",{"offset": -1}],
+          "Enrolamento Fase B trip": [13913,"REAL",{"offset": -1}],
+          "Enrolamento Fase B value": [13457,"REAL",{"offset": -1}],
+          "Enrolamento Fase C alarmes": [13979,"REAL",{"offset": -1}],
+          "Enrolamento Fase C trip": [13915,"REAL",{"offset": -1}],
+          "Enrolamento Fase C value": [13459,"REAL",{"offset": -1}],
+          "Mancal Combinado alarmes": [13985,"REAL",{"offset": -1}],
+          "Mancal Combinado trip": [13921,"REAL",{"offset": -1}],
+          "Mancal Combinado value": [13465,"REAL",{"offset": -1}],
+          "Mancal Escora alarmes": [13987,"REAL",{"offset": -1}],
+          "Mancal Escora trip": [13923,"REAL",{"offset": -1}],
+          "Mancal Escora value": [13467,"REAL",{"offset": -1}],
+          "Mancal Guia alarmes": [13983,"REAL",{"offset": -1}],
+          "Mancal Guia trip": [13919,"REAL",{"offset": -1}],
+          "Mancal Guia value": [13463,"REAL",{"offset": -1}],
+          "Nucleo do estator alarmes": [13981,"REAL",{"offset": -1}],
+          "Nucleo do estator trip": [13917,"REAL",{"offset": -1}],
+          "Nucleo do estator value": [13461,"REAL",{"offset": -1}],
+          "Óleo U.H.L.M. alarmes": [13991,"REAL",{"offset": -1}],
+          "Óleo U.H.L.M. trip": [13927,"REAL",{"offset": -1}],
+          "Óleo U.H.L.M. value": [13471,"REAL",{"offset": -1}],
+          "Óleo U.H.R.V. alarmes": [13989,"REAL",{"offset": -1}],
+          "Óleo U.H.R.V. trip": [13925,"REAL",{"offset": -1}],
+          "Óleo U.H.R.V. value": [13469,"REAL",{"offset": -1}]
         },
         "alarmes": {
-          "BOOLEAN": {
-            "[01.00] - PCP-U1 - Botão de Emergência Acionado": 24289,
-            "[01.01] - PCP-U1 - Botão de Emergência Acionado - SuperSEP": 24290
-          }
+          "[01.00] - PCP-U1 - Botão de Emergência Acionado": [24289,"BOOLEAN",{"offset": -1}],
+          "[01.01] - PCP-U1 - Botão de Emergência Acionado - SuperSEP": [24290,"BOOLEAN",{"offset": -1}]
         },
         "comandos": {
-          "BOOLEAN": {
-            "CalaSirene SuperSEP": 12532,
-            "Reset SuperSEP": 12529
-          }
+          "CalaSirene SuperSEP": [12532,"BOOLEAN",{"offset": -1}],
+          "Reset SuperSEP": [12529,"BOOLEAN",{"offset": -1}]
         }
       }
     }
@@ -279,77 +247,67 @@
           "velocidade máxima": 415
         },
         "leituras": {
-          "REAL": {
-            "Potência Ativa": 13407
-          },
-          "BOOLEAN": {
-            "Status U.P. (parada)": 20326,
-            "Status U.P.G.M. (pronta para giro mecânico)": 20327,
-            "Status U.P.S.(pronta para sincronização)": 20328,
-            "Status U.M.D.(sincronizado)": 20329,
-            "Status sincronizado": 20330
-          }
+          "Potência Ativa": [13407,"REAL",{"offset": -1}],
+          "Status U.P. (parada)": [20326,"BOOLEAN",{"offset": -1}],
+          "Status U.P.G.M. (pronta para giro mecânico)": [20327,"BOOLEAN",{"offset": -1}],
+          "Status U.P.S.(pronta para sincronização)": [20328,"BOOLEAN",{"offset": -1}],
+          "Status U.M.D.(sincronizado)": [20329,"BOOLEAN",{"offset": -1}],
+          "Status sincronizado": [20330,"BOOLEAN",{"offset": -1}]
         },
         "temperaturas": {
-          "REAL": {
-            "CS-01 alarmes": 14003,
-            "CS-01 trip": 13939,
-            "CS-01 value": 13483,
-            "Cont. Esc. Manc. Comb. alarmes": 13991,
-            "Cont. Esc. Manc. Comb. trip": 13927,
-            "Cont. Esc. Manc. Comb. value": 13471,
-            "Enrolamento Fase A alarmes": 13975,
-            "Enrolamento Fase A trip": 13911,
-            "Enrolamento Fase A value": 13455,
-            "Enrolamento Fase B alarmes": 13977,
-            "Enrolamento Fase B trip": 13913,
-            "Enrolamento Fase B value": 13457,
-            "Enrolamento Fase C alarmes": 13979,
-            "Enrolamento Fase C trip": 13915,
-            "Enrolamento Fase C value": 13459,
-            "Mancal Escora Combinado alarmes": 13987,
-            "Mancal Escora Combinado trip": 13923,
-            "Mancal Escora Combinado value": 13467,
-            "Mancal Rad. Comb. L.A. alarmes": 13995,
-            "Mancal Rad. Comb. L.A. trip": 13931,
-            "Mancal Rad. Comb. L.A. value": 13475,
-            "Mancal Rad. Comb. L.N.A. alarmes": 13997,
-            "Mancal Rad. Comb. L.N.A. trip": 13933,
-            "Mancal Rad. Comb. L.N.A. value": 13477,
-            "Mancal Radial Combinado alarmes": 13989,
-            "Mancal Radial Combinado trip": 13925,
-            "Mancal Radial Combinado value": 13469,
-            "Mancal Radial Guia alarmes": 13993,
-            "Mancal Radial Guia trip": 13929,
-            "Mancal Radial Guia value": 13473,
-            "Nucleo do estator alarmes": 13981,
-            "Nucleo do estator trip": 13917,
-            "Nucleo do estator value": 13461,
-            "Vedação do eixo LA alarmes": 13985,
-            "Vedação do eixo LA trip": 13921,
-            "Vedação do eixo LA value": 13465,
-            "Vedação do eixo LNA alarmes": 13983,
-            "Vedação do eixo LNA trip": 13919,
-            "Vedação do eixo LNA value": 13463,
-            "Óleo U.H.L.M. alarmes": 14001,
-            "Óleo U.H.L.M. trip": 13937,
-            "Óleo U.H.L.M. value": 13481,
-            "Óleo U.H.R.V. alarmes": 13999,
-            "Óleo U.H.R.V. trip": 13935,
-            "Óleo U.H.R.V. value": 13479
-          }
+          "CS-01 alarmes": [14003,"REAL",{"offset": -1}],
+          "CS-01 trip": [13939,"REAL",{"offset": -1}],
+          "CS-01 value": [13483,"REAL",{"offset": -1}],
+          "Cont. Esc. Manc. Comb. alarmes": [13991,"REAL",{"offset": -1}],
+          "Cont. Esc. Manc. Comb. trip": [13927,"REAL",{"offset": -1}],
+          "Cont. Esc. Manc. Comb. value": [13471,"REAL",{"offset": -1}],
+          "Enrolamento Fase A alarmes": [13975,"REAL",{"offset": -1}],
+          "Enrolamento Fase A trip": [13911,"REAL",{"offset": -1}],
+          "Enrolamento Fase A value": [13455,"REAL",{"offset": -1}],
+          "Enrolamento Fase B alarmes": [13977,"REAL",{"offset": -1}],
+          "Enrolamento Fase B trip": [13913,"REAL",{"offset": -1}],
+          "Enrolamento Fase B value": [13457,"REAL",{"offset": -1}],
+          "Enrolamento Fase C alarmes": [13979,"REAL",{"offset": -1}],
+          "Enrolamento Fase C trip": [13915,"REAL",{"offset": -1}],
+          "Enrolamento Fase C value": [13459,"REAL",{"offset": -1}],
+          "Mancal Escora Combinado alarmes": [13987,"REAL",{"offset": -1}],
+          "Mancal Escora Combinado trip": [13923,"REAL",{"offset": -1}],
+          "Mancal Escora Combinado value": [13467,"REAL",{"offset": -1}],
+          "Mancal Rad. Comb. L.A. alarmes": [13995,"REAL",{"offset": -1}],
+          "Mancal Rad. Comb. L.A. trip": [13931,"REAL",{"offset": -1}],
+          "Mancal Rad. Comb. L.A. value": [13475,"REAL",{"offset": -1}],
+          "Mancal Rad. Comb. L.N.A. alarmes": [13997,"REAL",{"offset": -1}],
+          "Mancal Rad. Comb. L.N.A. trip": [13933,"REAL",{"offset": -1}],
+          "Mancal Rad. Comb. L.N.A. value": [13477,"REAL",{"offset": -1}],
+          "Mancal Radial Combinado alarmes": [13989,"REAL",{"offset": -1}],
+          "Mancal Radial Combinado trip": [13925,"REAL",{"offset": -1}],
+          "Mancal Radial Combinado value": [13469,"REAL",{"offset": -1}],
+          "Mancal Radial Guia alarmes": [13993,"REAL",{"offset": -1}],
+          "Mancal Radial Guia trip": [13929,"REAL",{"offset": -1}],
+          "Mancal Radial Guia value": [13473,"REAL",{"offset": -1}],
+          "Nucleo do estator alarmes": [13981,"REAL",{"offset": -1}],
+          "Nucleo do estator trip": [13917,"REAL",{"offset": -1}],
+          "Nucleo do estator value": [13461,"REAL",{"offset": -1}],
+          "Vedação do eixo LA alarmes": [13985,"REAL",{"offset": -1}],
+          "Vedação do eixo LA trip": [13921,"REAL",{"offset": -1}],
+          "Vedação do eixo LA value": [13465,"REAL",{"offset": -1}],
+          "Vedação do eixo LNA alarmes": [13983,"REAL",{"offset": -1}],
+          "Vedação do eixo LNA trip": [13919,"REAL",{"offset": -1}],
+          "Vedação do eixo LNA value": [13463,"REAL",{"offset": -1}],
+          "Óleo U.H.L.M. alarmes": [14001,"REAL",{"offset": -1}],
+          "Óleo U.H.L.M. trip": [13937,"REAL",{"offset": -1}],
+          "Óleo U.H.L.M. value": [13481,"REAL",{"offset": -1}],
+          "Óleo U.H.R.V. alarmes": [13999,"REAL",{"offset": -1}],
+          "Óleo U.H.R.V. trip": [13935,"REAL",{"offset": -1}],
+          "Óleo U.H.R.V. value": [13479,"REAL",{"offset": -1}]
         },
         "alarmes": {
-          "BOOLEAN": {
-            "[01.00] - PCP-U1 - Botão de Emergência Acionado": 24289,
-            "[01.01] - PCP-U1 - Botão de Emergência Acionado - SuperSEP": 24290
-          }
+          "[01.00] - PCP-U1 - Botão de Emergência Acionado": [24289,"BOOLEAN",{"offset": -1}],
+          "[01.01] - PCP-U1 - Botão de Emergência Acionado - SuperSEP": [24290,"BOOLEAN",{"offset": -1}]
         },
         "comandos": {
-          "BOOLEAN": {
-            "CalaSirene SuperSEP": 12532,
-            "Reset SuperSEP": 12529
-          }
+          "CalaSirene SuperSEP": [12532,"BOOLEAN",{"offset": -1}],
+          "Reset SuperSEP": [12529,"BOOLEAN"]
         }
       },
       "UG-02": {
@@ -362,77 +320,67 @@
           "velocidade máxima": 415
         },
         "leituras": {
-          "REAL": {
-            "Potência Ativa": 13407
-          },
-          "BOOLEAN": {
-            "Status U.P. (parada)": 20326,
-            "Status U.P.G.M. (pronta para giro mecânico)": 20327,
-            "Status U.P.S.(pronta para sincronização)": 20328,
-            "Status U.M.D.(sincronizado)": 20329,
-            "Status sincronizado": 20330
-          }
+          "Potência Ativa": [13407,"REAL",{"offset": -1}],
+          "Status U.P. (parada)": [20326,"BOOLEAN"],
+          "Status U.P.G.M. (pronta para giro mecânico)": [20327,"BOOLEAN"],
+          "Status U.P.S.(pronta para sincronização)": [20328,"BOOLEAN"],
+          "Status U.M.D.(sincronizado)": [20329,"BOOLEAN"],
+          "Status sincronizado": [20330,"BOOLEAN"]
         },
         "temperaturas": {
-          "REAL": {
-            "CS-01 alarmes": 14003,
-            "CS-01 trip": 13939,
-            "CS-01 value": 13483,
-            "Cont. Esc. Manc. Comb. alarmes": 13991,
-            "Cont. Esc. Manc. Comb. trip": 13927,
-            "Cont. Esc. Manc. Comb. value": 13471,
-            "Enrolamento Fase A alarmes": 13975,
-            "Enrolamento Fase A trip": 13911,
-            "Enrolamento Fase A value": 13455,
-            "Enrolamento Fase B alarmes": 13977,
-            "Enrolamento Fase B trip": 13913,
-            "Enrolamento Fase B value": 13457,
-            "Enrolamento Fase C alarmes": 13979,
-            "Enrolamento Fase C trip": 13915,
-            "Enrolamento Fase C value": 13459,
-            "Mancal Escora Combinado alarmes": 13987,
-            "Mancal Escora Combinado trip": 13923,
-            "Mancal Escora Combinado value": 13467,
-            "Mancal Rad. Comb. L.A. alarmes": 13995,
-            "Mancal Rad. Comb. L.A. trip": 13931,
-            "Mancal Rad. Comb. L.A. value": 13475,
-            "Mancal Rad. Comb. L.N.A. alarmes": 13997,
-            "Mancal Rad. Comb. L.N.A. trip": 13933,
-            "Mancal Rad. Comb. L.N.A. value": 13477,
-            "Mancal Radial Combinado alarmes": 13989,
-            "Mancal Radial Combinado trip": 13925,
-            "Mancal Radial Combinado value": 13469,
-            "Mancal Radial Guia alarmes": 13993,
-            "Mancal Radial Guia trip": 13929,
-            "Mancal Radial Guia value": 13473,
-            "Nucleo do estator alarmes": 13981,
-            "Nucleo do estator trip": 13917,
-            "Nucleo do estator value": 13461,
-            "Vedação do eixo LA alarmes": 13985,
-            "Vedação do eixo LA trip": 13921,
-            "Vedação do eixo LA value": 13465,
-            "Vedação do eixo LNA alarmes": 13983,
-            "Vedação do eixo LNA trip": 13919,
-            "Vedação do eixo LNA value": 13463,
-            "Óleo U.H.L.M. alarmes": 14001,
-            "Óleo U.H.L.M. trip": 13937,
-            "Óleo U.H.L.M. value": 13481,
-            "Óleo U.H.R.V. alarmes": 13999,
-            "Óleo U.H.R.V. trip": 13935,
-            "Óleo U.H.R.V. value": 13479
-          }
+          "CS-01 alarmes": [14003,"REAL",{"offset": -1}],
+          "CS-01 trip": [13939,"REAL",{"offset": -1}],
+          "CS-01 value": [13483,"REAL",{"offset": -1}],
+          "Cont. Esc. Manc. Comb. alarmes": [13991,"REAL",{"offset": -1}],
+          "Cont. Esc. Manc. Comb. trip": [13927,"REAL",{"offset": -1}],
+          "Cont. Esc. Manc. Comb. value": [13471,"REAL",{"offset": -1}],
+          "Enrolamento Fase A alarmes": [13975,"REAL",{"offset": -1}],
+          "Enrolamento Fase A trip": [13911,"REAL",{"offset": -1}],
+          "Enrolamento Fase A value": [13455,"REAL",{"offset": -1}],
+          "Enrolamento Fase B alarmes": [13977,"REAL",{"offset": -1}],
+          "Enrolamento Fase B trip": [13913,"REAL",{"offset": -1}],
+          "Enrolamento Fase B value": [13457,"REAL",{"offset": -1}],
+          "Enrolamento Fase C alarmes": [13979,"REAL",{"offset": -1}],
+          "Enrolamento Fase C trip": [13915,"REAL",{"offset": -1}],
+          "Enrolamento Fase C value": [13459,"REAL",{"offset": -1}],
+          "Mancal Escora Combinado alarmes": [13987,"REAL",{"offset": -1}],
+          "Mancal Escora Combinado trip": [13923,"REAL",{"offset": -1}],
+          "Mancal Escora Combinado value": [13467,"REAL",{"offset": -1}],
+          "Mancal Rad. Comb. L.A. alarmes": [13995,"REAL",{"offset": -1}],
+          "Mancal Rad. Comb. L.A. trip": [13931,"REAL",{"offset": -1}],
+          "Mancal Rad. Comb. L.A. value": [13475,"REAL",{"offset": -1}],
+          "Mancal Rad. Comb. L.N.A. alarmes": [13997,"REAL",{"offset": -1}],
+          "Mancal Rad. Comb. L.N.A. trip": [13933,"REAL",{"offset": -1}],
+          "Mancal Rad. Comb. L.N.A. value": [13477,"REAL",{"offset": -1}],
+          "Mancal Radial Combinado alarmes": [13989,"REAL",{"offset": -1}],
+          "Mancal Radial Combinado trip": [13925,"REAL",{"offset": -1}],
+          "Mancal Radial Combinado value": [13469,"REAL",{"offset": -1}],
+          "Mancal Radial Guia alarmes": [13993,"REAL",{"offset": -1}],
+          "Mancal Radial Guia trip": [13929,"REAL",{"offset": -1}],
+          "Mancal Radial Guia value": [13473,"REAL",{"offset": -1}],
+          "Nucleo do estator alarmes": [13981,"REAL",{"offset": -1}],
+          "Nucleo do estator trip": [13917,"REAL",{"offset": -1}],
+          "Nucleo do estator value": [13461,"REAL",{"offset": -1}],
+          "Vedação do eixo LA alarmes": [13985,"REAL",{"offset": -1}],
+          "Vedação do eixo LA trip": [13921,"REAL",{"offset": -1}],
+          "Vedação do eixo LA value": [13465,"REAL",{"offset": -1}],
+          "Vedação do eixo LNA alarmes": [13983,"REAL",{"offset": -1}],
+          "Vedação do eixo LNA trip": [13919,"REAL",{"offset": -1}],
+          "Vedação do eixo LNA value": [13463,"REAL",{"offset": -1}],
+          "Óleo U.H.L.M. alarmes": [14001,"REAL",{"offset": -1}],
+          "Óleo U.H.L.M. trip": [13937,"REAL",{"offset": -1}],
+          "Óleo U.H.L.M. value": [13481,"REAL",{"offset": -1}],
+          "Óleo U.H.R.V. alarmes": [13999,"REAL",{"offset": -1}],
+          "Óleo U.H.R.V. trip": [13935,"REAL",{"offset": -1}],
+          "Óleo U.H.R.V. value": [13479,"REAL",{"offset": -1}]
         },
         "alarmes": {
-          "BOOLEAN": {
-            "[01.00] - PCP-U1 - Botão de Emergência Acionado": 24289,
-            "[01.01] - PCP-U1 - Botão de Emergência Acionado - SuperSEP": 24290
-          }
+          "[01.00] - PCP-U1 - Botão de Emergência Acionado": [24289,"BOOLEAN",{"offset": -1}],
+          "[01.01] - PCP-U1 - Botão de Emergência Acionado - SuperSEP": [24290,"BOOLEAN",{"offset": -1}]
         },
         "comandos": {
-          "BOOLEAN": {
-            "CalaSirene SuperSEP": 12532,
-            "Reset SuperSEP": 12529
-          }
+          "CalaSirene SuperSEP": [12532,"BOOLEAN",{"offset": -1}],
+          "Reset SuperSEP": [12529,"BOOLEAN",{"offset": -1}]
         }
       }
     }
@@ -452,62 +400,52 @@
           "velocidade máxima": 450
         },
         "leituras": {
-          "REAL": {
-            "Potência Ativa": 13407
-          },
-          "BOOLEAN": {
-            "Status U.P. (parada)": 20326,
-            "Status U.P.G.M. (pronta para giro mecânico)": 20327,
-            "Status U.P.S.(pronta para sincronização)": 20328,
-            "Status U.M.D.(sincronizado)": 20329,
-            "Status sincronizado": 20330
-          }
+          "Potência Ativa": [13407,"REAL",{"offset": -1}],
+          "Status U.P. (parada)": [20326,"BOOLEAN",{"offset": -1}],
+          "Status U.P.G.M. (pronta para giro mecânico)": [20327,"BOOLEAN",{"offset": -1}],
+          "Status U.P.S.(pronta para sincronização)": [20328,"BOOLEAN",{"offset": -1}],
+          "Status U.M.D.(sincronizado)": [20329,"BOOLEAN",{"offset": -1}],
+          "Status sincronizado": [20330,"BOOLEAN",{"offset": -1}]
         },
         "temperaturas": {
-          "REAL": {
-            "CS-U2 alarmes": 13995,
-            "CS-U2 trip": 13931,
-            "CS-U2 value": 13475,
-            "Enrolamento Fase A alarmes": 13975,
-            "Enrolamento Fase A trip": 13911,
-            "Enrolamento Fase A value": 13455,
-            "Enrolamento Fase B alarmes": 13977,
-            "Enrolamento Fase B trip": 13913,
-            "Enrolamento Fase B value": 13457,
-            "Enrolamento Fase C alarmes": 13979,
-            "Enrolamento Fase C trip": 13915,
-            "Enrolamento Fase C value": 13459,
-            "Manc. Comb. Esc. L.A. alarmes": 13985,
-            "Manc. Comb. Esc. L.A. trip": 13921,
-            "Manc. Comb. Esc. L.A. value": 13465,
-            "Manc. Comb. Rad. L.A. alarmes": 13983,
-            "Manc. Comb. Rad. L.A. trip": 13919,
-            "Manc. Comb. Rad. L.A. value": 13463,
-            "Manc. Cont. Esc. L.A. alarmes": 13987,
-            "Manc. Cont. Esc. L.A. trip": 13923,
-            "Manc. Cont. Esc. L.A. value": 13467,
-            "Mancal Guia L.N.A. alarmes": 13989,
-            "Mancal Guia L.N.A. trip": 13925,
-            "Mancal Guia L.N.A. value": 13469,
-            "Nucleo do estator alarmes": 13981,
-            "Nucleo do estator trip": 13917,
-            "Nucleo do estator value": 13461,
-            "Óleo U.H.L.M. alarmes": 13993,
-            "Óleo U.H.L.M. trip": 13929,
-            "Óleo U.H.L.M. value": 13473
-          }
+          "CS-U2 alarmes": [13995,"REAL",{"offset": -1}],
+          "CS-U2 trip": [13931,"REAL",{"offset": -1}],
+          "CS-U2 value": [13475,"REAL",{"offset": -1}],
+          "Enrolamento Fase A alarmes": [13975,"REAL",{"offset": -1}],
+          "Enrolamento Fase A trip": [13911,"REAL",{"offset": -1}],
+          "Enrolamento Fase A value": [13455,"REAL",{"offset": -1}],
+          "Enrolamento Fase B alarmes": [13977,"REAL",{"offset": -1}],
+          "Enrolamento Fase B trip": [13913,"REAL",{"offset": -1}],
+          "Enrolamento Fase B value": [13457,"REAL",{"offset": -1}],
+          "Enrolamento Fase C alarmes": [13979,"REAL",{"offset": -1}],
+          "Enrolamento Fase C trip": [13915,"REAL",{"offset": -1}],
+          "Enrolamento Fase C value": [13459,"REAL",{"offset": -1}],
+          "Manc. Comb. Esc. L.A. alarmes": [13985,"REAL",{"offset": -1}],
+          "Manc. Comb. Esc. L.A. trip": [13921,"REAL",{"offset": -1}],
+          "Manc. Comb. Esc. L.A. value": [13465,"REAL",{"offset": -1}],
+          "Manc. Comb. Rad. L.A. alarmes": [13983,"REAL",{"offset": -1}],
+          "Manc. Comb. Rad. L.A. trip": [13919,"REAL",{"offset": -1}],
+          "Manc. Comb. Rad. L.A. value": [13463,"REAL",{"offset": -1}],
+          "Manc. Cont. Esc. L.A. alarmes": [13987,"REAL",{"offset": -1}],
+          "Manc. Cont. Esc. L.A. trip": [13923,"REAL",{"offset": -1}],
+          "Manc. Cont. Esc. L.A. value": [13467,"REAL",{"offset": -1}],
+          "Mancal Guia L.N.A. alarmes": [13989,"REAL",{"offset": -1}],
+          "Mancal Guia L.N.A. trip": [13925,"REAL",{"offset": -1}],
+          "Mancal Guia L.N.A. value": [13469,"REAL",{"offset": -1}],
+          "Nucleo do estator alarmes": [13981,"REAL",{"offset": -1}],
+          "Nucleo do estator trip": [13917,"REAL",{"offset": -1}],
+          "Nucleo do estator value": [13461,"REAL",{"offset": -1}],
+          "Óleo U.H.L.M. alarmes": [13993,"REAL",{"offset": -1}],
+          "Óleo U.H.L.M. trip": [13929,"REAL",{"offset": -1}],
+          "Óleo U.H.L.M. value": [13473,"REAL",{"offset": -1}]
         },
         "alarmes": {
-          "BOOLEAN": {
-            "[01.00] - PCP-U1 - Botão de Emergência Acionado": 24289,
-            "[01.01] - PCP-U1 - Botão de Emergência Acionado - SuperSEP": 24290
-          }
+          "[01.00] - PCP-U1 - Botão de Emergência Acionado": [24289,"BOOLEAN",{"offset": -1}],
+          "[01.01] - PCP-U1 - Botão de Emergência Acionado - SuperSEP": [24290,"BOOLEAN",{"offset": -1}]
         },
         "comandos": {
-          "BOOLEAN": {
-            "CalaSirene SuperSEP": 12532,
-            "Reset SuperSEP": 12529
-          }
+          "CalaSirene SuperSEP": [12532,"BOOLEAN",{"offset": -1}],
+          "Reset SuperSEP": [12529,"BOOLEAN",{"offset": -1}]
         }
       },
       "UG-02": {
@@ -520,62 +458,52 @@
           "velocidade máxima": 450
         },
         "leituras": {
-          "REAL": {
-            "Potência Ativa": 13407
-          },
-          "BOOLEAN": {
-            "Status U.P. (parada)": 20326,
-            "Status U.P.G.M. (pronta para giro mecânico)": 20327,
-            "Status U.P.S.(pronta para sincronização)": 20328,
-            "Status U.M.D.(sincronizado)": 20329,
-            "Status sincronizado": 20330
-          }
+          "Potência Ativa": [13407,"REAL",{"offset": -1}],
+          "Status U.P. (parada)": [20326,"BOOLEAN",{"offset": -1}],
+          "Status U.P.G.M. (pronta para giro mecânico)": [20327,"BOOLEAN",{"offset": -1}],
+          "Status U.P.S.(pronta para sincronização)": [20328,"BOOLEAN",{"offset": -1}],
+          "Status U.M.D.(sincronizado)": [20329,"BOOLEAN",{"offset": -1}],
+          "Status sincronizado": [20330,"BOOLEAN",{"offset": -1}]
         },
         "temperaturas": {
-          "REAL": {
-            "CS-U2 alarmes": 13995,
-            "CS-U2 trip": 13931,
-            "CS-U2 value": 13475,
-            "Enrolamento Fase A alarmes": 13975,
-            "Enrolamento Fase A trip": 13911,
-            "Enrolamento Fase A value": 13455,
-            "Enrolamento Fase B alarmes": 13977,
-            "Enrolamento Fase B trip": 13913,
-            "Enrolamento Fase B value": 13457,
-            "Enrolamento Fase C alarmes": 13979,
-            "Enrolamento Fase C trip": 13915,
-            "Enrolamento Fase C value": 13459,
-            "Manc. Comb. Esc. L.A. alarmes": 13985,
-            "Manc. Comb. Esc. L.A. trip": 13921,
-            "Manc. Comb. Esc. L.A. value": 13465,
-            "Manc. Comb. Rad. L.A. alarmes": 13983,
-            "Manc. Comb. Rad. L.A. trip": 13919,
-            "Manc. Comb. Rad. L.A. value": 13463,
-            "Manc. Cont. Esc. L.A. alarmes": 13987,
-            "Manc. Cont. Esc. L.A. trip": 13923,
-            "Manc. Cont. Esc. L.A. value": 13467,
-            "Mancal Guia L.N.A. alarmes": 13989,
-            "Mancal Guia L.N.A. trip": 13925,
-            "Mancal Guia L.N.A. value": 13469,
-            "Nucleo do estator alarmes": 13981,
-            "Nucleo do estator trip": 13917,
-            "Nucleo do estator value": 13461,
-            "Óleo U.H.L.M. alarmes": 13993,
-            "Óleo U.H.L.M. trip": 13929,
-            "Óleo U.H.L.M. value": 13473
-          }
+          "CS-U2 alarmes": [13995,"REAL",{"offset": -1}],
+          "CS-U2 trip": [13931,"REAL",{"offset": -1}],
+          "CS-U2 value": [13475,"REAL",{"offset": -1}],
+          "Enrolamento Fase A alarmes": [13975,"REAL",{"offset": -1}],
+          "Enrolamento Fase A trip": [13911,"REAL",{"offset": -1}],
+          "Enrolamento Fase A value": [13455,"REAL",{"offset": -1}],
+          "Enrolamento Fase B alarmes": [13977,"REAL",{"offset": -1}],
+          "Enrolamento Fase B trip": [13913,"REAL",{"offset": -1}],
+          "Enrolamento Fase B value": [13457,"REAL",{"offset": -1}],
+          "Enrolamento Fase C alarmes": [13979,"REAL",{"offset": -1}],
+          "Enrolamento Fase C trip": [13915,"REAL",{"offset": -1}],
+          "Enrolamento Fase C value": [13459,"REAL",{"offset": -1}],
+          "Manc. Comb. Esc. L.A. alarmes": [13985,"REAL",{"offset": -1}],
+          "Manc. Comb. Esc. L.A. trip": [13921,"REAL",{"offset": -1}],
+          "Manc. Comb. Esc. L.A. value": [13465,"REAL",{"offset": -1}],
+          "Manc. Comb. Rad. L.A. alarmes": [13983,"REAL",{"offset": -1}],
+          "Manc. Comb. Rad. L.A. trip": [13919,"REAL",{"offset": -1}],
+          "Manc. Comb. Rad. L.A. value": [13463,"REAL",{"offset": -1}],
+          "Manc. Cont. Esc. L.A. alarmes": [13987,"REAL",{"offset": -1}],
+          "Manc. Cont. Esc. L.A. trip": [13923,"REAL",{"offset": -1}],
+          "Manc. Cont. Esc. L.A. value": [13467,"REAL",{"offset": -1}],
+          "Mancal Guia L.N.A. alarmes": [13989,"REAL",{"offset": -1}],
+          "Mancal Guia L.N.A. trip": [13925,"REAL",{"offset": -1}],
+          "Mancal Guia L.N.A. value": [13469,"REAL",{"offset": -1}],
+          "Nucleo do estator alarmes": [13981,"REAL",{"offset": -1}],
+          "Nucleo do estator trip": [13917,"REAL",{"offset": -1}],
+          "Nucleo do estator value": [13461,"REAL",{"offset": -1}],
+          "Óleo U.H.L.M. alarmes": [13993,"REAL",{"offset": -1}],
+          "Óleo U.H.L.M. trip": [13929,"REAL",{"offset": -1}],
+          "Óleo U.H.L.M. value": [13473,"REAL",{"offset": -1}]
         },
         "alarmes": {
-          "BOOLEAN": {
-            "[01.00] - PCP-U1 - Botão de Emergência Acionado": 24289,
-            "[01.01] - PCP-U1 - Botão de Emergência Acionado - SuperSEP": 24290
-          }
+          "[01.00] - PCP-U1 - Botão de Emergência Acionado": [24289,"BOOLEAN",{"offset": -1}],
+          "[01.01] - PCP-U1 - Botão de Emergência Acionado - SuperSEP": [24290,"BOOLEAN",{"offset": -1}]
         },
         "comandos": {
-          "BOOLEAN": {
-            "CalaSirene SuperSEP": 12532,
-            "Reset SuperSEP": 12529
-          }
+          "CalaSirene SuperSEP": [12532,"BOOLEAN",{"offset": -1}],
+          "Reset SuperSEP": [12529,"BOOLEAN",{"offset": -1}]
         }
       }
     }
@@ -595,71 +523,61 @@
           "velocidade máxima": 450
         },
         "leituras": {
-          "REAL": {
-            "Potência Ativa": 13407
-          },
-          "BOOLEAN": {
-            "Status U.P. (parada)": 20326,
-            "Status U.P.G.M. (pronta para giro mecânico)": 20327,
-            "Status U.P.S.(pronta para sincronização)": 20328,
-            "Status U.M.D.(sincronizado)": 20329,
-            "Status sincronizado": 20330
-          }
+          "Potência Ativa": [13407,"REAL",{"offset": -1}],
+          "Status U.P. (parada)": [20326,"BOOLEAN",{"offset": -1}],
+          "Status U.P.G.M. (pronta para giro mecânico)": [20327,"BOOLEAN",{"offset": -1}],
+          "Status U.P.S.(pronta para sincronização)": [20328,"BOOLEAN",{"offset": -1}],
+          "Status U.M.D.(sincronizado)": [20329,"BOOLEAN",{"offset": -1}],
+          "Status sincronizado": [20330,"BOOLEAN",{"offset": -1}]
         },
         "temperaturas": {
-          "REAL": {
-            "Enrolamento Fase A alarmes": 13979,
-            "Enrolamento Fase A trip": 13915,
-            "Enrolamento Fase A value": 13459,
-            "Enrolamento Fase B alarmes": 13981,
-            "Enrolamento Fase B trip": 13917,
-            "Enrolamento Fase B value": 13461,
-            "Enrolamento Fase C alarmes": 13983,
-            "Enrolamento Fase C trip": 13919,
-            "Enrolamento Fase C value": 13463,
-            "G Mancal L.A. Guia alarmes": 13985,
-            "G Mancal L.A. Guia trip": 13921,
-            "G Mancal L.A. Guia value": 13465,
-            "G Mancal L.N.A. Escora alarmes": 13987,
-            "G Mancal L.N.A. Escora trip": 13923,
-            "G Mancal L.N.A. Escora value": 13467,
-            "G Mancal L.N.A. Guia alarmes": 13989,
-            "G Mancal L.N.A. Guia trip": 13925,
-            "G Mancal L.N.A. Guia value": 13469,
-            "T Bucha Radial 01 alarmes": 13977,
-            "T Bucha Radial 01 trip": 13913,
-            "T Bucha Radial 01 value": 13457,
-            "T Bucha Radial 02 alarmes": 13995,
-            "T Bucha Radial 02 trip": 13931,
-            "T Bucha Radial 02 value": 13475,
-            "T Gaxeteiro 01 alarmes": 13975,
-            "T Gaxeteiro 01 trip": 13911,
-            "T Gaxeteiro 01 value": 13455,
-            "T Gaxeteiro 02 alarmes": 13993,
-            "T Gaxeteiro 02 trip": 13929,
-            "T Gaxeteiro 02 value": 13473,
-            "T Gaxeteiro 03 alarmes": 13991,
-            "T Gaxeteiro 03 trip": 13927,
-            "T Gaxeteiro 03 value": 13471,
-            "Óleo U.H.L.M. alarmes": 14001,
-            "Óleo U.H.L.M. trip": 13937,
-            "Óleo U.H.L.M. value": 13481,
-            "Óleo U.H.R.V. alarmes": 13999,
-            "Óleo U.H.R.V. trip": 13935,
-            "Óleo U.H.R.V. value": 13479
-          }
+          "Enrolamento Fase A alarmes": [13979,"REAL",{"offset": -1}],
+          "Enrolamento Fase A trip": [13915,"REAL",{"offset": -1}],
+          "Enrolamento Fase A value": [13459,"REAL",{"offset": -1}],
+          "Enrolamento Fase B alarmes": [13981,"REAL",{"offset": -1}],
+          "Enrolamento Fase B trip": [13917,"REAL",{"offset": -1}],
+          "Enrolamento Fase B value": [13461,"REAL",{"offset": -1}],
+          "Enrolamento Fase C alarmes": [13983,"REAL",{"offset": -1}],
+          "Enrolamento Fase C trip": [13919,"REAL",{"offset": -1}],
+          "Enrolamento Fase C value": [13463,"REAL",{"offset": -1}],
+          "G Mancal L.A. Guia alarmes": [13985,"REAL",{"offset": -1}],
+          "G Mancal L.A. Guia trip": [13921,"REAL",{"offset": -1}],
+          "G Mancal L.A. Guia value": [13465,"REAL",{"offset": -1}],
+          "G Mancal L.N.A. Escora alarmes": [13987,"REAL",{"offset": -1}],
+          "G Mancal L.N.A. Escora trip": [13923,"REAL",{"offset": -1}],
+          "G Mancal L.N.A. Escora value": [13467,"REAL",{"offset": -1}],
+          "G Mancal L.N.A. Guia alarmes": [13989,"REAL",{"offset": -1}],
+          "G Mancal L.N.A. Guia trip": [13925,"REAL",{"offset": -1}],
+          "G Mancal L.N.A. Guia value": [13469,"REAL",{"offset": -1}],
+          "T Bucha Radial 01 alarmes": [13977,"REAL",{"offset": -1}],
+          "T Bucha Radial 01 trip": [13913,"REAL",{"offset": -1}],
+          "T Bucha Radial 01 value": [13457,"REAL",{"offset": -1}],
+          "T Bucha Radial 02 alarmes": [13995,"REAL",{"offset": -1}],
+          "T Bucha Radial 02 trip": [13931,"REAL",{"offset": -1}],
+          "T Bucha Radial 02 value": [13475,"REAL",{"offset": -1}],
+          "T Gaxeteiro 01 alarmes": [13975,"REAL",{"offset": -1}],
+          "T Gaxeteiro 01 trip": [13911,"REAL",{"offset": -1}],
+          "T Gaxeteiro 01 value": [13455,"REAL",{"offset": -1}],
+          "T Gaxeteiro 02 alarmes": [13993,"REAL",{"offset": -1}],
+          "T Gaxeteiro 02 trip": [13929,"REAL",{"offset": -1}],
+          "T Gaxeteiro 02 value": [13473,"REAL",{"offset": -1}],
+          "T Gaxeteiro 03 alarmes": [13991,"REAL",{"offset": -1}],
+          "T Gaxeteiro 03 trip": [13927,"REAL",{"offset": -1}],
+          "T Gaxeteiro 03 value": [13471,"REAL",{"offset": -1}],
+          "Óleo U.H.L.M. alarmes": [14001,"REAL",{"offset": -1}],
+          "Óleo U.H.L.M. trip": [13937,"REAL",{"offset": -1}],
+          "Óleo U.H.L.M. value": [13481,"REAL",{"offset": -1}],
+          "Óleo U.H.R.V. alarmes": [13999,"REAL",{"offset": -1}],
+          "Óleo U.H.R.V. trip": [13935,"REAL",{"offset": -1}],
+          "Óleo U.H.R.V. value": [13479,"REAL",{"offset": -1}]
         },
         "alarmes": {
-          "BOOLEAN": {
-            "[01.00] - PCP-U1 - Botão de Emergência Acionado": 24289,
-            "[01.01] - PCP-U1 - Botão de Emergência Acionado - SuperSEP": 24290
-          }
+          "[01.00] - PCP-U1 - Botão de Emergência Acionado": [24289,"BOOLEAN",{"offset": -1}],
+          "[01.01] - PCP-U1 - Botão de Emergência Acionado - SuperSEP": [24290,"BOOLEAN",{"offset": -1}]
         },
         "comandos": {
-          "BOOLEAN": {
-            "CalaSirene SuperSEP": 12532,
-            "Reset SuperSEP": 12529
-          }
+          "CalaSirene SuperSEP": [12532,"BOOLEAN",{"offset": -1}],
+          "Reset SuperSEP": [12529,"BOOLEAN",{"offset": -1}]
         }
       },
       "UG-02": {
@@ -672,71 +590,61 @@
           "velocidade máxima": 450
         },
         "leituras": {
-          "REAL": {
-            "Potência Ativa": 13407
-          },
-          "BOOLEAN": {
-            "Status U.P. (parada)": 20326,
-            "Status U.P.G.M. (pronta para giro mecânico)": 20327,
-            "Status U.P.S.(pronta para sincronização)": 20328,
-            "Status U.M.D.(sincronizado)": 20329,
-            "Status sincronizado": 20330
-          }
+          "Potência Ativa": [13407,"REAL",{"offset": -1}],
+          "Status U.P. (parada)": [20326,"BOOLEAN",{"offset": -1}],
+          "Status U.P.G.M. (pronta para giro mecânico)": [20327,"BOOLEAN",{"offset": -1}],
+          "Status U.P.S.(pronta para sincronização)": [20328,"BOOLEAN",{"offset": -1}],
+          "Status U.M.D.(sincronizado)": [20329,"BOOLEAN",{"offset": -1}],
+          "Status sincronizado": [20330,"BOOLEAN",{"offset": -1}]
         },
         "temperaturas": {
-          "REAL": {
-            "Enrolamento Fase A alarmes": 13979,
-            "Enrolamento Fase A trip": 13915,
-            "Enrolamento Fase A value": 13459,
-            "Enrolamento Fase B alarmes": 13981,
-            "Enrolamento Fase B trip": 13917,
-            "Enrolamento Fase B value": 13461,
-            "Enrolamento Fase C alarmes": 13983,
-            "Enrolamento Fase C trip": 13919,
-            "Enrolamento Fase C value": 13463,
-            "G Mancal L.A. Guia alarmes": 13985,
-            "G Mancal L.A. Guia trip": 13921,
-            "G Mancal L.A. Guia value": 13465,
-            "G Mancal L.N.A. Escora alarmes": 13987,
-            "G Mancal L.N.A. Escora trip": 13923,
-            "G Mancal L.N.A. Escora value": 13467,
-            "G Mancal L.N.A. Guia alarmes": 13989,
-            "G Mancal L.N.A. Guia trip": 13925,
-            "G Mancal L.N.A. Guia value": 13469,
-            "T Bucha Radial 01 alarmes": 13977,
-            "T Bucha Radial 01 trip": 13913,
-            "T Bucha Radial 01 value": 13457,
-            "T Bucha Radial 02 alarmes": 13995,
-            "T Bucha Radial 02 trip": 13931,
-            "T Bucha Radial 02 value": 13475,
-            "T Gaxeteiro 01 alarmes": 13975,
-            "T Gaxeteiro 01 trip": 13911,
-            "T Gaxeteiro 01 value": 13455,
-            "T Gaxeteiro 02 alarmes": 13993,
-            "T Gaxeteiro 02 trip": 13929,
-            "T Gaxeteiro 02 value": 13473,
-            "T Gaxeteiro 03 alarmes": 13991,
-            "T Gaxeteiro 03 trip": 13927,
-            "T Gaxeteiro 03 value": 13471,
-            "Óleo U.H.L.M. alarmes": 14001,
-            "Óleo U.H.L.M. trip": 13937,
-            "Óleo U.H.L.M. value": 13481,
-            "Óleo U.H.R.V. alarmes": 13999,
-            "Óleo U.H.R.V. trip": 13935,
-            "Óleo U.H.R.V. value": 13479
-          }
+          "Enrolamento Fase A alarmes": [13979,"REAL",{"offset": -1}],
+          "Enrolamento Fase A trip": [13915,"REAL",{"offset": -1}],
+          "Enrolamento Fase A value": [13459,"REAL",{"offset": -1}],
+          "Enrolamento Fase B alarmes": [13981,"REAL",{"offset": -1}],
+          "Enrolamento Fase B trip": [13917,"REAL",{"offset": -1}],
+          "Enrolamento Fase B value": [13461,"REAL",{"offset": -1}],
+          "Enrolamento Fase C alarmes": [13983,"REAL",{"offset": -1}],
+          "Enrolamento Fase C trip": [13919,"REAL",{"offset": -1}],
+          "Enrolamento Fase C value": [13463,"REAL",{"offset": -1}],
+          "G Mancal L.A. Guia alarmes": [13985,"REAL",{"offset": -1}],
+          "G Mancal L.A. Guia trip": [13921,"REAL",{"offset": -1}],
+          "G Mancal L.A. Guia value": [13465,"REAL",{"offset": -1}],
+          "G Mancal L.N.A. Escora alarmes": [13987,"REAL",{"offset": -1}],
+          "G Mancal L.N.A. Escora trip": [13923,"REAL",{"offset": -1}],
+          "G Mancal L.N.A. Escora value": [13467,"REAL",{"offset": -1}],
+          "G Mancal L.N.A. Guia alarmes": [13989,"REAL",{"offset": -1}],
+          "G Mancal L.N.A. Guia trip": [13925,"REAL",{"offset": -1}],
+          "G Mancal L.N.A. Guia value": [13469,"REAL",{"offset": -1}],
+          "T Bucha Radial 01 alarmes": [13977,"REAL",{"offset": -1}],
+          "T Bucha Radial 01 trip": [13913,"REAL",{"offset": -1}],
+          "T Bucha Radial 01 value": [13457,"REAL",{"offset": -1}],
+          "T Bucha Radial 02 alarmes": [13995,"REAL",{"offset": -1}],
+          "T Bucha Radial 02 trip": [13931,"REAL",{"offset": -1}],
+          "T Bucha Radial 02 value": [13475,"REAL",{"offset": -1}],
+          "T Gaxeteiro 01 alarmes": [13975,"REAL",{"offset": -1}],
+          "T Gaxeteiro 01 trip": [13911,"REAL",{"offset": -1}],
+          "T Gaxeteiro 01 value": [13455,"REAL",{"offset": -1}],
+          "T Gaxeteiro 02 alarmes": [13993,"REAL",{"offset": -1}],
+          "T Gaxeteiro 02 trip": [13929,"REAL",{"offset": -1}],
+          "T Gaxeteiro 02 value": [13473,"REAL",{"offset": -1}],
+          "T Gaxeteiro 03 alarmes": [13991,"REAL",{"offset": -1}],
+          "T Gaxeteiro 03 trip": [13927,"REAL",{"offset": -1}],
+          "T Gaxeteiro 03 value": [13471,"REAL",{"offset": -1}],
+          "Óleo U.H.L.M. alarmes": [14001,"REAL",{"offset": -1}],
+          "Óleo U.H.L.M. trip": [13937,"REAL",{"offset": -1}],
+          "Óleo U.H.L.M. value": [13481,"REAL",{"offset": -1}],
+          "Óleo U.H.R.V. alarmes": [13999,"REAL",{"offset": -1}],
+          "Óleo U.H.R.V. trip": [13935,"REAL",{"offset": -1}],
+          "Óleo U.H.R.V. value": [13479,"REAL",{"offset": -1}]
         },
         "alarmes": {
-          "BOOLEAN": {
-            "[01.00] - PCP-U1 - Botão de Emergência Acionado": 24289,
-            "[01.01] - PCP-U1 - Botão de Emergência Acionado - SuperSEP": 24290
-          }
+          "[01.00] - PCP-U1 - Botão de Emergência Acionado": [24289,"BOOLEAN",{"offset": -1}],
+          "[01.01] - PCP-U1 - Botão de Emergência Acionado - SuperSEP": [24290,"BOOLEAN",{"offset": -1}]
         },
         "comandos": {
-          "BOOLEAN": {
-            "CalaSirene SuperSEP": 12532,
-            "Reset SuperSEP": 12529
-          }
+          "CalaSirene SuperSEP": [12532,"BOOLEAN",{"offset": -1}],
+          "Reset SuperSEP": [12529,"BOOLEAN",{"offset": -1}]
         }
       }
     }

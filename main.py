@@ -1,13 +1,28 @@
+# --------------------------------------------------------------------------------
+# imports librairies
+# --------------------------------------------------------------------------------
 
 import os
 import time
 from flask import Flask
 from flask_socketio import SocketIO
+from libs.controllers.decorador import desempenho
+from libs.models.utils import register_template_filters
 
+from libs.sockets import register_socket_handlers
+
+# ----------------------------------------------------------------------------------
 # caminhos robustos (independe do diretório onde o service inicia)
+# ----------------------------------------------------------------------------------
+
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 template_dir = os.path.join(BASE_DIR, 'libs', 'views')
 static_dir   = os.path.join(BASE_DIR, 'libs', 'views', 'static')
+DEV_RELOAD = os.getenv("DEV_RELOAD", "0") == "1"
+
+# ----------------------------------------------------------------------------------
+# configuração do app Flask
+# ----------------------------------------------------------------------------------
 
 app = Flask(
     __name__,
@@ -18,21 +33,19 @@ app = Flask(
 
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'change-me')
 
-# filtros/rotas
-from libs.models.utils import register_template_filters
-register_template_filters(app)
+# ----------------------------------------------------------------------------------
+# filtros/rotas e configuração do Socket.IO
+# ----------------------------------------------------------------------------------
 from libs.routes.routes import *  # noqa
 
-# dev: threading; prod: gunicorn -k eventlet (não precisa mudar aqui)
+register_template_filters(app)
 socketio = SocketIO(app, cors_allowed_origins="*", async_mode="threading")
-
-# --- Socket.IO event handlers ---
-from libs.sockets import register_socket_handlers
-
 register_socket_handlers(socketio)
 
-# --- watcher só em DEV -------------------------------------------------------
-DEV_RELOAD = os.getenv("DEV_RELOAD", "0") == "1"
+# ---------------------------------------------------------------------------------
+# watcher para recarregar arquivos estáticos em desenvolvimento
+# ---------------------------------------------------------------------------------
+
 if DEV_RELOAD:
     from watchdog.observers import Observer
     from watchdog.events import FileSystemEventHandler
@@ -52,13 +65,17 @@ if DEV_RELOAD:
                 print(f"Arquivo modificado: {event.src_path}")
                 self.socketio.emit("file_changed", {"path": event.src_path})
 
+    @desempenho
     def setup_file_watcher(socketio):
         handler = FileChangeHandler(socketio)
         observer = Observer()
         observer.schedule(handler, BASE_DIR, recursive=True)
         observer.start()
         return observer
-# --- fim watcher ---
+    
+# ----------------------------------------------------------------------------------
+# inicialização do servidor
+# ----------------------------------------------------------------------------------
 
 if __name__ == '__main__':
     port = int(os.getenv("PORT", "5001"))

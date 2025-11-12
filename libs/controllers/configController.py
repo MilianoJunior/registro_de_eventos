@@ -3,7 +3,7 @@ from flask import render_template, request, jsonify
 from datetime import datetime
 from libs.models.read import Read
 from libs.models.utils.mock_data import DEVELOPER_MODE, get_mock_data
-from libs.models.utils.utils import desempenho
+from libs.controllers.decorador import desempenho
 from libs.servicos.readRT import get_data
 import json
 import os
@@ -94,6 +94,7 @@ class ConfigController:
         except Exception as e:
             return jsonify({"error": str(e)}), 500
     
+    @desempenho
     async def testar_leitura_async(self, data):
         """Testa a leitura de uma variável do CLP"""
         try:
@@ -110,22 +111,22 @@ class ConfigController:
                 'tipo': tipo_secao
             }
             
-            # Preparar dados da leitura
+            # Preparar dados da leitura no novo formato da API
             read_data = {
                 'conexao': {
                     'ip': dispositivo['ip'],
                     'port': dispositivo['port'],
                     'timeout': 3.0
                 },
-                tipo_secao: {
-                    variavel['tipo']: {
-                        variavel['nome']: variavel['endereco']
-                    }
+                'registers': {
+                    variavel['nome']: [variavel['endereco'], variavel['tipo']]
                 }
             }
             
-            # Fazer a leitura
-            resultado, tempo = await get_data(config, read_data)
+            # Fazer a leitura (passando nome da usina e dispositivo para contexto de erro)
+            nome_usina = usina.get('nome', 'Usina desconhecida')
+            nome_dispositivo = dispositivo.get('nome', 'Dispositivo desconhecido')
+            resultado, tempo = await get_data(config, read_data, nome_usina, nome_dispositivo)
             
             # Verificar se obteve sucesso
             if resultado and variavel['tipo'] in resultado and variavel['nome'] in resultado[variavel['tipo']]:

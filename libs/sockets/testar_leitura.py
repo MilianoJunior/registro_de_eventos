@@ -15,6 +15,10 @@ def register_testar_leitura_handler(socketio):
         config = payload.get("config", {})
         data = payload.get("data", {})
         entrada_id = payload.get("entrada_id")
+        
+        # Extrair informações de contexto (se disponíveis)
+        nome_usina = payload.get("nome_usina", "Usina de teste")
+        nome_dispositivo = payload.get("nome_dispositivo", "Dispositivo de teste")
 
         print("[SOCKET] Recebido pedido de teste:")
         print(f"   Unidade: {config.get('unidade')}")
@@ -24,7 +28,7 @@ def register_testar_leitura_handler(socketio):
             # Executar funcao assinc em thread separada
             loop = asyncio.new_event_loop()
             asyncio.set_event_loop(loop)
-            resultado, tempo = loop.run_until_complete(get_data(config, data))
+            resultado, tempo = loop.run_until_complete(get_data(config, data, nome_usina, nome_dispositivo))
             loop.close()
 
             print(f"[SOCKET] Resultado da API: {resultado}")

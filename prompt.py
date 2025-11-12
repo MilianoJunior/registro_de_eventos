@@ -351,3 +351,29 @@ sigla
 APAR
 --------------------------------
 '''
+'''
+1_initStatusUsinas
+2_setup: É chamada pela 1_initStatusUsinas assim que a estrutura da página (DOM) está pronta. Sua tarefa é preparar o ambiente, o que inclui chamar a próxima função da sequência.
+3_verificarSocket:Iniciada pela 2_setup, esta função fica em um loop, verificando a cada 400ms se a conexão com o Socket.IO (window.socket) já está disponível para uso.
+4_solicitar: Assim que a 3_verificarSocket confirma que a conexão existe, esta função é chamada com o parâmetro 'inicial'. Ela serve como um invólucro (wrapper) para a próxima função.
+5_solicitarStatus: Chamada pela 4_solicitar, esta é a função que efetivamente envia a mensagem solicitar_status_usinas para o servidor, pedindo os dados pela primeira vez.
+6_handleStatusPayload: Esta função não é chamada diretamente na sequência, mas fica "escutando". Ela é executada automaticamente quando o servidor responde com o evento status_usinas_dados, trazendo os dados das usinas.
+7_applyStatus: Após a 6_handleStatusPayload receber e validar os dados, ela chama esta função para cada usina. A 7_applyStatus localiza a área correta no HTML para exibir as informações.
+8_renderBadge: É chamada pela 7_applyStatus para gerar o código HTML dos "badges" coloridos que mostram o status de cada dispositivo da usina.
+9_getColorByDescription: Esta é uma função auxiliar, chamada pela 8_renderBadge. Sua única função é olhar a descrição do status (ex: "sincronizado") e retornar o conjunto de cores correto para o badge.
+10_renderStatusDetalhes: Também chamada pela 7_applyStatus, mas só é útil se houver um local específico na página para mostrar uma lista mais detalhada dos status (o que não parece ser o caso no home.html atual, mas a função existe).
+
+--------------------------------
+
+1_initStatusUsinas (executa logo que o script de home.html carrega e registra setup para o DOM pronto)
+2_setup (chamado no DOMContentLoaded, inicia a verificação do socket e do DOM)
+3_verificarSocket (confere window.socket, registra listeners, cria o intervalo e chama solicitar quando o socket está pronto)
+4_solicitar (função interna de verificarSocket que loga o tipo da solicitação e chama solicitarStatus)
+5_solicitarStatus (aplica o controle de throttle e emite socket.emit('solicitar_status_usinas'))
+6_handler_status_usinas_dados (listener registrado no socket, recebe o payload e chama handleStatusPayload)
+7_handleStatusPayload (valida os dados, itera sobre as usinas e dispara applyStatus para cada uma)
+8_applyStatus (seleciona elementos no DOM e usa renderBadge e renderStatusDetalhes para atualizar a UI)
+9_renderBadge (gera o HTML das badges de dispositivos chamando getColorByDescription conforme necessário)
+10_getColorByDescription (mapeia a descrição do status para classes de cor, devolvendo as opções corretas)
+11_renderStatusDetalhes (monta a listagem textual dos dispositivos e seus status para o painel de detalhes)
+'''

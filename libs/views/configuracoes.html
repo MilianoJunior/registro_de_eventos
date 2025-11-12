@@ -321,8 +321,8 @@ function addDispositivo(usinaId) {
 
                 <!-- Seções de Entradas -->
                 <div id="${dispositivoId}_secoes_entradas" class="space-y-2 border-t border-gray-600 pt-3">
-                    ${createEntradaSection(dispositivoId, 'leituras', 'Leituras', 'bar_chart', ['REAL', 'INT'])}
-                    ${createEntradaSection(dispositivoId, 'temperaturas', 'Temperaturas', 'thermostat', ['REAL', 'INT'])}
+                    ${createEntradaSection(dispositivoId, 'leituras', 'Leituras', 'bar_chart', ['REAL', 'INT', 'BOOLEAN'])}
+                    ${createEntradaSection(dispositivoId, 'temperaturas', 'Temperaturas', 'thermostat', ['REAL', 'INT', 'BOOLEAN'])}
                     ${createEntradaSection(dispositivoId, 'alarmes', 'Alarmes', 'warning', ['BOOLEAN'])}
                     ${createEntradaSection(dispositivoId, 'comandos', 'Comandos', 'settings_input_antenna', ['BOOLEAN'])}
                 </div>
@@ -356,6 +356,12 @@ function createEntradaSection(dispositivoId, tipo, titulo, icon, tipos) {
             </div>
         </div>
     `;
+}
+
+function getTiposPermitidosPorSecao(tipoSecao) {
+    // Determina os tipos permitidos baseado na seção
+    // Por padrão, todas as seções aceitam REAL, INT e BOOLEAN
+    return ['REAL', 'INT', 'BOOLEAN'];
 }
 
 function addCaracteristica(dispositivoId) {
@@ -395,8 +401,8 @@ function addEntrada(dispositivoId, tipo, tipos) {
     
     const entradaHTML = `
         <div id="${entradaId}" class="grid grid-cols-12 gap-2 items-center bg-surface p-2 rounded">
-            <div class="col-span-3">
-                <label class="text-label text-text-muted block mb-1" style="font-size: 10px;">Tipo</label>
+            <div class="col-span-2">
+                <label class="text-label text-text-muted block mb-1" style="font-size: 10px;">TIPO</label>
                 <select class="input-field w-full text-xs" 
                         data-entrada-id="${entradaId}"
                         data-field="tipo"
@@ -406,7 +412,7 @@ function addEntrada(dispositivoId, tipo, tipos) {
                 </select>
             </div>
             <div class="col-span-4">
-                <label class="text-label text-text-muted block mb-1" style="font-size: 10px;">Nome da Variável</label>
+                <label class="text-label text-text-muted block mb-1" style="font-size: 10px;">NOME DA VARIÁVEL</label>
                 <input type="text" 
                        placeholder="Ex: potencia_ativa" 
                        class="input-field w-full text-xs"
@@ -414,8 +420,8 @@ function addEntrada(dispositivoId, tipo, tipos) {
                        data-field="nome"
                        required>
             </div>
-            <div class="col-span-3">
-                <label class="text-label text-text-muted block mb-1" style="font-size: 10px;">Endereço Modbus</label>
+            <div class="col-span-2">
+                <label class="text-label text-text-muted block mb-1" style="font-size: 10px;">ENDEREÇO MODBUS</label>
                 <input type="number" 
                        placeholder="Ex: 13407" 
                        class="input-field w-full text-xs"
@@ -423,7 +429,16 @@ function addEntrada(dispositivoId, tipo, tipos) {
                        data-field="endereco"
                        required>
             </div>
-            <div class="col-span-2 flex items-end pb-1 gap-1">
+            <div class="col-span-1">
+                <label class="text-label text-text-muted block mb-1" style="font-size: 10px;">OFFSET</label>
+                <input type="number" 
+                       placeholder="Ex: -1" 
+                       class="input-field w-full text-xs"
+                       data-entrada-id="${entradaId}"
+                       data-field="offset"
+                       value="-1">
+            </div>
+            <div class="col-span-3 flex items-end pb-1 gap-1">
                 <button type="button" 
                         onclick="coletarDadosETeste('${entradaId}', '${tipo}')" 
                         class="flex items-center gap-1 px-3 py-1.5 bg-primary text-white rounded hover:bg-blue-600 transition-colors text-xs font-medium"
@@ -584,6 +599,7 @@ function searchVariaveis(dispositivoId, searchTerm) {
                     const nomeNormalizado = normalizeText(nomeOriginal);
                     const tipo = tipoInput?.value || '';
                     const endereco = enderecoInput?.value || '';
+                    const offset = entradaEl.querySelector('input[data-field="offset"]')?.value || '';
                     
                     // Busca case-insensitive, sem acentos e com palavras incompletas
                     if (nomeNormalizado.includes(searchNormalized)) {
@@ -591,6 +607,7 @@ function searchVariaveis(dispositivoId, searchTerm) {
                             nome: nomeOriginal,
                             tipo: tipo,
                             endereco: endereco,
+                            offset: offset,
                             secao: tipoEntrada,
                             secaoNome: secaoNomesMap[tipoEntrada] || tipoEntrada.charAt(0).toUpperCase() + tipoEntrada.slice(1).replace(/_/g, ' '),
                             sectionContentId: `${dispositivoId}_${tipoEntrada}_content`,
@@ -705,12 +722,14 @@ function coletarDadosETeste(entradaId, tipoSecao) {
     const nomeInput = entradaEl.querySelector('input[data-field="nome"]');
     const tipoInput = entradaEl.querySelector('select[data-field="tipo"]');
     const enderecoInput = entradaEl.querySelector('input[data-field="endereco"]');
+    const offsetInput = entradaEl.querySelector('input[data-field="offset"]');
     
     const nome = nomeInput?.value.trim();
     const tipo = tipoInput?.value;
     const endereco = parseInt(enderecoInput?.value);
+    const offset = offsetInput ? parseInt(offsetInput.value) : -1;
     
-    if (!nome || !tipo || !endereco) {
+    if (!nome || !tipo || !endereco || isNaN(endereco)) {
         showToast('Preencha todos os campos da variável', 'warning');
         return;
     }
@@ -772,6 +791,8 @@ function coletarDadosETeste(entradaId, tipoSecao) {
         endereco
     };
     
+    // Novo formato: agrupado por tipo
+    // { conexao: {...}, tipoSecao: { TIPO: { nome: [endereco, "TIPO", {opts}] } } }
     const data = {
         conexao: {
             ip: conexao_ip,
@@ -779,7 +800,7 @@ function coletarDadosETeste(entradaId, tipoSecao) {
         },
         [tipoSecao]: {
             [tipo]: {
-                [nome]: endereco
+                [nome]: [endereco, tipo, { offset: offset }]
             }
         }
     };
@@ -922,9 +943,50 @@ function loadConfiguration(config) {
                 // Carregar todas as seções (base + extras)
                 [...secoesBase, ...secoesExtras].forEach(tipoEntrada => {
                     if (dispData[tipoEntrada]) {
-                        Object.entries(dispData[tipoEntrada]).forEach(([tipo, entradas]) => {
-                            Object.entries(entradas).forEach(([nomeEntrada, endereco]) => {
-                                addEntrada(dispId, tipoEntrada, tipo === 'BOOLEAN' ? ['BOOLEAN'] : ['REAL', 'INT']);
+                        // Novo formato: { "nome": [endereco, "TIPO", {"offset": valor}] }
+                        // Formato antigo (compatibilidade): { "TIPO": { "nome": endereco } }
+                        Object.entries(dispData[tipoEntrada]).forEach(([chave, valor]) => {
+                            let nomeEntrada, tipo, endereco, offset;
+                            
+                            // Verificar se é novo formato (array)
+                            if (Array.isArray(valor)) {
+                                nomeEntrada = chave;
+                                endereco = valor[0];
+                                tipo = valor[1] || 'REAL';
+                                offset = valor[2]?.offset || -1;
+                            } 
+                            // Formato antigo (compatibilidade)
+                            else if (typeof valor === 'object' && valor !== null) {
+                                // É um objeto de tipos: { "REAL": {}, "INT": {} }
+                                Object.entries(valor).forEach(([tipoAntigo, entradas]) => {
+                                    Object.entries(entradas).forEach(([nome, enderecoAntigo]) => {
+                                        nomeEntrada = nome;
+                                        tipo = tipoAntigo;
+                                        endereco = enderecoAntigo;
+                                        offset = -1;
+                                        
+                                        // Adicionar entrada
+                                        const tiposPermitidos = getTiposPermitidosPorSecao(tipoEntrada);
+                                        addEntrada(dispId, tipoEntrada, tiposPermitidos);
+                                        const entradaCount = entradaCounters[dispId][tipoEntrada] - 1;
+                                        const entradaId = `${dispId}_${tipoEntrada}_${entradaCount}`;
+                                        const entradaEl = document.getElementById(entradaId);
+                                        
+                                        if (entradaEl) {
+                                            entradaEl.querySelector(`[data-entrada-id="${entradaId}"][data-field="tipo"]`).value = tipo;
+                                            entradaEl.querySelector(`[data-entrada-id="${entradaId}"][data-field="nome"]`).value = nomeEntrada;
+                                            entradaEl.querySelector(`[data-entrada-id="${entradaId}"][data-field="endereco"]`).value = endereco;
+                                            entradaEl.querySelector(`[data-entrada-id="${entradaId}"][data-field="offset"]`).value = offset;
+                                        }
+                                    });
+                                });
+                                return; // Pular o processamento abaixo para formato antigo
+                            }
+                            
+                            // Processar entrada do novo formato
+                            if (nomeEntrada !== undefined) {
+                                const tiposPermitidos = getTiposPermitidosPorSecao(tipoEntrada);
+                                addEntrada(dispId, tipoEntrada, tiposPermitidos);
                                 const entradaCount = entradaCounters[dispId][tipoEntrada] - 1;
                                 const entradaId = `${dispId}_${tipoEntrada}_${entradaCount}`;
                                 const entradaEl = document.getElementById(entradaId);
@@ -933,8 +995,9 @@ function loadConfiguration(config) {
                                     entradaEl.querySelector(`[data-entrada-id="${entradaId}"][data-field="tipo"]`).value = tipo;
                                     entradaEl.querySelector(`[data-entrada-id="${entradaId}"][data-field="nome"]`).value = nomeEntrada;
                                     entradaEl.querySelector(`[data-entrada-id="${entradaId}"][data-field="endereco"]`).value = endereco;
+                                    entradaEl.querySelector(`[data-entrada-id="${entradaId}"][data-field="offset"]`).value = offset;
                                 }
-                            });
+                            }
                         });
                     }
                 });
@@ -976,10 +1039,10 @@ function collectFormData() {
                     port: parseInt(dispEl.querySelector(`[data-dispositivo-id="${dispId}"][data-field="port"]`)?.value) || 0
                 },
                 caracteristicas: {},
-                leituras: { REAL: {}, INT: {} },
-                temperaturas: { REAL: {}, INT: {} },
-                alarmes: { BOOLEAN: {} },
-                comandos: { BOOLEAN: {} }
+                leituras: {},
+                temperaturas: {},
+                alarmes: {},
+                comandos: {}
             };
             
             config[nome].dispositivos[dispNome] = dispositivoData;
@@ -1037,7 +1100,7 @@ function collectFormData() {
                 if (entradas.length > 0) {
                     // Inicializar a seção se não existir
                     if (!dispositivoData[tipoEntrada]) {
-                        dispositivoData[tipoEntrada] = { REAL: {}, INT: {}, BOOLEAN: {} };
+                        dispositivoData[tipoEntrada] = {};
                     }
                     
                     entradas.forEach(entradaEl => {
@@ -1047,20 +1110,19 @@ function collectFormData() {
                         
                         const tipo = entradaEl.querySelector(`[data-entrada-id="${entradaId}"][data-field="tipo"]`)?.value;
                         const nomeEntrada = entradaEl.querySelector(`[data-entrada-id="${entradaId}"][data-field="nome"]`)?.value.trim();
-                        const endereco = parseInt(entradaEl.querySelector(`[data-entrada-id="${entradaId}"][data-field="endereco"]`)?.value);
+                        const enderecoInput = entradaEl.querySelector(`[data-entrada-id="${entradaId}"][data-field="endereco"]`);
+                        const offsetInput = entradaEl.querySelector(`[data-entrada-id="${entradaId}"][data-field="offset"]`);
                         
-                        if (tipo && nomeEntrada && endereco) {
-                            if (!dispositivoData[tipoEntrada][tipo]) {
-                                dispositivoData[tipoEntrada][tipo] = {};
-                            }
-                            dispositivoData[tipoEntrada][tipo][nomeEntrada] = endereco;
-                        }
-                    });
-                    
-                    // Remover tipos vazios
-                    Object.keys(dispositivoData[tipoEntrada]).forEach(tipo => {
-                        if (Object.keys(dispositivoData[tipoEntrada][tipo]).length === 0) {
-                            delete dispositivoData[tipoEntrada][tipo];
+                        const endereco = enderecoInput ? parseInt(enderecoInput.value) : null;
+                        const offset = offsetInput ? parseInt(offsetInput.value) : -1;
+                        
+                        if (tipo && nomeEntrada && endereco !== null && !isNaN(endereco)) {
+                            // Novo formato: [endereco, "TIPO", {"offset": valor}]
+                            dispositivoData[tipoEntrada][nomeEntrada] = [
+                                endereco,
+                                tipo,
+                                { offset: offset }
+                            ];
                         }
                     });
                     
@@ -1180,6 +1242,58 @@ document.getElementById('configForm').addEventListener('submit', async (e) => {
         console.error('Erro:', error);
         showToast('Erro ao salvar configuração: ' + error.message, 'error');
     }
+});
+
+// Listener para resposta do teste de leitura
+socket.on('resultado_teste_leitura', (data) => {
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    console.log('📡 RESPOSTA DO SERVIDOR');
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    
+    const statusDiv = document.getElementById(`${data.entrada_id}_status`);
+    if (!statusDiv) {
+        console.error('❌ Status div não encontrado:', data.entrada_id);
+        return;
+    }
+    
+    if (data.status === 'success') {
+        let valorFormatado = data.valor;
+        if (data.tipo === 'REAL') {
+            valorFormatado = parseFloat(data.valor).toFixed(2);
+        } else if (data.tipo === 'BOOLEAN') {
+            valorFormatado = data.valor ? 'TRUE' : 'FALSE';
+        }
+        
+        const agora = new Date();
+        const data_hora = agora.toLocaleString('pt-BR');
+        const tempo_resposta = data.tempo || 'N/A';
+        
+        console.log(`✅ SUCESSO: ${data.nome} = ${valorFormatado} (${tempo_resposta})`);
+        
+        statusDiv.innerHTML = `
+            <div class="flex flex-col gap-0.5">
+                <div class="flex items-center gap-1">
+                    <span class="material-icons text-sm text-success">check_circle</span>
+                    <span class="text-xs font-mono text-success font-medium">${valorFormatado}</span>
+                </div>
+                <span class="text-xs text-text-muted ml-5">${data_hora} • ${tempo_resposta}</span>
+            </div>
+        `;
+        
+    } else {
+        console.error(`❌ ERRO: ${data.message}`);
+        
+        const agora = new Date();
+        const data_hora = agora.toLocaleString('pt-BR');
+        
+        statusDiv.innerHTML = `
+            <div class="flex flex-col gap-0.5">
+                <span class="material-icons text-sm text-danger">error</span>
+                <span class="text-xs text-text-muted ml-5">${data_hora}</span>
+            </div>
+        `;
+    }
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
 });
 </script>
 {% endblock %}

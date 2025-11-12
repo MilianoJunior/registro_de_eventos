@@ -4,8 +4,10 @@ Centraliza a configuração de filtros relacionados à apresentação de dados.
 """
 
 from libs.models.utils.filters import TEMPLATE_FILTERS
+from libs.controllers.decorador import desempenho
 
 
+@desempenho
 def register_template_filters(app):
     """
     Registra todos os filtros customizados no ambiente Jinja2 da aplicação Flask.
