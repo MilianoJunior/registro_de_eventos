@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="pt-br"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Erro - EngeSEP O&amp;M</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#0d8bf2",
+              "background-light": "#f5f7f8",
+              "background-dark": "#101a22",
+            },
+            fontFamily: {
+              "display": ["Inter", "sans-serif"]
+            },
+            borderRadius: {
+                "DEFAULT": "0.25rem",
+                "lg": "0.5rem",
+                "xl": "0.75rem",
+                "full": "9999px"
+            },
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="font-display bg-background-light dark:bg-background-dark">
+<div class="relative flex min-h-screen w-full flex-col items-center justify-center p-4">
+<header class="absolute top-0 left-0 w-full p-6">
+<h1 class="text-xl font-bold text-gray-700 dark:text-gray-300">EngeSEP O&amp;M</h1>
+</header>
+<main class="flex w-full max-w-lg flex-col items-center justify-center">
+<div class="flex w-full flex-col items-center gap-8 rounded-xl bg-white/[.05] p-6 text-center shadow-lg backdrop-blur-sm sm:p-10">
+<span class="material-symbols-outlined text-6xl text-red-500">
+                    error
+                </span>
+<div class="flex flex-col items-center gap-2">
+<h2 class="text-2xl font-bold leading-tight tracking-tight text-white">Oops! Algo deu errado.</h2>
+<p class="text-base font-normal leading-normal text-gray-400">
+                        Não foi possível carregar esta página. Nossa equipe já foi notificada. Por favor, tente novamente em alguns instantes.
+                    </p>
+</div>
+<div class="w-full max-w-sm">
+<details class="group flex flex-col rounded-lg border border-white/20 bg-black/20 px-4 transition-colors hover:border-white/30">
+<summary class="flex cursor-pointer list-none items-center justify-between gap-4 py-3">
+<p class="text-sm font-medium text-gray-300">Detalhes do Erro</p>
+<span class="material-symbols-outlined text-gray-300 transition-transform duration-300 group-open:rotate-180">
+                                expand_more
+                            </span>
+</summary>
+<div class="border-t border-white/10 py-3">
+<p class="text-left text-xs font-normal leading-normal text-gray-400">
+                                Código do Erro: 500<br/>
+                                Timestamp: 2023-10-27T10:00:00Z<br/>
+                                ID da Requisição: abc-123-def-456<br/>
+                                Stack Trace: (...omitted for brevity)
+                            </p>
+</div>
+</details>
+</div>
+<button class="flex h-11 w-full max-w-sm cursor-pointer items-center justify-center gap-2 overflow-hidden rounded-lg bg-primary px-4 text-sm font-bold text-white shadow-lg shadow-primary/20 transition-all hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background-dark">
+<span class="material-symbols-outlined text-xl">
+                        refresh
+                    </span>
+<span class="truncate">Recarregar Página</span>
+</button>
+</div>
+</main>
+</div>
+</body></html>

@@ -124,3 +124,7 @@ class OpUsuarioEdit(Edit):
 class OpOcorrenciaEdit(Edit):
     def __init__(self, db_instance: Optional[Database] = None):
         super().__init__("op_ocorrencia", db_instance=db_instance)
+
+class OpParadasEdit(Edit):
+    def __init__(self, db_instance: Optional[Database] = None):
+        super().__init__("op_paradas", db_instance=db_instance)

@@ -244,7 +244,7 @@ def desempenho(func):
         start_time = time.time()
         result = func(*args, **kwargs)
         end_time = time.time()
-        print(f"{func.__name__} - Tempo de execução: {end_time - start_time} segundos")
-        print('-' * 50)
+        # print(f"{func.__name__} - Tempo de execução: {end_time - start_time} segundos")
+        # print('-' * 50)
         return result
     return wrapper

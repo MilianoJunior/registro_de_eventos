@@ -121,6 +121,16 @@ def schema_statements_5():
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
     """))
 
+    # 6) paradas (snapshots JSON de status das usinas)
+    stmts.append(dedent("""
+        CREATE TABLE IF NOT EXISTS op_paradas (
+          id BIGINT PRIMARY KEY AUTO_INCREMENT,
+          timestamp DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+          dados JSON NOT NULL,
+          KEY ix_timestamp (timestamp)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+    """))
+
     return stmts
 
 
@@ -162,9 +172,9 @@ def run():
     db = Database()
     try:
         db.connect()
-        db.execute_many(schema_statements_5())   # cria 5 tabelas
+        db.execute_many(schema_statements_5())   # cria 6 tabelas
         db.execute_many(trigger_statements())    # cria gatilhos
-        print("\n✅ Esquema (5 tabelas) criado/atualizado com sucesso.")
+        print("\n✅ Esquema (6 tabelas) criado/atualizado com sucesso.")
     except Exception as e:
         print(f"\n❌ Erro ao criar o esquema: {e}")
         raise
@@ -427,6 +437,137 @@ def populate_data_ocorrencia():
         db.close()
 
 
+def drop_tabela_paradas():
+    """
+    Deleta a tabela op_paradas
+    """
+    db = Database()
+    try:
+        conn = db.connect()
+        cur = conn.cursor()
+        
+        print("\n" + "="*60)
+        print("DELETANDO TABELA OP_PARADAS")
+        print("="*60)
+        
+        # Verifica se a tabela existe
+        cur.execute("""
+            SELECT COUNT(*) 
+            FROM INFORMATION_SCHEMA.TABLES 
+            WHERE TABLE_SCHEMA = DATABASE() 
+              AND TABLE_NAME = 'op_paradas'
+        """)
+        
+        exists = cur.fetchone()[0]
+        
+        if exists:
+            cur.execute("DROP TABLE op_paradas")
+            conn.commit()
+            print("✅ Tabela 'op_paradas' deletada com sucesso!")
+        else:
+            print("ℹ️  Tabela 'op_paradas' não existe, nada a fazer.")
+        
+        cur.close()
+        
+    except Exception as e:
+        print(f"\n❌ Erro ao deletar tabela op_paradas: {e}")
+        raise
+    finally:
+        db.close()
+
+
+def create_tabela_paradas():
+    """
+    Cria apenas a tabela op_paradas (status/potência das usinas)
+    """
+    db = Database()
+    try:
+        conn = db.connect()
+        cur = conn.cursor()
+        
+        print("\n" + "="*60)
+        print("CRIANDO TABELA OP_PARADAS")
+        print("="*60)
+        
+        # Verifica se a tabela já existe
+        cur.execute("""
+            SELECT COUNT(*) 
+            FROM INFORMATION_SCHEMA.TABLES 
+            WHERE TABLE_SCHEMA = DATABASE() 
+              AND TABLE_NAME = 'op_paradas'
+        """)
+        
+        exists = cur.fetchone()[0]
+        
+        if exists:
+            print("ℹ️  Tabela 'op_paradas' já existe")
+        else:
+            cur.execute(dedent("""
+                CREATE TABLE op_paradas (
+                  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+                  timestamp DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+                  dados JSON NOT NULL,
+                  KEY ix_timestamp (timestamp)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+            """))
+            conn.commit()
+            print("✅ Tabela 'op_paradas' criada com sucesso!")
+        
+        cur.close()
+        
+    except Exception as e:
+        print(f"\n❌ Erro ao criar tabela op_paradas: {e}")
+        raise
+    finally:
+        db.close()
+
+
+def migrate_labels_json():
+    """
+    Atualiza as labels de status antigas para as novas siglas no campo JSON da tabela op_paradas.
+    """
+    db = Database()
+    try:
+        conn = db.connect()
+        cur = conn.cursor()
+        
+        print("\n" + "="*60)
+        print("MIGRANDO LABELS DE STATUS (JSON)")
+        print("="*60)
+        
+        # Mapa de substituições (Da mais específica para a menos específica)
+        replacements = [
+            ("Status U.P. (parada)", "UP (parada)"),
+            ("Status U.P.G.M. (pronta para giro mecânico)", "UPGM (pronta para giro mecânico)"),
+            ("Status U.P.S.(pronta para sincronização)", "UPS (pronta para sincronização)"),
+            ("Status U.M.D.(sincronizado)", "UMD (marcha desexcitada)"),
+            ("Status sincronizado", "US (sincronizado)")
+        ]
+        
+        # Construção da query com REPLACE aninhados
+        # CAST(dados AS CHAR) converte o JSON para string para o REPLACE funcionar
+        expression = "CAST(dados AS CHAR)"
+        for old, new in replacements:
+            expression = f"REPLACE({expression}, '{old}', '{new}')"
+            
+        sql = f"UPDATE op_paradas SET dados = CAST({expression} AS JSON) WHERE dados IS NOT NULL"
+        
+        print("Executando atualização no banco de dados...")
+        cur.execute(sql)
+        rows_affected = cur.rowcount
+        conn.commit()
+        
+        print(f"✅ Atualização concluída! Registros afetados: {rows_affected}")
+        
+        cur.close()
+        
+    except Exception as e:
+        print(f"\n❌ Erro ao migrar labels: {e}")
+        raise
+    finally:
+        db.close()
+
+
 if __name__ == "__main__":
     import sys
     
@@ -451,14 +592,26 @@ if __name__ == "__main__":
         elif comando == 'schema':
             # Criar schema original
             run()
+        elif comando == 'paradas':
+            # Criar apenas tabela op_paradas
+            create_tabela_paradas()
+        elif comando == 'drop_paradas':
+            # Deletar tabela op_paradas
+            drop_tabela_paradas()
+        elif comando == 'labels':
+            # Migrar labels JSON
+            migrate_labels_json()
         else:
             print("Comandos disponíveis:")
-            print("  python cog_schema.py schema      - Cria o schema original")
-            print("  python cog_schema.py migrate     - Executa migração completa")
-            print("  python cog_schema.py campos      - Adiciona apenas os campos")
-            print("  python cog_schema.py constraints - Adiciona apenas as constraints")
-            print("  python cog_schema.py indices     - Adiciona apenas os índices")
-            print("  python cog_schema.py populate    - Popula data_ocorrencia com created_at")
+            print("  python cog_schema.py schema        - Cria o schema original (6 tabelas)")
+            print("  python cog_schema.py migrate       - Executa migração completa")
+            print("  python cog_schema.py campos        - Adiciona apenas os campos")
+            print("  python cog_schema.py constraints   - Adiciona apenas as constraints")
+            print("  python cog_schema.py indices       - Adiciona apenas os índices")
+            print("  python cog_schema.py populate      - Popula data_ocorrencia com created_at")
+            print("  python cog_schema.py paradas       - Cria apenas a tabela op_paradas")
+            print("  python cog_schema.py drop_paradas  - Deleta a tabela op_paradas")
+            print("  python cog_schema.py labels        - Migra labels de status antigas para novas no JSON")
     else:
         # Comando padrão: migração completa de resolução
         print("\n💡 Dica: Use 'python cog_schema.py migrate' para migração completa")

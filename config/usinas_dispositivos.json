@@ -14,12 +14,12 @@
           "velocidade máxima": 450
         },
         "leituras": {
-          "Potência Ativa": [13407,"INT"],
-          "Status U.P. (parada)": [20326,"BOOLEAN",{"offset": -1}],
-          "Status U.P.G.M. (pronta para giro mecânico)": [20327,"BOOLEAN",{"offset": -1}],
-          "Status U.P.S.(pronta para sincronização)": [20328,"BOOLEAN",{"offset": -1}],
-          "Status U.M.D.(sincronizado)": [20329,"BOOLEAN",{"offset": -1}],
-          "Status sincronizado": [20330,"BOOLEAN",{"offset": -1}]
+          "Potência Ativa": [13407,"INT",{"offset": -1}],
+          "UP (parada)": [20326,"BOOLEAN",{"offset": -1}],
+          "UPGM (pronta para giro mecânico)": [20327,"BOOLEAN",{"offset": -1}],
+          "UPS (pronta para sincronização)": [20328,"BOOLEAN",{"offset": -1}],
+          "UMD (marcha desexcitada)": [20329,"BOOLEAN",{"offset": -1}],
+          "US (sincronizado)": [20330,"BOOLEAN",{"offset": -1}]
         },
         "temperaturas": {
           "Enrolamento Fase A alarmes": [13989,"REAL",{"offset": -1}],
@@ -108,11 +108,11 @@
         },
         "leituras": {
           "Potência Ativa": [13407,"REAL",{"offset": -1}],
-          "Status U.P. (parada)": [20326,"BOOLEAN",{"offset": -1}],
-          "Status U.P.G.M. (pronta para giro mecânico)": [20327,"BOOLEAN",{"offset": -1}],
-          "Status U.P.S.(pronta para sincronização)": [20328,"BOOLEAN",{"offset": -1}],
-          "Status U.M.D.(sincronizado)": [20329,"BOOLEAN",{"offset": -1}],
-          "Status sincronizado": [20330,"BOOLEAN",{"offset": -1}]
+          "UP (parada)": [20326,"BOOLEAN",{"offset": -1}],
+          "UPGM (pronta para giro mecânico)": [20327,"BOOLEAN",{"offset": -1}],
+          "UPS (pronta para sincronização)": [20328,"BOOLEAN",{"offset": -1}],
+          "UMD (marcha desexcitada)": [20329,"BOOLEAN",{"offset": -1}],
+          "US (sincronizado)": [20330,"BOOLEAN",{"offset": -1}]
         },
         "temperaturas": {
           "Enrolamento Fase A alarmes": [13975,"REAL",{"offset": -1}],
@@ -180,11 +180,11 @@
         },
         "leituras": {
           "Potência Ativa": [13407,"REAL",{"offset": -1}],
-          "Status U.P. (parada)": [20326,"BOOLEAN",{"offset": -1}],
-          "Status U.P.G.M. (pronta para giro mecânico)": [20327,"BOOLEAN",{"offset": -1}],
-          "Status U.P.S.(pronta para sincronização)": [20328,"BOOLEAN",{"offset": -1}],
-          "Status U.M.D.(sincronizado)": [20329,"BOOLEAN",{"offset": -1}],
-          "Status sincronizado": [20330,"BOOLEAN",{"offset": -1}]
+          "UP (parada)": [20326,"BOOLEAN",{"offset": -1}],
+          "UPGM (pronta para giro mecânico)": [20327,"BOOLEAN",{"offset": -1}],
+          "UPS (pronta para sincronização)": [20328,"BOOLEAN",{"offset": -1}],
+          "UMD (marcha desexcitada)": [20329,"BOOLEAN",{"offset": -1}],
+          "US (sincronizado)": [20330,"BOOLEAN",{"offset": -1}]
         },
         "temperaturas": {
           "CSS-U1 alarmes": [13995,"REAL",{"offset": -1}],
@@ -248,11 +248,11 @@
         },
         "leituras": {
           "Potência Ativa": [13407,"REAL",{"offset": -1}],
-          "Status U.P. (parada)": [20326,"BOOLEAN",{"offset": -1}],
-          "Status U.P.G.M. (pronta para giro mecânico)": [20327,"BOOLEAN",{"offset": -1}],
-          "Status U.P.S.(pronta para sincronização)": [20328,"BOOLEAN",{"offset": -1}],
-          "Status U.M.D.(sincronizado)": [20329,"BOOLEAN",{"offset": -1}],
-          "Status sincronizado": [20330,"BOOLEAN",{"offset": -1}]
+          "UP (parada)": [20326,"BOOLEAN",{"offset": -1}],
+          "UPGM (pronta para giro mecânico)": [20327,"BOOLEAN",{"offset": -1}],
+          "UPS (pronta para sincronização)": [20328,"BOOLEAN",{"offset": -1}],
+          "UMD (marcha desexcitada)": [20329,"BOOLEAN",{"offset": -1}],
+          "US (sincronizado)": [20330,"BOOLEAN",{"offset": -1}]
         },
         "temperaturas": {
           "CS-01 alarmes": [14003,"REAL",{"offset": -1}],
@@ -321,11 +321,11 @@
         },
         "leituras": {
           "Potência Ativa": [13407,"REAL",{"offset": -1}],
-          "Status U.P. (parada)": [20326,"BOOLEAN"],
-          "Status U.P.G.M. (pronta para giro mecânico)": [20327,"BOOLEAN"],
-          "Status U.P.S.(pronta para sincronização)": [20328,"BOOLEAN"],
-          "Status U.M.D.(sincronizado)": [20329,"BOOLEAN"],
-          "Status sincronizado": [20330,"BOOLEAN"]
+          "UP (parada)": [20326,"BOOLEAN"],
+          "UPGM (pronta para giro mecânico)": [20327,"BOOLEAN"],
+          "UPS (pronta para sincronização)": [20328,"BOOLEAN"],
+          "UMD (marcha desexcitada)": [20329,"BOOLEAN"],
+          "US (sincronizado)": [20330,"BOOLEAN"]
         },
         "temperaturas": {
           "CS-01 alarmes": [14003,"REAL",{"offset": -1}],
@@ -401,11 +401,11 @@
         },
         "leituras": {
           "Potência Ativa": [13407,"REAL",{"offset": -1}],
-          "Status U.P. (parada)": [20326,"BOOLEAN",{"offset": -1}],
-          "Status U.P.G.M. (pronta para giro mecânico)": [20327,"BOOLEAN",{"offset": -1}],
-          "Status U.P.S.(pronta para sincronização)": [20328,"BOOLEAN",{"offset": -1}],
-          "Status U.M.D.(sincronizado)": [20329,"BOOLEAN",{"offset": -1}],
-          "Status sincronizado": [20330,"BOOLEAN",{"offset": -1}]
+          "UP (parada)": [20326,"BOOLEAN",{"offset": -1}],
+          "UPGM (pronta para giro mecânico)": [20327,"BOOLEAN",{"offset": -1}],
+          "UPS (pronta para sincronização)": [20328,"BOOLEAN",{"offset": -1}],
+          "UMD (marcha desexcitada)": [20329,"BOOLEAN",{"offset": -1}],
+          "US (sincronizado)": [20330,"BOOLEAN",{"offset": -1}]
         },
         "temperaturas": {
           "CS-U2 alarmes": [13995,"REAL",{"offset": -1}],
@@ -459,11 +459,11 @@
         },
         "leituras": {
           "Potência Ativa": [13407,"REAL",{"offset": -1}],
-          "Status U.P. (parada)": [20326,"BOOLEAN",{"offset": -1}],
-          "Status U.P.G.M. (pronta para giro mecânico)": [20327,"BOOLEAN",{"offset": -1}],
-          "Status U.P.S.(pronta para sincronização)": [20328,"BOOLEAN",{"offset": -1}],
-          "Status U.M.D.(sincronizado)": [20329,"BOOLEAN",{"offset": -1}],
-          "Status sincronizado": [20330,"BOOLEAN",{"offset": -1}]
+          "UP (parada)": [20326,"BOOLEAN",{"offset": -1}],
+          "UPGM (pronta para giro mecânico)": [20327,"BOOLEAN",{"offset": -1}],
+          "UPS (pronta para sincronização)": [20328,"BOOLEAN",{"offset": -1}],
+          "UMD (marcha desexcitada)": [20329,"BOOLEAN",{"offset": -1}],
+          "US (sincronizado)": [20330,"BOOLEAN",{"offset": -1}]
         },
         "temperaturas": {
           "CS-U2 alarmes": [13995,"REAL",{"offset": -1}],
@@ -524,11 +524,11 @@
         },
         "leituras": {
           "Potência Ativa": [13407,"REAL",{"offset": -1}],
-          "Status U.P. (parada)": [20326,"BOOLEAN",{"offset": -1}],
-          "Status U.P.G.M. (pronta para giro mecânico)": [20327,"BOOLEAN",{"offset": -1}],
-          "Status U.P.S.(pronta para sincronização)": [20328,"BOOLEAN",{"offset": -1}],
-          "Status U.M.D.(sincronizado)": [20329,"BOOLEAN",{"offset": -1}],
-          "Status sincronizado": [20330,"BOOLEAN",{"offset": -1}]
+          "UP (parada)": [20326,"BOOLEAN",{"offset": -1}],
+          "UPGM (pronta para giro mecânico)": [20327,"BOOLEAN",{"offset": -1}],
+          "UPS (pronta para sincronização)": [20328,"BOOLEAN",{"offset": -1}],
+          "UMD (marcha desexcitada)": [20329,"BOOLEAN",{"offset": -1}],
+          "US (sincronizado)": [20330,"BOOLEAN",{"offset": -1}]
         },
         "temperaturas": {
           "Enrolamento Fase A alarmes": [13979,"REAL",{"offset": -1}],
@@ -591,11 +591,11 @@
         },
         "leituras": {
           "Potência Ativa": [13407,"REAL",{"offset": -1}],
-          "Status U.P. (parada)": [20326,"BOOLEAN",{"offset": -1}],
-          "Status U.P.G.M. (pronta para giro mecânico)": [20327,"BOOLEAN",{"offset": -1}],
-          "Status U.P.S.(pronta para sincronização)": [20328,"BOOLEAN",{"offset": -1}],
-          "Status U.M.D.(sincronizado)": [20329,"BOOLEAN",{"offset": -1}],
-          "Status sincronizado": [20330,"BOOLEAN",{"offset": -1}]
+          "UP (parada)": [20326,"BOOLEAN",{"offset": -1}],
+          "UPGM (pronta para giro mecânico)": [20327,"BOOLEAN",{"offset": -1}],
+          "UPS (pronta para sincronização)": [20328,"BOOLEAN",{"offset": -1}],
+          "UMD (marcha desexcitada)": [20329,"BOOLEAN",{"offset": -1}],
+          "US (sincronizado)": [20330,"BOOLEAN",{"offset": -1}]
         },
         "temperaturas": {
           "Enrolamento Fase A alarmes": [13979,"REAL",{"offset": -1}],

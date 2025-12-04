@@ -21,16 +21,16 @@ def desempenho(func):
         if LOGS_LEVEL >= 1:
             # Extrai o nome do módulo/arquivo de forma segura
             modulo = func.__module__.split('.')[-1] if func.__module__ else 'desconhecido'
-            print('-' * 50)
-            print(f" {contador} - Função: {func.__name__} | Local: {modulo}")
+            # print('-' * 50)
+            # print(f" {contador} - Função: {func.__name__} | Local: {modulo}")
         
         inicio = time.time()
         resultado = func(*args, **kwargs)
         fim = time.time() - inicio
         
-        if LOGS_LEVEL >= 1:
-            print(f"  {contador} - Tempo de execução: {fim} segundos")
-            print('-' * 50)
+        # if LOGS_LEVEL >= 1:
+        #     print(f"  {contador} - Tempo de execução: {fim} segundos")
+        #     print('-' * 50)
         
         return resultado
     return wrapper

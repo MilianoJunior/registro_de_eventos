@@ -9,8 +9,7 @@ from collections import Counter
 # ============================================================
 # CONFIGURAÇÃO GLOBAL DE DESENVOLVIMENTO
 # ============================================================
-DEVELOPER_MODE = True # Alterar para False em produção
-
+DEVELOPER_MODE = False # Alterar para False em produção
 
 # ============================================================
 # TABELA: op_usina

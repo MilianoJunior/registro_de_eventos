@@ -107,3 +107,6 @@ class OpOcorrenciaCreate(Create):
     def __init__(self, db_instance: Optional[Database] = None):
         super().__init__("op_ocorrencia", db_instance=db_instance)
 
+class OpParadasCreate(Create):
+    def __init__(self, db_instance: Optional[Database] = None):
+        super().__init__("op_paradas", db_instance=db_instance)
