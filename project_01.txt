@@ -1,0 +1,51 @@
+PROJETO: COG (Central de Operação de Geração) – Monitoramento + Registro de Ocorrências para CGHs/PCHs
+
+OBJETIVO
+- Centralizar status operacional e potência das usinas (UGs) e permitir registro/auditoria de ocorrências operacionais.
+- Operação remota via VPN (Tailscale), com atualização periódica aceitável de até 30s.
+
+CENÁRIO / CARGA
+- Hoje: ~6 usinas; meta 6–12 meses: ~10 usinas.
+- Por usina: 3–15 dispositivos; por usina: 1–4 UGs.
+- Clientes simultâneos: normalmente 1–2; pior caso 5.
+- Abas por operador: normalmente 1–2; pior 3 (~15 sockets).
+- “Tempo real” para potência/status: até 30s é aceitável.
+
+TOPOLOGIA
+- Cada usina tem um PC Windows 11 Pro rodando uma API local (Python + Modbus TCP) empacotada (pyinstaller) e registrada como serviço (winsw).
+- O servidor central (Flask) acessa cada API via HTTP (httpx) pela VPN.
+- Infra atual: VM GCP Ubuntu 22.04 (e2-small 2vCPU/2GB) com Tailscale. Banco MySQL (hoje Railway com cópia local sincronizada; plano de migrar MySQL para GCP).
+
+BACKEND (Python)
+- Flask + Flask-SocketIO (async_mode="threading").
+- Coleta: libs/servicos/coletor_core.py
+  - Lê config/usinas_dispositivos.json
+  - Faz leituras via httpx (bridge da usina) por dispositivo
+  - Consolida payload por usina com dispositivos e campos como potencia_ativa_mw e status
+  - Cache global TTL: 5s (get_dados_cache) para evitar múltiplas coletas repetidas quando chegam várias solicitações.
+- Socket handlers: libs/sockets/status_usina.py
+  - Evento legacy: solicitar_status_usinas → emite status_usinas_dados (broadcast) para Home.
+  - Opção B implementada: rooms por usina:
+    - entrar_usina_room / sair_usina_room (room = "usina:<slug>")
+    - solicitar_status_usina → emite status_usina_dados com payload mínimo (potência total + potência por dispositivo) apenas para o room da usina.
+- Thread background (main.py): coleta a cada 30s, persiste payload em op_paradas e emite status_usinas_dados.
+
+FRONTEND (Jinja + Tailwind offline)
+- Templates em libs/views/*.html; base.html injeta Socket.IO e cria window.socket = io() no fim do body.
+- Tailwind offline em libs/views/static/css/tailwind.min.css + styles.css (custom).
+- Home:
+  - Atualiza status e potência por usina a partir de status_usinas_dados.
+- Usina (usinas.html):
+  - Usa Opção B: entra no room da usina e solicita status mínimo (30s), com retry para aguardar window.socket.
+  - Atualização incremental no DOM (textContent, sem re-render pesado).
+- Ajustes feitos:
+  - Evitar 404 virar 500: handler global de exceção não intercepta HTTPException; rota 204 para /.well-known/appspecific/com.chrome.devtools.json (ruído do Chrome).
+  - Layout filtros em usinas.html com CSS manual (sem rebuild Tailwind).
+  - Home: altura da lista via styles.css (sem rebuild Tailwind).
+
+BANCO (MySQL)
+- Tabelas principais: op_usina, op_ocorrencia, op_ocorrencia_hist, op_anexo e op_paradas (persistência periódica).
+- CRUD de ocorrências é parte central do sistema (registro, status, auditoria).
+
+
+A ideia principal é usa IA para analisar os dados e prever falhas, analisar as imagens das cameras para ver fumaça ou então instalar cameras que medem o calor, o software seria a parte que integra isso com uma interface visual e sonora que mostra os valores criticos. Estou confiante, aqui no Brasil é uma area promissora, acredito que a energia renovavel é em todas as areas, mas mesmo a energia sem capctada de outras formas, vai necessitar operação integrada e centralizada. Em Janeiro desse ano, estive em uma reunião com Carlos Grillo (Diretor Superintendente WEG Digital & Sistemas), foi o apice da minha carreira profissional, enfim, meu irmão que é dono da EngeSEP está rico (tem uns 15 milhões de patrimonio), eu tenho 2 empregos e uns 300 mil de dividas nos bancos 

@@ -1,8 +1,14 @@
-# libs/controllers/configController.py
+# -------------------------------------------------------------------
+# FLUXO DO MÓDULO
+# 1. config_page → Renderiza a página de configuração (usa ViewModel)
+# 2. salvar_configuracao → Valida e salva o JSON de usinas/dispositivos
+# 3. carregar_configuracao → Lê e retorna o JSON salvo
+# 4. testar_leitura_async → Testa conexão Modbus em tempo real
+# -------------------------------------------------------------------
+
 from flask import render_template, request, jsonify
 from datetime import datetime
-from libs.models.read import Read
-from libs.models.utils.mock_data import DEVELOPER_MODE, get_mock_data
+from libs.models.modelstate import ConfiguracoesPageViewModel, DadosContexto
 from libs.controllers.decorador import desempenho
 from libs.servicos.readRT import get_data
 import json
@@ -11,19 +17,14 @@ import asyncio
 
 class ConfigController:
     def __init__(self):
-        self.usinas = None if DEVELOPER_MODE else Read("op_usina")
         self.config_file_path = "config/usinas_dispositivos.json"
     
     @desempenho
     def config_page(self):
         """Renderiza a página de configuração"""
-        if DEVELOPER_MODE:
-            # Usa dados mock do arquivo mock_data.py
-            usinas = get_mock_data('op_usina')
-        else:
-            # Usa dados reais do banco de dados
-            usinas = self.usinas.get_all()
-        return render_template("configuracoes.html", usinas=usinas)
+        ctx = DadosContexto()
+        vm = ConfiguracoesPageViewModel.carregar(ctx)
+        return render_template("configuracoes.html", usinas=vm.usinas)
     
     @desempenho
     def salvar_configuracao(self):

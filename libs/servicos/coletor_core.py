@@ -2,13 +2,16 @@
 # FLUXO DO MÓDULO
 # 1. coletar_status_completo → orquestra coleta completa (entry point)
 # 2. _carregar_configuracoes → lê JSON de configuração
-# 3. _coletar_async → cria tarefas paralelas por dispositivo
-# 4. _ler_dispositivo → lê status/potência de um dispositivo
-# 5. _extrair_registradores_status → filtra registradores de status
-# 6. _extrair_registradores_potencia → filtra registradores de potência
-# 7. _determinar_status → determina status geral da UG
-# 8. _normalizar_slug → normaliza nome para slug
-# 9. get_dados_cache → busca cache ou executa leitura real
+# 3. get_dados_cache → busca cache ou executa leitura real
+# 4. registrar_intervencao → registra intervenção manual e persiste em JSON
+# 5. _carregar_intervencoes → carrega intervenções persistidas do JSON
+# 6. _salvar_intervencoes → salva intervenções em JSON (atômico)
+# 7. _coletar_async → cria tarefas paralelas por dispositivo
+# 8. _ler_dispositivo → lê status/potência de um dispositivo
+# 9. _extrair_registradores_status → filtra registradores de status
+# 10. _extrair_registradores_potencia → filtra registradores de potência
+# 11. _determinar_status → determina status geral da UG
+# 12. _normalizar_slug → normaliza nome para slug
 # -------------------------------------------------------------------
 
 import asyncio
@@ -18,13 +21,16 @@ import time
 import unicodedata
 from pathlib import Path
 from typing import Any, Dict, List, Optional
+from threading import Lock
 
 from libs.servicos.readRT import get_data
+from libs.controllers.decorador import desempenho
 
 # -------------------------------------------------------------------
 # CONFIGURAÇÕES
 # -------------------------------------------------------------------
 CONFIG_PATH = Path("config/usinas_dispositivos.json")
+INTERVENCOES_PATH = Path("config/intervencoes_operador.json")
 DEFAULT_TIMEOUT = 3.0
 
 STATUS_LABEL_ORDER = [
@@ -42,12 +48,11 @@ POTENCIA_LABELS = ["Potência Ativa"]
 # -------------------------------------------------------------------
 _cache_leituras: Dict[str, tuple] = {}  # {chave: (payload, timestamp)}
 CACHE_TTL_SEGUNDOS = 5  # cache válido por 5 segundos
+_lock_intervencoes = Lock()
+_lock_config = Lock()
+_config_cache: Dict[str, Any] = {"mtime": None, "data": None}
 
 def get_dados_cache(chave: str, func_coleta, *args, **kwargs):
-    """
-    Busca no cache ou executa coleta real.
-    Evita leituras duplicadas quando socket e thread requisitam simultaneamente.
-    """
     agora = time.time()
     
     if chave in _cache_leituras:
@@ -55,46 +60,78 @@ def get_dados_cache(chave: str, func_coleta, *args, **kwargs):
         if agora - timestamp_cache < CACHE_TTL_SEGUNDOS:
             print(f"[CACHE] Retornando dados em cache para '{chave}' (idade: {agora - timestamp_cache:.1f}s)")
             return payload_cache
-    
-    # Cache expirado ou inexistente, executa coleta
-    # print(f"[CACHE] Executando nova coleta para '{chave}'")
+
     payload = func_coleta(*args, **kwargs)
     _cache_leituras[chave] = (payload, agora)
     return payload
-
-# -------------------------------------------------------------------
-# FUNÇÕES PRINCIPAIS
-# -------------------------------------------------------------------
-
 # -------------------------------------------------------------------
 # ESTADO GLOBAL DE INTERVENÇÕES
 # Armazena intervenções manuais: { 'slug_usina': { 'nome_disp': 'MOTIVO' } }
 # -------------------------------------------------------------------
 INTERVENCOES_GLOBAIS: Dict[str, Dict[str, str]] = {}
 
+@desempenho
+def _carregar_intervencoes() -> Dict[str, Dict[str, str]]:
+    try:
+        if not INTERVENCOES_PATH.exists():
+            return {}
+        with INTERVENCOES_PATH.open("r", encoding="utf-8") as f:
+            data = json.load(f)
+        if not isinstance(data, dict):
+            return {}
+        out: Dict[str, Dict[str, str]] = {}
+        for usina_slug, dispositivos in data.items():
+            if not isinstance(usina_slug, str) or not isinstance(dispositivos, dict):
+                continue
+            out[usina_slug] = {
+                str(nome_disp): str(motivo)
+                for nome_disp, motivo in dispositivos.items()
+                if motivo in ("MANUTENCAO", "RESTRICAO")
+            }
+        return {k: v for k, v in out.items() if v}
+    except Exception as e:
+        print(f"[ERRO][coletor_core] Falha ao carregar intervenções: {e}")
+        return {}
+
+@desempenho
+def _salvar_intervencoes(intervencoes: Dict[str, Dict[str, str]]) -> None:
+    try:
+        INTERVENCOES_PATH.parent.mkdir(parents=True, exist_ok=True)
+        tmp = INTERVENCOES_PATH.with_suffix(".tmp")
+        with tmp.open("w", encoding="utf-8") as f:
+            json.dump(intervencoes, f, ensure_ascii=False, indent=2, sort_keys=True)
+        tmp.replace(INTERVENCOES_PATH)
+    except Exception as e:
+        print(f"[ERRO][coletor_core] Falha ao salvar intervenções: {e}")
+
+# Carrega intervenções persistidas ao iniciar o módulo (sobrevive a refresh/restart)
+INTERVENCOES_GLOBAIS.update(_carregar_intervencoes())
+
 def registrar_intervencao(usina_slug: str, dispositivo_nome: str, motivo: str):
     """Registra ou remove uma intervenção manual no estado global."""
-    if motivo == "NORMAL":
-        if usina_slug in INTERVENCOES_GLOBAIS:
-            INTERVENCOES_GLOBAIS[usina_slug].pop(dispositivo_nome, None)
-            if not INTERVENCOES_GLOBAIS[usina_slug]:
-                del INTERVENCOES_GLOBAIS[usina_slug]
-    else:
-        if usina_slug not in INTERVENCOES_GLOBAIS:
-            INTERVENCOES_GLOBAIS[usina_slug] = {}
-        INTERVENCOES_GLOBAIS[usina_slug][dispositivo_nome] = motivo
+    if not usina_slug or not dispositivo_nome or not motivo:
+        return
+
+    with _lock_intervencoes:
+        if motivo == "NORMAL":
+            if usina_slug in INTERVENCOES_GLOBAIS:
+                INTERVENCOES_GLOBAIS[usina_slug].pop(dispositivo_nome, None)
+                if not INTERVENCOES_GLOBAIS[usina_slug]:
+                    del INTERVENCOES_GLOBAIS[usina_slug]
+        elif motivo in ("MANUTENCAO", "RESTRICAO"):
+            if usina_slug not in INTERVENCOES_GLOBAIS:
+                INTERVENCOES_GLOBAIS[usina_slug] = {}
+            INTERVENCOES_GLOBAIS[usina_slug][dispositivo_nome] = motivo
+        else:
+            return
+
+        _salvar_intervencoes(INTERVENCOES_GLOBAIS)
+
+        # Força refletir o override imediatamente após intervenção (evita TTL do cache)
+        _cache_leituras.pop("coleta_completa", None)
 
 def coletar_status_completo(intervencoes_externas: Dict[str, Any] = None) -> Dict[str, Any]:
-    """
-    Entry point: coleta status de todas as usinas.
-    Retorna payload completo pronto para salvar/emitir.
-    
-    Args:
-        intervencoes_externas: (Obsoleto/Opcional) Mantido para compatibilidade, 
-                               mas agora usamos INTERVENCOES_GLOBAIS.
-    """
     try:
-        # Usa o estado global de intervenções
         usinas = _coletar_status_usinas(INTERVENCOES_GLOBAIS)
         return {
             "success": True,
@@ -125,13 +162,29 @@ def _coletar_status_usinas(intervencoes_externas: Dict[str, Any] = None) -> List
         loop.close()
         asyncio.set_event_loop(None)
 
+@desempenho
 def _carregar_configuracoes() -> Dict[str, Any]:
     """Lê arquivo JSON de configuração das usinas."""
     try:
+        if not CONFIG_PATH.exists():
+            print(f"[ERRO][coletor_core] Arquivo não encontrado: {CONFIG_PATH}")
+            return {}
+
+        mtime = CONFIG_PATH.stat().st_mtime
+        with _lock_config:
+            if _config_cache.get("mtime") == mtime and isinstance(_config_cache.get("data"), dict):
+                return _config_cache["data"]
+
         with CONFIG_PATH.open("r", encoding="utf-8") as f:
-            return json.load(f)
-    except FileNotFoundError:
-        print(f"[ERRO][coletor_core] Arquivo não encontrado: {CONFIG_PATH}")
+            data = json.load(f)
+
+        if not isinstance(data, dict):
+            return {}
+
+        with _lock_config:
+            _config_cache["mtime"] = mtime
+            _config_cache["data"] = data
+        return data
     except json.JSONDecodeError as e:
         print(f"[ERRO][coletor_core] Erro ao parsear JSON: {e}")
     except Exception as e:

@@ -244,318 +244,424 @@
 </div>
 
 <script>
-    // ============================================================
-    // UTILITÁRIOS
-    // ============================================================
-    function getURLParams() {
-        const params = new URLSearchParams(window.location.search);
-        return {
-            tab: params.get('tab'),
-            ocorrencia_id: params.get('ocorrencia_id')
-        };
-    }
+    (function() {
+        // Proteção contra múltiplas inicializações
+        if (window.__ocorrenciasPageInitialized) return;
+        window.__ocorrenciasPageInitialized = true;
 
-    // ============================================================
-    // GERENCIAMENTO DE TABS
-    // ============================================================
-    const tabButtons = document.querySelectorAll('.tab-button');
-    const formOcorrencia = document.getElementById('form-ocorrencia');
-    const formResolver = document.getElementById('form-resolver');
-    
-    function switchToTab(tabId) {
-        // Remove active de todos
-        tabButtons.forEach(btn => {
-            btn.classList.remove('active', 'border-primary', 'text-primary');
-            btn.classList.add('border-transparent', 'text-text-muted');
-        });
-        
-        // Encontra e ativa a tab específica
-        const targetTab = document.getElementById(`tab-${tabId}`);
-        if (targetTab) {
-            targetTab.classList.add('active', 'border-primary', 'text-primary');
-            targetTab.classList.remove('border-transparent', 'text-text-muted');
-        }
-        
-        // Mostra/esconde forms
-        if (tabId === 'registrar') {
-            formOcorrencia.classList.remove('hidden');
-            formResolver.classList.add('hidden');
-        } else if (tabId === 'resolver') {
-            formOcorrencia.classList.add('hidden');
-            formResolver.classList.remove('hidden');
-            return carregarOcorrenciasAbertas(); // Retorna a promise
-        }
-    }
-    
-    tabButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            const tabId = this.id.replace('tab-', '');
-            switchToTab(tabId);
-        });
-    });
-    
-    // ============================================================
-    // BOTÕES "AGORA" PARA DATA/HORA
-    // ============================================================
-    function formatarDataTimeLocal(date) {
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const day = String(date.getDate()).padStart(2, '0');
-        const hours = String(date.getHours()).padStart(2, '0');
-        const minutes = String(date.getMinutes()).padStart(2, '0');
-        return `${year}-${month}-${day}T${hours}:${minutes}`;
-    }
-    
-    document.getElementById('btn-agora').addEventListener('click', function() {
-        document.getElementById('data_ocorrencia').value = formatarDataTimeLocal(new Date());
-    });
-    
-    document.getElementById('btn-agora-resolucao').addEventListener('click', function() {
-        document.getElementById('data_resolucao').value = formatarDataTimeLocal(new Date());
-    });
-    
-    // Inicializar com data atual
-    document.getElementById('data_ocorrencia').value = formatarDataTimeLocal(new Date());
-    
-    // ============================================================
-    // TEMPLATE DE TEXTO
-    // ============================================================
-    document.getElementById('template_texto').addEventListener('change', function() {
-        const selectedOption = this.options[this.selectedIndex];
-        const textoTemplate = selectedOption.getAttribute('data-texto');
-        if (textoTemplate) {
-            document.getElementById('descricao').value = textoTemplate;
-        }
-    });
-    
-    // ============================================================
-    // CARREGAR OCORRÊNCIAS QUE REQUEREM AÇÃO
-    // ============================================================
-    async function carregarOcorrenciasAbertas() {
-        try {
-            // Busca apenas ocorrências que requerem ação e ainda não foram resolvidas
-            const response = await fetch('/api/ocorrencias?status=aberta,em_andamento&requer_acao=true');
-            const result = await response.json();
-            
-            const select = document.getElementById('ocorrencia_resolver');
-            select.innerHTML = '<option value="">Selecione uma ocorrência que requer ação</option>';
-            
-            if (result.success && result.data) {
-                // Filtra apenas ocorrências com requer_acao=true
-                const ocorrenciasComAcao = result.data.filter(oc => oc.requer_acao === true || oc.requer_acao === 1);
-                
-                if (ocorrenciasComAcao.length === 0) {
-                    const option = document.createElement('option');
-                    option.value = '';
-                    option.textContent = 'Nenhuma ocorrência requer ação no momento';
-                    option.disabled = true;
-                    select.appendChild(option);
-                } else {
-                    ocorrenciasComAcao.forEach(oc => {
+        const OcorrenciasModule = {
+            // --- Configuração Centralizada (constantes no topo) ---
+            config: {
+                endpoints: {
+                    ocorrencias: '/salvar_ocorrencia',
+                    ocorrenciasAbertas: '/listar_ocorrencias?status=aberta,em_andamento&requer_acao=true',
+                    resolverOcorrencia: (id) => `/resolver_ocorrencia/${id}`,
+                },
+                redirect: {
+                    index: "{{ url_for('index') }}",
+                },
+                timeoutsMs: {
+                    esconderToast: 5000,
+                    redirecionar: 2000,
+                },
+                classes: {
+                    tabActiveAdd: ['active', 'border-primary', 'text-primary'],
+                    tabActiveRemove: ['border-transparent', 'text-text-muted'],
+                    tabInactiveAdd: ['border-transparent', 'text-text-muted'],
+                    tabInactiveRemove: ['active', 'border-primary', 'text-primary'],
+                    toastBase: 'fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50',
+                    toastSuccess: 'bg-success text-white',
+                    toastError: 'bg-danger text-white',
+                    toastWarning: 'bg-warning text-white',
+                },
+            },
+
+            // --- Estado do Módulo ---
+            state: {
+                dom: {},
+                toastTimeoutId: null,
+                ocorrenciasPorId: new Map(),
+            },
+
+            // --- Métodos Principais ---
+            init() {
+                this._cacheDom();
+                if (!this.state.dom.formOcorrencia || !this.state.dom.formResolver) return;
+                this._bindEventos();
+                this._inicializarDataOcorrenciaAgora();
+                this._initFromUrlParams();
+            },
+
+            // --- DOM / Eventos ---
+            _cacheDom() {
+                this.state.dom = {
+                    tabButtons: document.querySelectorAll('.tab-button'),
+                    formOcorrencia: document.getElementById('form-ocorrencia'),
+                    formResolver: document.getElementById('form-resolver'),
+                    mensagem: document.getElementById('mensagem'),
+
+                    btnAgoraOcorrencia: document.getElementById('btn-agora'),
+                    btnAgoraResolucao: document.getElementById('btn-agora-resolucao'),
+
+                    usinaId: document.getElementById('usina_id'),
+                    operadorId: document.getElementById('operador_id'),
+                    tipo: document.getElementById('tipo'),
+                    categoria: document.getElementById('categoria'),
+                    dataOcorrencia: document.getElementById('data_ocorrencia'),
+                    unidade: document.getElementById('unidade'),
+                    tags: document.getElementById('tags'),
+                    templateTexto: document.getElementById('template_texto'),
+                    descricao: document.getElementById('descricao'),
+                    severidade: document.getElementById('severidade'),
+                    playbook: document.getElementById('playbook'),
+                    requerAcao: document.getElementById('requer_acao'),
+
+                    ocorrenciaResolverSelect: document.getElementById('ocorrencia_resolver'),
+                    resolvidaPor: document.getElementById('resolvida_por'),
+                    dataResolucao: document.getElementById('data_resolucao'),
+                    resolucaoDescricao: document.getElementById('resolucao_descricao'),
+
+                    previewBox: document.getElementById('preview-ocorrencia'),
+                    previewUsina: document.getElementById('preview-usina'),
+                    previewTipo: document.getElementById('preview-tipo'),
+                    previewCategoria: document.getElementById('preview-categoria'),
+                    previewUnidade: document.getElementById('preview-unidade'),
+                    previewData: document.getElementById('preview-data'),
+                    previewDescricao: document.getElementById('preview-descricao'),
+                };
+            },
+
+            _bindEventos() {
+                const d = this.state.dom;
+
+                d.tabButtons.forEach((button) => {
+                    button.addEventListener('click', () => {
+                        const tabId = (button.id || '').replace('tab-', '');
+                        this.switchToTab(tabId);
+                    });
+                });
+
+                if (d.btnAgoraOcorrencia && d.dataOcorrencia) {
+                    d.btnAgoraOcorrencia.addEventListener('click', () => this._setInputAgora(d.dataOcorrencia));
+                }
+                if (d.btnAgoraResolucao && d.dataResolucao) {
+                    d.btnAgoraResolucao.addEventListener('click', () => this._setInputAgora(d.dataResolucao));
+                }
+
+                if (d.templateTexto && d.descricao) {
+                    d.templateTexto.addEventListener('change', () => this._aplicarTemplateSelecionado());
+                }
+
+                if (d.ocorrenciaResolverSelect) {
+                    d.ocorrenciaResolverSelect.addEventListener('change', () => this._atualizarPreviewOcorrenciaSelecionada());
+                }
+
+                d.formOcorrencia.addEventListener('submit', (e) => this._submitRegistrar(e));
+                d.formResolver.addEventListener('submit', (e) => this._submitResolver(e));
+            },
+
+            // --- URL Params / Inicialização ---
+            _getUrlParams() {
+                const params = new URLSearchParams(window.location.search);
+                return { tab: params.get('tab'), ocorrencia_id: params.get('ocorrencia_id') };
+            },
+
+            async _initFromUrlParams() {
+                const params = this._getUrlParams();
+                if (params.tab !== 'resolver') return;
+
+                await this.switchToTab('resolver');
+                if (!params.ocorrencia_id) return;
+                await this._selecionarOcorrenciaPorId(params.ocorrencia_id);
+            },
+
+            async _selecionarOcorrenciaPorId(ocorrenciaId) {
+                const d = this.state.dom;
+                if (!d.ocorrenciaResolverSelect) return;
+
+                const id = String(ocorrenciaId);
+                const option = Array.from(d.ocorrenciaResolverSelect.options).find((opt) => String(opt.value) === id);
+                if (!option) {
+                    this._mostrarToast('warning', 'Ocorrência não encontrada na lista de ações pendentes.');
+                    return;
+                }
+
+                d.ocorrenciaResolverSelect.value = id;
+                this._atualizarPreviewOcorrenciaSelecionada();
+                d.formResolver.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            },
+
+            // --- Tabs ---
+            async switchToTab(tabId) {
+                const d = this.state.dom;
+                const id = String(tabId || '');
+                if (!d.formOcorrencia || !d.formResolver) return;
+
+                this._atualizarBotoesTab(id);
+
+                if (id === 'registrar') {
+                    d.formOcorrencia.classList.remove('hidden');
+                    d.formResolver.classList.add('hidden');
+                    return;
+                }
+
+                if (id === 'resolver') {
+                    d.formOcorrencia.classList.add('hidden');
+                    d.formResolver.classList.remove('hidden');
+                    await this._carregarOcorrenciasAbertas();
+                }
+            },
+
+            _atualizarBotoesTab(tabId) {
+                const activeId = `tab-${tabId}`;
+                const { tabButtons } = this.state.dom;
+                const c = this.config.classes;
+
+                tabButtons.forEach((btn) => {
+                    const isActive = btn.id === activeId;
+                    if (isActive) {
+                        btn.classList.add(...c.tabActiveAdd);
+                        btn.classList.remove(...c.tabActiveRemove);
+                        return;
+                    }
+                    btn.classList.add(...c.tabInactiveAdd);
+                    btn.classList.remove(...c.tabInactiveRemove);
+                });
+            },
+
+            // --- Data/Hora ---
+            _formatarDataTimeLocal(date) {
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                const hours = String(date.getHours()).padStart(2, '0');
+                const minutes = String(date.getMinutes()).padStart(2, '0');
+                return `${year}-${month}-${day}T${hours}:${minutes}`;
+            },
+
+            _setInputAgora(inputEl) {
+                if (!inputEl) return;
+                inputEl.value = this._formatarDataTimeLocal(new Date());
+            },
+
+            _inicializarDataOcorrenciaAgora() {
+                this._setInputAgora(this.state.dom.dataOcorrencia);
+            },
+
+            // --- Template ---
+            _aplicarTemplateSelecionado() {
+                const d = this.state.dom;
+                const select = d.templateTexto;
+                if (!select) return;
+                const selectedOption = select.options[select.selectedIndex];
+                const textoTemplate = selectedOption ? selectedOption.getAttribute('data-texto') : null;
+                if (textoTemplate && d.descricao) d.descricao.value = textoTemplate;
+            },
+
+            // --- Toast / Feedback ---
+            _mostrarToast(tipo, texto) {
+                const el = this.state.dom.mensagem;
+                if (!el) return;
+
+                const c = this.config.classes;
+                const base = c.toastBase;
+                const variant = tipo === 'success'
+                    ? c.toastSuccess
+                    : (tipo === 'warning' ? c.toastWarning : c.toastError);
+
+                el.className = `${base} ${variant}`;
+                el.textContent = texto || '-';
+                el.classList.remove('hidden');
+
+                if (this.state.toastTimeoutId) clearTimeout(this.state.toastTimeoutId);
+                this.state.toastTimeoutId = setTimeout(() => el.classList.add('hidden'), this.config.timeoutsMs.esconderToast);
+            },
+
+            // --- API (fetch JSON) ---
+            _extrairMensagemErro(payload, fallback) {
+                if (!payload) return fallback;
+                if (typeof payload === 'string') return payload || fallback;
+                if (typeof payload !== 'object') return fallback;
+                return payload.error || payload.message || fallback;
+            },
+
+            async _fetchJson(url, options) {
+                const response = await fetch(url, options);
+                const contentType = response.headers.get('content-type') || '';
+                const isJson = contentType.includes('application/json');
+                const payload = isJson ? await response.json() : await response.text();
+                if (!response.ok) throw new Error(this._extrairMensagemErro(payload, `HTTP ${response.status}`));
+                return payload;
+            },
+
+            async _postJson(url, body) {
+                return this._fetchJson(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body || {}),
+                });
+            },
+
+            async _putJson(url, body) {
+                return this._fetchJson(url, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body || {}),
+                });
+            },
+
+            // --- Resolver: carregar ocorrências e preview ---
+            _normalizarListaOcorrencias(payload) {
+                if (Array.isArray(payload)) return payload;
+                if (payload && typeof payload === 'object') {
+                    if (Array.isArray(payload.data)) return payload.data;
+                    if (Array.isArray(payload.items)) return payload.items;
+                }
+                return [];
+            },
+
+            async _carregarOcorrenciasAbertas() {
+                const d = this.state.dom;
+                const select = d.ocorrenciaResolverSelect;
+                if (!select) return;
+
+                select.innerHTML = '<option value="">Selecione uma ocorrência que requer ação</option>';
+                this.state.ocorrenciasPorId.clear();
+                if (d.previewBox) d.previewBox.classList.add('hidden');
+
+                try {
+                    const payload = await this._fetchJson(this.config.endpoints.ocorrenciasAbertas, { method: 'GET' });
+                    const lista = this._normalizarListaOcorrencias(payload);
+                    const ocorrenciasComAcao = (lista || []).filter((oc) => oc && (oc.requer_acao === true || oc.requer_acao === 1));
+
+                    if (ocorrenciasComAcao.length === 0) {
                         const option = document.createElement('option');
-                        option.value = oc.id;
+                        option.value = '';
+                        option.textContent = 'Nenhuma ocorrência requer ação no momento';
+                        option.disabled = true;
+                        select.appendChild(option);
+                        return;
+                    }
+
+                    ocorrenciasComAcao.forEach((oc) => {
+                        const id = String(oc.id);
+                        const option = document.createElement('option');
+                        option.value = id;
                         option.textContent = `#${oc.id} - ${oc.tipo} - ${oc.unidade} (${oc.status})`;
                         option.dataset.ocorrencia = JSON.stringify(oc);
                         select.appendChild(option);
+                        this.state.ocorrenciasPorId.set(id, oc);
                     });
+
+                } catch (error) {
+                    console.error('Erro ao carregar ocorrências:', error);
+                    this._mostrarToast('error', 'Erro ao carregar ocorrências');
                 }
-            }
-        } catch (error) {
-            console.error('Erro ao carregar ocorrências:', error);
-        }
-    }
-    
-    // ============================================================
-    // PREVIEW DA OCORRÊNCIA SELECIONADA
-    // ============================================================
-    document.getElementById('ocorrencia_resolver').addEventListener('change', function() {
-        const selectedOption = this.options[this.selectedIndex];
-        const preview = document.getElementById('preview-ocorrencia');
-        
-        if (selectedOption.value) {
-            const ocorrencia = JSON.parse(selectedOption.dataset.ocorrencia);
-            
-            document.getElementById('preview-usina').textContent = ocorrencia.usina_nome || '-';
-            document.getElementById('preview-tipo').textContent = ocorrencia.tipo || '-';
-            document.getElementById('preview-categoria').textContent = ocorrencia.categoria || '-';
-            document.getElementById('preview-unidade').textContent = ocorrencia.unidade || '-';
-            document.getElementById('preview-data').textContent = ocorrencia.data_ocorrencia || ocorrencia.created_at || '-';
-            document.getElementById('preview-descricao').textContent = ocorrencia.descricao || '-';
-            
-            preview.classList.remove('hidden');
-        } else {
-            preview.classList.add('hidden');
-        }
-    });
-    
-    // ============================================================
-    // ENVIAR FORMULÁRIO DE REGISTRO
-    // ============================================================
-    document.getElementById('form-ocorrencia').addEventListener('submit', async function(e) {
-        e.preventDefault();
-        
-        const formData = {
-            usina_id: document.getElementById('usina_id').value,
-            operador_id: document.getElementById('operador_id').value,
-            tipo: document.getElementById('tipo').value,
-            categoria: document.getElementById('categoria').value,
-            data_ocorrencia: document.getElementById('data_ocorrencia').value,
-            unidade: document.getElementById('unidade').value,
-            tags: document.getElementById('tags').value,
-            template_texto: document.getElementById('template_texto').value,
-            descricao: document.getElementById('descricao').value,
-            severidade: document.getElementById('severidade').value,
-            playbook: document.getElementById('playbook').value,
-            requer_acao: document.getElementById('requer_acao').checked
-        };
-        
-        try {
-            const response = await fetch('/api/ocorrencias', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(formData)
-            });
-            
-            const result = await response.json();
-            
-            const mensagem = document.getElementById('mensagem');
-            if (result.success) {
-                mensagem.className = 'fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 bg-success text-white';
-                mensagem.textContent = result.message || 'Ocorrência registrada com sucesso!';
-                mensagem.classList.remove('hidden');
-                
-                // Limpar formulário
-                this.reset();
-                document.getElementById('data_ocorrencia').value = formatarDataTimeLocal(new Date());
-                
-                // Redirecionar após 2 segundos
-                setTimeout(() => {
-                    window.location.href = "{{ url_for('index') }}";
-                }, 2000);
-            } else {
-                mensagem.className = 'fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 bg-danger text-white';
-                mensagem.textContent = result.error || 'Erro ao registrar ocorrência';
-                mensagem.classList.remove('hidden');
-            }
-            
-            setTimeout(() => {
-                mensagem.classList.add('hidden');
-            }, 5000);
-            
-        } catch (error) {
-            const mensagem = document.getElementById('mensagem');
-            mensagem.className = 'fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 bg-danger text-white';
-            mensagem.textContent = 'Erro ao conectar com o servidor';
-            mensagem.classList.remove('hidden');
-            
-            setTimeout(() => {
-                mensagem.classList.add('hidden');
-            }, 5000);
-        }
-    });
-    
-    // ============================================================
-    // ENVIAR FORMULÁRIO DE RESOLUÇÃO
-    // ============================================================
-    document.getElementById('form-resolver').addEventListener('submit', async function(e) {
-        e.preventDefault();
-        
-        const ocorrenciaId = document.getElementById('ocorrencia_resolver').value;
-        
-        const formData = {
-            resolvida_por: document.getElementById('resolvida_por').value,
-            data_resolucao: document.getElementById('data_resolucao').value,
-            resolucao_descricao: document.getElementById('resolucao_descricao').value
-        };
-        
-        try {
-            const response = await fetch(`/api/ocorrencias/${ocorrenciaId}/resolver`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(formData)
-            });
-            
-            const result = await response.json();
-            
-            const mensagem = document.getElementById('mensagem');
-            if (result.success) {
-                mensagem.className = 'fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 bg-success text-white';
-                mensagem.textContent = result.message || 'Ocorrência resolvida com sucesso!';
-                mensagem.classList.remove('hidden');
-                
-                // Limpar formulário
-                this.reset();
-                document.getElementById('preview-ocorrencia').classList.add('hidden');
-                
-                // Redirecionar após 2 segundos
-                setTimeout(() => {
-                    window.location.href = "{{ url_for('index') }}";
-                }, 2000);
-            } else {
-                mensagem.className = 'fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 bg-danger text-white';
-                mensagem.textContent = result.error || 'Erro ao resolver ocorrência';
-                mensagem.classList.remove('hidden');
-            }
-            
-            setTimeout(() => {
-                mensagem.classList.add('hidden');
-            }, 5000);
-            
-        } catch (error) {
-            const mensagem = document.getElementById('mensagem');
-            mensagem.className = 'fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 bg-danger text-white';
-            mensagem.textContent = 'Erro ao conectar com o servidor';
-            mensagem.classList.remove('hidden');
-            
-            setTimeout(() => {
-                mensagem.classList.add('hidden');
-            }, 5000);
-        }
-    });
-    
-    // ============================================================
-    // INICIALIZAÇÃO COM PARÂMETROS DA URL
-    // ============================================================
-    document.addEventListener('DOMContentLoaded', async function() {
-        const params = getURLParams();
-        
-        // Se foi requisitado abrir a aba resolver
-        if (params.tab === 'resolver') {
-            // Carrega as ocorrências e depois seleciona a específica
-            await switchToTab('resolver');
-            
-            // Se foi passado um ID de ocorrência específica
-            if (params.ocorrencia_id) {
-                // Aguarda um pouco para garantir que as ocorrências foram carregadas
-                setTimeout(() => {
-                    const select = document.getElementById('ocorrencia_resolver');
-                    const option = Array.from(select.options).find(opt => opt.value === params.ocorrencia_id);
-                    
-                    if (option) {
-                        select.value = params.ocorrencia_id;
-                        // Dispara o evento change para carregar o preview
-                        select.dispatchEvent(new Event('change'));
-                        
-                        // Scroll suave até o formulário
-                        formResolver.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    } else {
-                        // Se a ocorrência não foi encontrada, mostra mensagem
-                        const mensagem = document.getElementById('mensagem');
-                        mensagem.className = 'fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 bg-warning text-white';
-                        mensagem.textContent = 'Ocorrência não encontrada na lista de ações pendentes.';
-                        mensagem.classList.remove('hidden');
-                        
-                        setTimeout(() => {
-                            mensagem.classList.add('hidden');
-                        }, 5000);
+            },
+
+            _getOcorrenciaSelecionada() {
+                const d = this.state.dom;
+                const select = d.ocorrenciaResolverSelect;
+                if (!select || !select.value) return null;
+                const id = String(select.value);
+
+                if (this.state.ocorrenciasPorId.has(id)) return this.state.ocorrenciasPorId.get(id);
+
+                const option = select.options[select.selectedIndex];
+                if (!option || !option.dataset || !option.dataset.ocorrencia) return null;
+                try { return JSON.parse(option.dataset.ocorrencia); } catch { return null; }
+            },
+
+            _atualizarPreviewOcorrenciaSelecionada() {
+                const d = this.state.dom;
+                if (!d.previewBox) return;
+
+                const ocorrencia = this._getOcorrenciaSelecionada();
+                if (!ocorrencia) {
+                    d.previewBox.classList.add('hidden');
+                    return;
+                }
+
+                if (d.previewUsina) d.previewUsina.textContent = ocorrencia.usina_nome || '-';
+                if (d.previewTipo) d.previewTipo.textContent = ocorrencia.tipo || '-';
+                if (d.previewCategoria) d.previewCategoria.textContent = ocorrencia.categoria || '-';
+                if (d.previewUnidade) d.previewUnidade.textContent = ocorrencia.unidade || '-';
+                if (d.previewData) d.previewData.textContent = ocorrencia.data_ocorrencia || ocorrencia.created_at || '-';
+                if (d.previewDescricao) d.previewDescricao.textContent = ocorrencia.descricao || '-';
+
+                d.previewBox.classList.remove('hidden');
+            },
+
+            // --- Submits ---
+            async _submitRegistrar(e) {
+                e.preventDefault();
+                const d = this.state.dom;
+
+                const body = {
+                    usina_id: d.usinaId ? d.usinaId.value : '',
+                    operador_id: d.operadorId ? d.operadorId.value : '',
+                    tipo: d.tipo ? d.tipo.value : '',
+                    categoria: d.categoria ? d.categoria.value : '',
+                    data_ocorrencia: d.dataOcorrencia ? d.dataOcorrencia.value : '',
+                    unidade: d.unidade ? d.unidade.value : '',
+                    tags: d.tags ? d.tags.value : '',
+                    template_texto: d.templateTexto ? d.templateTexto.value : '',
+                    descricao: d.descricao ? d.descricao.value : '',
+                    severidade: d.severidade ? d.severidade.value : '',
+                    playbook: d.playbook ? d.playbook.value : '',
+                    requer_acao: d.requerAcao ? d.requerAcao.checked : false,
+                };
+
+                try {
+                    const result = await this._postJson(this.config.endpoints.ocorrencias, body);
+                    if (result && result.success) {
+                        this._mostrarToast('success', result.message || 'Ocorrência registrada com sucesso!');
+                        d.formOcorrencia.reset();
+                        this._inicializarDataOcorrenciaAgora();
+                        setTimeout(() => window.location.href = this.config.redirect.index, this.config.timeoutsMs.redirecionar);
+                        return;
                     }
-                }, 500);
-            }
+                    this._mostrarToast('error', this._extrairMensagemErro(result, 'Erro ao registrar ocorrência'));
+                } catch {
+                    this._mostrarToast('error', 'Erro ao conectar com o servidor');
+                }
+            },
+
+            async _submitResolver(e) {
+                e.preventDefault();
+                const d = this.state.dom;
+                const ocorrenciaId = d.ocorrenciaResolverSelect ? d.ocorrenciaResolverSelect.value : '';
+                if (!ocorrenciaId) return;
+
+                const body = {
+                    resolvida_por: d.resolvidaPor ? d.resolvidaPor.value : '',
+                    data_resolucao: d.dataResolucao ? d.dataResolucao.value : '',
+                    resolucao_descricao: d.resolucaoDescricao ? d.resolucaoDescricao.value : '',
+                };
+
+                try {
+                    const url = this.config.endpoints.resolverOcorrencia(ocorrenciaId);
+                    const result = await this._putJson(url, body);
+
+                    if (result && result.success) {
+                        this._mostrarToast('success', result.message || 'Ocorrência resolvida com sucesso!');
+                        d.formResolver.reset();
+                        if (d.previewBox) d.previewBox.classList.add('hidden');
+                        setTimeout(() => window.location.href = this.config.redirect.index, this.config.timeoutsMs.redirecionar);
+                        return;
+                    }
+                    this._mostrarToast('error', this._extrairMensagemErro(result, 'Erro ao resolver ocorrência'));
+                } catch {
+                    this._mostrarToast('error', 'Erro ao conectar com o servidor');
+                }
+            },
+        };
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => OcorrenciasModule.init());
+        } else {
+            OcorrenciasModule.init();
         }
-    });
+    })();
 </script>
 {% endblock %}

@@ -20,9 +20,10 @@
         </a>
       <div class="pt-3 mt-3 border-t border-slate-200 dark:border-slate-800">
           <h6 class="px-3 text-xs font-medium text-text-muted uppercase tracking-wide mb-1.5">Usinas</h6>
+          {% set lista_usinas = (vm.usinas if (vm is defined and vm.usinas is defined) else usinas) %}
           <div class="space-y-0.5">
-              {% if usinas %}
-                  {% for usina in usinas %}
+              {% if lista_usinas %}
+                  {% for usina in lista_usinas %}
                       <a class="flex items-center px-3 py-2 rounded-lg text-sm text-text-muted hover:text-text-primary sidebar-item" href="{{ url_for('usina_page', sigla=usina.sigla) }}" data-usina-id="{{ usina.id }}">
                           <span class="material-icons text-base">factory</span>
                           <span class="ml-2.5">{{ usina.nome }}</span>

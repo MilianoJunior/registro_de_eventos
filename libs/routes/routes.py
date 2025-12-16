@@ -1,3 +1,16 @@
+# -------------------------------------------------------------------
+# FLUXO DO MÓDULO
+# 1. index → renderiza o dashboard (home)
+# 2. usina_page → renderiza página da usina
+# 3. ocorrencias → renderiza página HTML de ocorrências
+# 4. salvar_ocorrencia → API POST (JSON) para criar ocorrência
+# 5. listar_ocorrencias → API GET (JSON) para listar ocorrências (filtros via querystring)
+# 6. resolver_ocorrencia → API PUT/POST (JSON) para resolver ocorrência
+# 7. configuracoes → renderiza página HTML de configurações
+# 8. salvar_configuracao → persiste configurações (POST)
+# 9. carregar_configuracao → carrega configurações (GET)
+# -------------------------------------------------------------------
+
 from flask import render_template, jsonify, Response, request
 from main import app
 from libs.controllers.homeController import HomeController
@@ -20,6 +33,10 @@ configController = ConfigController()
 def favicon():
     return app.send_static_file("imgs/engegom.ico")
 
+@app.route("/.well-known/appspecific/com.chrome.devtools.json")
+def chrome_devtools_probe():
+    return Response(status=204)
+
 @app.route("/")
 @desempenho
 def index():
@@ -39,13 +56,23 @@ def ocorrencias():
     print('5- ocorrencias')
     return ocorrenciasController.ocorrencias_page()
 
-@app.route("/api/ocorrencias", methods=["GET", "POST"])
+@app.route("/salvar_ocorrencia", methods=["POST"])
 # @desempenho
-def api_ocorrencias():
-    print('6- api_ocorrencias', request.method)
-    if request.method == 'POST':
-        return ocorrenciasController.criar_ocorrencia()
-    return ocorrenciasController.get_ocorrencias()
+def salvar_ocorrencia():
+    print('6- salvar_ocorrencia', request.method)
+    return ocorrenciasController.criar_ocorrencia()
+
+@app.route("/listar_ocorrencias", methods=["GET"])
+# @desempenho
+def listar_ocorrencias():
+    print('6- listar_ocorrencias')
+    return ocorrenciasController.listar_ocorrencias()
+
+@app.route("/resolver_ocorrencia/<int:id>", methods=["PUT", "POST"])
+# @desempenho
+def resolver_ocorrencia(id):
+    print('7- resolver_ocorrencia', id)
+    return ocorrenciasController.resolver_ocorrencia(id)
 
 @app.route("/configuracoes")
 # @desempenho

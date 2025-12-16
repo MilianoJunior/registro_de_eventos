@@ -21,21 +21,18 @@ class HomeController:
         # 3. Renderiza
         # Passamos 'vm' para o template, mas também desconstruímos 
         # para manter compatibilidade com variáveis existentes no HTML se necessário
-        print("VM", vm)
-        print(" ")
-        print("Usinas", vm.usinas)
-        print(" ")
-        print("Ocorrencias Recentes", vm.ocorrencias_recentes)
-        print(" ")
-        print("Total Ocorrencias", vm.total_ocorrencias)
-        print(" ")
-        print("Potencia Total MW", vm.potencia_total_mw)
-        print(" ")
-        print("Por Status", vm.stats_por_status)
-        print(" ")
-        print("Por Unidade", vm.stats_por_unidade)
-        print('-' * 50)
-        print("")
+        propriedades = ['usinas', 'ocorrencias_recentes', 'stats_por_status', 'potencia_total_mw']
+        # cont = 0
+        # for prop in propriedades:
+        #     print(f"{prop}: type: {type(getattr(vm, prop))}")
+        #     if type(getattr(vm, prop)) == list:
+        #         for item in getattr(vm, prop):
+        #             cont += 1
+        #             print(f"item: {cont}")
+        #             print(item)
+        #             print('-' * 50)
+        #     print('¨¨' * 50)
+            
         return render_template("home.html",
             vm=vm,
             # usinas=vm.usinas,
@@ -49,4 +46,3 @@ class HomeController:
         )
 # O código antigo e placeholders foram removidos pois agora
 # a lógica está encapsulada em HomePageViewModel e DadosContexto.
-

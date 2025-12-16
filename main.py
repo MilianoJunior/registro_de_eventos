@@ -4,12 +4,13 @@
 
 import os
 import time
-from flask import Flask
+from flask import Flask, render_template
 from flask_socketio import SocketIO
 from libs.controllers.decorador import desempenho
 from libs.models.utils import register_template_filters
 
 from libs.sockets import register_socket_handlers
+from werkzeug.exceptions import HTTPException
 
 # ----------------------------------------------------------------------------------
 # caminhos robustos (independe do diretório onde o service inicia)
@@ -33,21 +34,21 @@ app = Flask(
 
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'change-me')
 
-# # ----------------------------------------------------------------------------------
-# # error handlers (captura 500 e exceções gerais)
-# # ----------------------------------------------------------------------------------
-# @app.errorhandler(500)
-# def internal_server_error(e):
-#     # Renderiza a página de erro amigável para erros internos
-#     return render_template("error.html", error_code=500, error_msg=str(e)), 500
+# ----------------------------------------------------------------------------------
+# error handlers (captura 500 e exceções gerais)
+# ----------------------------------------------------------------------------------
+@app.errorhandler(500)
+def internal_server_error(e):
+    return render_template("error.html", error_code=500, error_msg=str(e)), 500
 
-# @app.errorhandler(Exception)
-# def handle_exception(e):
-#     # Captura outras exceções não tratadas
-#     import traceback
-#     trace = traceback.format_exc()
-#     print(f"[ERROR] Exceção não tratada: {e}\n{trace}")
-#     return render_template("error.html", error_code=500, error_msg="Erro interno inesperado", debug_trace=trace if DEV_RELOAD else None), 500
+@app.errorhandler(Exception)
+def handle_exception(e):
+    if isinstance(e, HTTPException):
+        return e
+    import traceback
+    trace = traceback.format_exc()
+    print(f"[ERROR] Exceção não tratada: {e}\n{trace}")
+    return render_template("error.html", error_code=500, error_msg="Erro interno inesperado", debug_trace=trace if DEV_RELOAD else None), 500
 
 # ----------------------------------------------------------------------------------
 # filtros/rotas e configuração do Socket.IO
@@ -65,51 +66,35 @@ register_socket_handlers(socketio)
 # ---------------------------------------------------------------------------------
 # thread background para coleta contínua de dados
 # ---------------------------------------------------------------------------------
-
 def coletor_background_thread():
     """
     Thread daemon que coleta dados das usinas a cada 30 segundos.
     Salva no banco e emite via Socket.IO (se houver clientes conectados).
     """
-    print("[THREAD] Coletor background iniciado")
     intervalo_coleta = int(os.getenv("INTERVALO_COLETA", "30"))  # segundos
     
     while True:
         try:
-            print(f"[THREAD] Iniciando coleta automática...")
-            inicio = time.time()
-            
-            # Coleta dados (usa cache compartilhado com socket)
             payload = coletar_status_completo()
-            
-            # Salva no banco
-            try:
-                repo = OpParadasCreate()
-                repo.insert({"dados": json.dumps(payload)})
-                print(f"[THREAD] ✅ Snapshot salvo em op_paradas")
-            except Exception as e:
-                print(f"[THREAD] ❌ Erro ao salvar: {e}")
-            
-            # Emite para clientes conectados (se houver)
-            try:
-                socketio.emit("status_usinas_dados", payload, broadcast=True)
-                print(f"[THREAD] ✅ Dados emitidos via Socket.IO")
-            except Exception as e:
-                print(f"[THREAD] ⚠️  Erro ao emitir (sem clientes?): {e}")
-            
-            duracao = time.time() - inicio
-            print(f"[THREAD] Coleta finalizada em {duracao:.2f}s")
-            
-        except Exception as e:
-            print(f"[THREAD] ❌ Erro na coleta: {e}")
-        
-        # Aguarda próximo ciclo
+        except Exception:
+            time.sleep(intervalo_coleta)
+            continue
+
+        try:
+            OpParadasCreate().insert({"dados": json.dumps(payload)})
+        except Exception:
+            pass
+
+        try:
+            socketio.emit("status_usinas_dados", payload, broadcast=True)
+        except Exception:
+            pass
+
         time.sleep(intervalo_coleta)
 
 # ---------------------------------------------------------------------------------
 # watcher para recarregar arquivos estáticos em desenvolvimento
 # ---------------------------------------------------------------------------------
-
 if DEV_RELOAD:
     print('DEV_RELOAD is enabled')
     from watchdog.observers import Observer
@@ -143,24 +128,19 @@ else:
 # ----------------------------------------------------------------------------------
 # inicialização do servidor
 # ----------------------------------------------------------------------------------
-
 if __name__ == '__main__':
     port = int(os.getenv("PORT", "5001"))
     observer = None
     coletor_thread = None
-    
+    host = '0.0.0.0'
     try:
-        # Inicia file watcher (dev)
         if DEV_RELOAD:
             observer = setup_file_watcher(socketio)
-        
-        # Inicia thread de coleta background
         coletor_thread = threading.Thread(target=coletor_background_thread, daemon=True)
         coletor_thread.start()
-        print(f'[MAIN] Thread de coleta iniciada (intervalo: {os.getenv("INTERVALO_COLETA", "30")}s)')
         
-        print(f'[MAIN] Iniciando servidor em 0.0.0.0:{port} (DEV_RELOAD={DEV_RELOAD})')
-        socketio.run(app, host='0.0.0.0', port=port, debug=DEV_RELOAD)
+        print(f'[MAIN] Iniciando servidor em {host}:{port} (DEV_RELOAD={DEV_RELOAD})')
+        socketio.run(app, host=host, port=port, debug=DEV_RELOAD)
     finally:
         if observer:
             observer.stop()

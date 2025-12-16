@@ -131,6 +131,22 @@ def schema_statements_5():
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
     """))
 
+    # 7) kpi_consolidado (cache para relatórios e dashboards)
+    stmts.append(dedent("""
+        CREATE TABLE IF NOT EXISTS op_kpi_consolidado (
+          id BIGINT PRIMARY KEY AUTO_INCREMENT,
+          data_referencia DATE NOT NULL,
+          usina_slug VARCHAR(50) NOT NULL,
+          mttr_minutos FLOAT DEFAULT 0,
+          energia_nao_gerada_mwh FLOAT DEFAULT 0,
+          eventos_count INT DEFAULT 0,
+          created_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+          updated_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6)
+                     ON UPDATE CURRENT_TIMESTAMP(6),
+          UNIQUE KEY unique_kpi (data_referencia, usina_slug)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+    """))
+
     return stmts
 
 
@@ -172,9 +188,9 @@ def run():
     db = Database()
     try:
         db.connect()
-        db.execute_many(schema_statements_5())   # cria 6 tabelas
+        db.execute_many(schema_statements_5())   # cria 7 tabelas
         db.execute_many(trigger_statements())    # cria gatilhos
-        print("\n✅ Esquema (6 tabelas) criado/atualizado com sucesso.")
+        print("\n✅ Esquema (7 tabelas) criado/atualizado com sucesso.")
     except Exception as e:
         print(f"\n❌ Erro ao criar o esquema: {e}")
         raise
@@ -603,7 +619,7 @@ if __name__ == "__main__":
             migrate_labels_json()
         else:
             print("Comandos disponíveis:")
-            print("  python cog_schema.py schema        - Cria o schema original (6 tabelas)")
+            print("  python cog_schema.py schema        - Cria o schema original (7 tabelas)")
             print("  python cog_schema.py migrate       - Executa migração completa")
             print("  python cog_schema.py campos        - Adiciona apenas os campos")
             print("  python cog_schema.py constraints   - Adiciona apenas as constraints")

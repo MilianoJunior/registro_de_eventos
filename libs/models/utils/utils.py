@@ -248,3 +248,13 @@ def desempenho(func):
         # print('-' * 50)
         return result
     return wrapper
+
+# ---------------- Slug ----------------
+def normalizar_slug(texto: str) -> str:
+    """Remove acentos/espacos/pontuação, deixa minúsculo e alfanumérico."""
+    import unicodedata, re
+    if not texto:
+        return ""
+    n = unicodedata.normalize("NFKD", texto)
+    s = "".join(c for c in n if not unicodedata.combining(c))
+    return re.sub(r"[^a-z0-9]", "", s.lower())
