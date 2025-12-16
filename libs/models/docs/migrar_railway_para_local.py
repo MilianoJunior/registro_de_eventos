@@ -3,8 +3,9 @@
 # 1. _carregar_cfg_mysql → lê credenciais do .env (prefixo) e monta config do banco
 # 2. _abrir_conexao_mysql → abre conexão MySQL (mysql-connector) com commit/rollback controlado
 # 3. _sync_triggers_ocorrencia → desativa/recria triggers de ocorrência no destino (evita duplicar histórico)
-# 4. _copiar_tabela → copia uma tabela (batch por ID) preservando colunas em comum e IDs
-# 5. migrar_railway_para_local → orquestra migração Railway → Local (ordem segura por FK)
+# 4. _tabela_existe → verifica se a tabela existe no schema atual (DATABASE())
+# 5. _copiar_tabela → copia uma tabela (batch por ID) preservando colunas em comum e IDs
+# 6. migrar_railway_para_local → orquestra migração Railway → Local (ordem segura por FK)
 # -------------------------------------------------------------------
 
 from __future__ import annotations
@@ -241,6 +242,12 @@ def _colunas_tabela(db: ConexaoMySQL, tabela: str) -> List[str]:
     rows = db.fetchall(f"SHOW COLUMNS FROM {_qi(tabela)}")
     return [str(r[0]) for r in rows]
 
+def _tabela_existe(db: ConexaoMySQL, tabela: str) -> bool:
+    return db.scalar(
+        "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = %s",
+        (str(tabela),),
+    ) > 0
+
 
 def _colunas_comuns(db_src: ConexaoMySQL, db_dst: ConexaoMySQL, tabela: str) -> List[str]:
     src = set(_colunas_tabela(db_src, tabela))
@@ -331,6 +338,11 @@ def migrar_railway_para_local(
         _sync_triggers_ocorrencia(db_dst, habilitar=False)
 
         for tabela in TABELAS_COPIA_ORDEM_FK:
+            if not _tabela_existe(db_src, tabela):
+                print(f"[MIGRACAO] Origem sem tabela {tabela}. Pulando.")
+                continue
+            if not _tabela_existe(db_dst, tabela):
+                raise ValueError(f"Destino sem tabela {tabela}. Rode primeiro o schema/migrate local.")
             print(f"[MIGRACAO] Copiando {tabela}...")
             total = _copiar_tabela(db_src, db_dst, tabela, batch=batch)
             print(f"[MIGRACAO] {tabela}: {total} linhas")

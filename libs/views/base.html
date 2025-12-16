@@ -16,7 +16,16 @@
 <body class="font-sans">
     <div class="flex h-screen bg-background">
         {% include 'components/_sidebar.html' %}
-        <div class="flex-1 overflow-y-auto">
+        <button
+          id="sidebar-toggle-open"
+          type="button"
+          class="hidden fixed top-4 left-4 z-50 p-2 rounded-lg bg-surface border border-slate-200 dark:border-slate-800 text-text-primary hover:bg-background-alt transition"
+          aria-label="Abrir menu lateral"
+          title="Abrir menu"
+        >
+          <span class="material-icons text-base">menu</span>
+        </button>
+        <div id="app-main" class="flex-1 overflow-y-auto transition-all duration-200">
             {% block content %}
             {% endblock %}
         </div>
@@ -67,6 +76,31 @@
         } else {
             document.documentElement.classList.remove('dark')
         }
+
+        // Sidebar (toggle minimalista)
+        (function() {
+            const STORAGE_KEY = 'sidebar_collapsed';
+            const sidebar = document.getElementById('sidebar');
+            const btnClose = document.getElementById('sidebar-toggle-close');
+            const btnOpen = document.getElementById('sidebar-toggle-open');
+            const main = document.getElementById('app-main');
+            if (!sidebar) return;
+
+            function setCollapsed(collapsed) {
+                const isCollapsed = Boolean(collapsed);
+                sidebar.classList.toggle('hidden', isCollapsed);
+                if (btnOpen) btnOpen.classList.toggle('hidden', !isCollapsed);
+                if (main) main.classList.toggle('pl-14', isCollapsed);
+                try { localStorage.setItem(STORAGE_KEY, isCollapsed ? '1' : '0'); } catch {}
+            }
+
+            let collapsed = false;
+            try { collapsed = localStorage.getItem(STORAGE_KEY) === '1'; } catch {}
+            setCollapsed(collapsed);
+
+            if (btnClose) btnClose.addEventListener('click', () => setCollapsed(true));
+            if (btnOpen) btnOpen.addEventListener('click', () => setCollapsed(false));
+        })();
     </script>
 </body>
 </html>
