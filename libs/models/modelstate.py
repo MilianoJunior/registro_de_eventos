@@ -1,6 +1,6 @@
 # -------------------------------------------------------------------
 # FLUXO DO MÓDULO
-# 1. CacheStore.get/set/clear → cache global simples com TTL + prints (HIT/MISS/EXPIRED/SET)
+# 1. CacheStore.get/set/delete/clear → cache global simples com TTL + prints (HIT/MISS/EXPIRED/SET/DEL)
 # 2. _normalizar_cache_ocorrencias → normaliza cache em dict {itens, ultimo_id, ultimo_created_at, atualizado_em}
 # 3. _montar_payload_ocorrencias → monta payload padronizado para persistir no cache
 # 4. DadosContexto.get_usinas/get_usuarios → cache de horas (dados quase estáticos)
@@ -76,6 +76,7 @@ TTL_USINA_SIGLA_SEG = 6 * 60 * 60
 TTL_STATS_STATUS_SEG = 5 * 60
 TTL_KPIS_MTTR_SEG = 5 * 60
 TTL_OCORRENCIAS_SEG = 6 * 60 * 60
+TTL_OCORRENCIAS_REQUER_ACAO_SEG = 30
 REFRESH_OCORRENCIAS_SEG = 60
 MAX_OCORRENCIAS_POR_USINA = 30
 
@@ -319,6 +320,19 @@ class DadosContexto:
         CacheStore.set('kpis_mttr', data, ttl_seconds=TTL_KPIS_MTTR_SEG)
         return data
 
+    @desempenho
+    def get_ocorrencias_requer_acao(self) -> List[Dict]:
+        if self.developer_mode:
+            return []
+        
+        cached = CacheStore.get('ocorrencias_requer_acao')
+        if cached is not None:
+            return cached
+        
+        data = self._op_ocorrencia.listar_requer_acao()
+        CacheStore.set('ocorrencias_requer_acao', data, ttl_seconds=TTL_OCORRENCIAS_REQUER_ACAO_SEG)
+        return data
+
 # ============================================================================
 # MODELOS DE APRESENTAÇÃO (ViewModels)
 # ============================================================================
@@ -380,6 +394,7 @@ class HomePageViewModel:
 class OcorrenciasPageViewModel:
     usinas: List[Dict]
     usuarios: List[Dict]
+    ocorrencias_requer_acao: List[Dict]
     templates: List[Dict]
     categorias: List[str]
     tipos: List[str]
@@ -389,6 +404,10 @@ class OcorrenciasPageViewModel:
     def carregar(cls, ctx: DadosContexto) -> 'OcorrenciasPageViewModel':
         usinas = ctx.get_usinas()
         usuarios = ctx.get_usuarios()
+        ocorrencias_requer_acao = ctx.get_ocorrencias_requer_acao()
+        for ocorrencia in ocorrencias_requer_acao:
+            print(f"ocorrencia: {ocorrencia}")
+            print('-' * 50)
 
         templates = [
             {"id": "manutencao_preventiva", "nome": "Manutenção Preventiva", "texto": "Realizada manutenção preventiva conforme plano estabelecido..."},
@@ -406,7 +425,8 @@ class OcorrenciasPageViewModel:
             usuarios=usuarios,
             templates=templates,
             categorias=categorias,
-            tipos=tipos
+            tipos=tipos,
+            ocorrencias_requer_acao=ocorrencias_requer_acao,
         )
 
 @dataclass

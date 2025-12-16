@@ -8,9 +8,7 @@
 from __future__ import annotations
 
 import json
-import time
 from typing import Any, Dict, List, Optional
-
 from flask import jsonify, render_template, request
 
 from libs.controllers.decorador import desempenho
@@ -18,16 +16,12 @@ from libs.models.create import OpOcorrenciaCreate
 from libs.models.edit import OpOcorrenciaEdit
 from libs.models.modelstate import DadosContexto, OcorrenciasPageViewModel
 from libs.models.read import OpOcorrencia
-from libs.models.utils.mock_data import DEVELOPER_MODE
-from libs.models.utils.utils import build_where_clause, columns_sql, limit_sql, order_sql, safe_ident
-
 
 def _bool_para_int(v: Any) -> int:
     if isinstance(v, bool):
         return 1 if v else 0
     s = str(v).strip().lower()
     return 1 if s in ("1", "true", "sim", "yes", "on") else 0
-
 
 def _datetime_local_para_mysql(valor: Any) -> Optional[str]:
     """
@@ -49,10 +43,6 @@ class OcorrenciasController:
         self.ocorrencias_create: Optional[OpOcorrenciaCreate] = None
         self.ocorrencias_read: Optional[OpOcorrencia] = None
         self.ocorrencias_edit: Optional[OpOcorrenciaEdit] = None
-
-        if DEVELOPER_MODE:
-            return
-
         self.ocorrencias_create = OpOcorrenciaCreate()
         self.ocorrencias_read = OpOcorrencia()
         self.ocorrencias_edit = OpOcorrenciaEdit()
@@ -60,21 +50,16 @@ class OcorrenciasController:
     @desempenho
     def ocorrencias_page(self):
         """Renderiza a página de ocorrências usando ViewModel"""
-        inicio = time.time()
-
         ctx = DadosContexto()
         vm = OcorrenciasPageViewModel.carregar(ctx)
-
-        fim = time.time()
-        print(f"ocorrenciasController.ocorrencias_page - Tempo de execução: {fim - inicio} segundos")
         return render_template(
             "ocorrencias.html",
-            vm=vm,
             usinas=vm.usinas,
             usuarios=vm.usuarios,
             templates=vm.templates,
             categorias=vm.categorias,
             tipos=vm.tipos,
+            ocorrencias_requer_acao=vm.ocorrencias_requer_acao,
         )
 
     @desempenho
@@ -83,36 +68,26 @@ class OcorrenciasController:
         try:
             status_filter = request.args.get("status")
             requer_acao = request.args.get("requer_acao")
-            limit = request.args.get("limit", type=int, default=50) or 50
-            limit = max(1, min(int(limit), 500))
+            # Se tiver filtrando por requer_acao=true, tenta usar o cache do contexto
+            ctx = DadosContexto()
+            if requer_acao is not None and _bool_para_int(requer_acao) == 1 and not status_filter:
+                return jsonify(ctx.get_ocorrencias_requer_acao())
 
-            if DEVELOPER_MODE:
-                from libs.models.utils.mock_data import get_mock_data
-                rows = list(get_mock_data("op_ocorrencia") or [])
-                rows = self._filtrar_mock(rows, status_filter, requer_acao)
-                return jsonify(rows[:limit])
-
-            where: Dict[str, Any] = {}
+            status_list = None
             if status_filter:
-                lista_status = [s.strip() for s in status_filter.split(",") if s.strip()]
-                if len(lista_status) == 1:
-                    where["status"] = lista_status[0]
-                elif len(lista_status) > 1:
-                    where["status__in"] = lista_status
+                status_list = [s.strip() for s in status_filter.split(",") if s.strip()]
 
+            requer_acao_val = None
             if requer_acao is not None:
-                where["requer_acao"] = _bool_para_int(requer_acao)
+                requer_acao_val = _bool_para_int(requer_acao)
 
+            # Para filtros mais complexos ou fora do cache padrão, usa o reader direto (mas encapsulado)
             assert self.ocorrencias_read is not None
-            cols = columns_sql(self.ocorrencias_read.colunas_padrao)
-            sql = f"SELECT {cols} FROM {safe_ident(self.ocorrencias_read.tabela)}"
-            where_sql, params = build_where_clause(where)
-            sql += where_sql
-            sql += order_sql("created_at", True)
-            sql += limit_sql(limit, None)
-
-            rows = self.ocorrencias_read._run(sql, tuple(params))
-            rows = self.ocorrencias_read._injetar_usina_nome(rows)
+            rows = self.ocorrencias_read.listar_api(
+                status_list=status_list,
+                requer_acao=requer_acao_val,
+                limit=limit
+            )
             return jsonify(rows)
 
         except Exception as e:
@@ -130,19 +105,8 @@ class OcorrenciasController:
         try:
             data = request.get_json(silent=True) or {}
 
-            required_fields = ["usina_id", "operador_id", "tipo", "categoria", "unidade", "descricao", "data_ocorrencia"]
-            for field in required_fields:
-                if not data.get(field):
-                    return jsonify({"success": False, "error": f"Campo obrigatório: {field}"}), 400
-
             requer_acao = bool(data.get("requer_acao", False))
-            metadata = {
-                "requer_acao": requer_acao,
-                "notificado_em": None,
-                "responsavel_id": None,
-                "assumido_em": None,
-                "observacoes": None,
-            }
+            metadata = {}
 
             ocorrencia_data = {
                 "usina_id": int(data["usina_id"]),
@@ -161,14 +125,6 @@ class OcorrenciasController:
                 "requer_acao": 1 if requer_acao else 0,
                 "data_ocorrencia": _datetime_local_para_mysql(data.get("data_ocorrencia")),
             }
-
-            for key, value in ocorrencia_data.items():
-                print(f"{key}: {value}")
-
-            if DEVELOPER_MODE:
-                return jsonify({"success": True, "message": "Ocorrência registrada (mock)", "id": 0}), 201
-
-            assert self.ocorrencias_create is not None
             ocorrencia_id = self.ocorrencias_create.insert(ocorrencia_data)
             if not ocorrencia_id:
                 return jsonify({"success": False, "error": "Erro ao registrar ocorrência"}), 500
@@ -189,9 +145,13 @@ class OcorrenciasController:
                 if not data.get(field):
                     return jsonify({"success": False, "error": f"Campo obrigatório: {field}"}), 400
 
-            if DEVELOPER_MODE:
-                return jsonify({"success": True, "message": "Ocorrência resolvida (mock)"}), 200
+            # 1. Verifica se existe
+            assert self.ocorrencias_read is not None
+            existente = self.ocorrencias_read.one({"id": int(ocorrencia_id)})
+            if not existente:
+                return jsonify({"success": False, "error": "Ocorrência não encontrada"}), 404
 
+            # 2. Tenta atualizar
             assert self.ocorrencias_edit is not None
             rows = self.ocorrencias_edit.update_by_id(
                 int(ocorrencia_id),
@@ -200,22 +160,12 @@ class OcorrenciasController:
                     "resolvida_por": int(data["resolvida_por"]),
                     "resolucao_descricao": str(data["resolucao_descricao"]),
                     "resolved_at": _datetime_local_para_mysql(data.get("data_resolucao")),
+                    "requer_acao": 0,
                 },
             )
 
-            if rows <= 0:
-                return jsonify({"success": False, "error": "Ocorrência não encontrada"}), 404
-
+            # Se rows for 0, mas o registro existe, é pq não houve mudança (idempotente) -> Sucesso
             return jsonify({"success": True, "message": "Ocorrência resolvida com sucesso!"}), 200
 
         except Exception as e:
             return jsonify({"success": False, "error": str(e)}), 500
-
-    def _filtrar_mock(self, rows: List[Dict[str, Any]], status_filter: Optional[str], requer_acao: Optional[str]) -> List[Dict[str, Any]]:
-        if status_filter:
-            lista_status = [s.strip() for s in status_filter.split(",") if s.strip()]
-            rows = [r for r in rows if (r.get("status") in lista_status)]
-        if requer_acao is not None:
-            flag = _bool_para_int(requer_acao)
-            rows = [r for r in rows if _bool_para_int(r.get("requer_acao")) == flag]
-        return rows

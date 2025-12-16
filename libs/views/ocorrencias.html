@@ -5,134 +5,157 @@
 {% block content %}
 <div class="p-6 space-y-6">
     <h1 class="text-lg font-medium text-text-primary">Gerenciar Ocorrências</h1>
-    
+
     <!-- Tabs -->
     <div class="max-w-[960px] mx-auto border-b border-slate-200 dark:border-slate-800">
         <nav class="flex gap-6" aria-label="Tabs">
-            <button type="button" id="tab-registrar" class="tab-button active pb-3 px-1 border-b-2 border-primary font-medium text-sm text-primary transition">
+            <button type="button" id="tab-registrar"
+                class="tab-button active pb-3 px-1 border-b-2 border-primary font-medium text-sm text-primary transition">
                 <span class="material-icons text-base align-middle mr-1">add_circle</span>
                 Registrar Ocorrência
             </button>
-            <button type="button" id="tab-resolver" class="tab-button pb-3 px-1 border-b-2 border-transparent font-medium text-sm text-text-muted hover:text-text-primary hover:border-slate-300 transition">
+            <button type="button" id="tab-resolver"
+                class="tab-button pb-3 px-1 border-b-2 border-transparent font-medium text-sm text-text-muted hover:text-text-primary hover:border-slate-300 transition">
                 <span class="material-icons text-base align-middle mr-1">check_circle</span>
                 Resolver Ocorrência
             </button>
         </nav>
     </div>
-    
+
     <!-- Conteúdo Tab Registrar -->
     <form id="form-ocorrencia" class="tab-content max-w-[960px] mx-auto space-y-6">
         <!-- Informações Básicas -->
         <div class="bg-surface p-5 rounded-lg border border-slate-200 dark:border-slate-800 space-y-4">
             <h2 class="text-base font-medium text-text-primary mb-3">Informações Básicas</h2>
-            
+
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label class="block text-xs font-medium text-text-muted uppercase tracking-wide mb-2">Usina*</label>
-                    <select id="usina_id" name="usina_id" required class="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-background text-text-primary focus:outline-none focus:ring-2 focus:ring-primary">
+                    <select id="usina_id" name="usina_id" required
+                        class="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-background text-text-primary focus:outline-none focus:ring-2 focus:ring-primary">
                         <option value="">Selecione uma usina</option>
                         {% for usina in usinas %}
                         <option value="{{ usina.id }}">{{ usina.nome }}</option>
                         {% endfor %}
                     </select>
                 </div>
-                
+
                 <div>
-                    <label class="block text-xs font-medium text-text-muted uppercase tracking-wide mb-2">Operador*</label>
-                    <select id="operador_id" name="operador_id" required class="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-background text-text-primary focus:outline-none focus:ring-2 focus:ring-primary">
+                    <label
+                        class="block text-xs font-medium text-text-muted uppercase tracking-wide mb-2">Operador*</label>
+                    <select id="operador_id" name="operador_id" required
+                        class="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-background text-text-primary focus:outline-none focus:ring-2 focus:ring-primary">
                         <option value="">Selecione um operador</option>
                         {% for usuario in usuarios %}
                         <option value="{{ usuario.id }}">{{ usuario.nome }}</option>
                         {% endfor %}
                     </select>
                 </div>
-                
+
                 <div>
                     <label class="block text-xs font-medium text-text-muted uppercase tracking-wide mb-2">Tipo*</label>
-                    <select id="tipo" name="tipo" required class="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-background text-text-primary focus:outline-none focus:ring-2 focus:ring-primary">
+                    <select id="tipo" name="tipo" required
+                        class="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-background text-text-primary focus:outline-none focus:ring-2 focus:ring-primary">
                         <option value="">Selecione um tipo</option>
                         {% for tipo in tipos %}
                         <option value="{{ tipo }}">{{ tipo }}</option>
                         {% endfor %}
                     </select>
                 </div>
-                
+
                 <div>
-                    <label class="block text-xs font-medium text-text-muted uppercase tracking-wide mb-2">Categoria*</label>
-                    <select id="categoria" name="categoria" required class="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-background text-text-primary focus:outline-none focus:ring-2 focus:ring-primary">
+                    <label
+                        class="block text-xs font-medium text-text-muted uppercase tracking-wide mb-2">Categoria*</label>
+                    <select id="categoria" name="categoria" required
+                        class="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-background text-text-primary focus:outline-none focus:ring-2 focus:ring-primary">
                         <option value="">Selecione uma categoria</option>
                         {% for categoria in categorias %}
                         <option value="{{ categoria }}">{{ categoria }}</option>
                         {% endfor %}
                     </select>
                 </div>
-                
+
                 <div class="md:col-span-2">
-                    <label class="block text-xs font-medium text-text-muted uppercase tracking-wide mb-2">Data/Hora da Ocorrência*</label>
+                    <label class="block text-xs font-medium text-text-muted uppercase tracking-wide mb-2">Data/Hora da
+                        Ocorrência*</label>
                     <div class="flex gap-2">
-                        <input type="datetime-local" id="data_ocorrencia" name="data_ocorrencia" required class="flex-1 px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-background text-text-primary focus:outline-none focus:ring-2 focus:ring-primary">
-                        <button type="button" id="btn-agora" class="px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-700 text-text-primary hover:bg-background-alt transition flex items-center gap-1.5">
+                        <input type="datetime-local" id="data_ocorrencia" name="data_ocorrencia" required
+                            class="flex-1 px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-background text-text-primary focus:outline-none focus:ring-2 focus:ring-primary">
+                        <button type="button" id="btn-agora"
+                            class="px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-700 text-text-primary hover:bg-background-alt transition flex items-center gap-1.5">
                             <span class="material-icons text-base">schedule</span>
                             Agora
                         </button>
                     </div>
                     <p class="text-xs text-text-muted mt-1">Informe quando a ocorrência realmente aconteceu</p>
                 </div>
-                
+
                 <div class="md:col-span-2">
-                    <label class="block text-xs font-medium text-text-muted uppercase tracking-wide mb-2">Unidade/Sistema*</label>
-                    <input type="text" id="unidade" name="unidade" required placeholder="Ex: UG-01, Vertedouro" class="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-background text-text-primary focus:outline-none focus:ring-2 focus:ring-primary">
+                    <label
+                        class="block text-xs font-medium text-text-muted uppercase tracking-wide mb-2">Unidade/Sistema*</label>
+                    <input type="text" id="unidade" name="unidade" required placeholder="Ex: UG-01, Vertedouro"
+                        class="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-background text-text-primary focus:outline-none focus:ring-2 focus:ring-primary">
                 </div>
-                
+
                 <div class="md:col-span-2">
-                    <label class="block text-xs font-medium text-text-muted uppercase tracking-wide mb-2">Etiquetas (tags)</label>
-                    <input type="text" id="tags" name="tags" placeholder="Ex: temperatura, vibração" class="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-background text-text-primary focus:outline-none focus:ring-2 focus:ring-primary">
+                    <label class="block text-xs font-medium text-text-muted uppercase tracking-wide mb-2">Etiquetas
+                        (tags)</label>
+                    <input type="text" id="tags" name="tags" placeholder="Ex: temperatura, vibração"
+                        class="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-background text-text-primary focus:outline-none focus:ring-2 focus:ring-primary">
                     <p class="text-xs text-text-muted mt-1">Separe múltiplas tags por vírgula</p>
                 </div>
             </div>
         </div>
-        
+
         <!-- Informações e Templates -->
         <div class="bg-surface p-5 rounded-lg border border-slate-200 dark:border-slate-800 space-y-4">
             <h2 class="text-base font-medium text-text-primary mb-2">Informações e Templates</h2>
-            <p class="text-sm text-text-muted mb-4">Playbook: Documentar manobra, confirmar status dos equipamentos no SCADA.</p>
-            
+            <p class="text-sm text-text-muted mb-4">Playbook: Documentar manobra, confirmar status dos equipamentos no
+                SCADA.</p>
+
             <div>
                 <label class="block text-sm font-medium text-text-primary mb-2">Template de Texto</label>
-                <select id="template_texto" name="template_texto" class="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-background text-text-primary focus:outline-none focus:ring-2 focus:ring-primary">
+                <select id="template_texto" name="template_texto"
+                    class="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-background text-text-primary focus:outline-none focus:ring-2 focus:ring-primary">
                     <option value="">Selecionar template...</option>
                     {% for template in templates %}
                     <option value="{{ template.id }}" data-texto="{{ template.texto }}">{{ template.nome }}</option>
                     {% endfor %}
                 </select>
             </div>
-            
+
             <div>
                 <label class="block text-sm font-medium text-text-primary mb-2">Descrição Detalhada*</label>
-                <textarea id="descricao" name="descricao" required rows="6" placeholder="Descreva o evento ou alarme em detalhes..." class="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-background text-text-primary focus:outline-none focus:ring-2 focus:ring-primary resize-none"></textarea>
+                <textarea id="descricao" name="descricao" required rows="6"
+                    placeholder="Descreva o evento ou alarme em detalhes..."
+                    class="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-background text-text-primary focus:outline-none focus:ring-2 focus:ring-primary resize-none"></textarea>
             </div>
-            
+
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                    <label class="block text-xs font-medium text-text-muted uppercase tracking-wide mb-2">Severidade</label>
-                    <select id="severidade" name="severidade" class="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-background text-text-primary focus:outline-none focus:ring-2 focus:ring-primary">
+                    <label
+                        class="block text-xs font-medium text-text-muted uppercase tracking-wide mb-2">Severidade</label>
+                    <select id="severidade" name="severidade"
+                        class="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-background text-text-primary focus:outline-none focus:ring-2 focus:ring-primary">
                         <option value="baixa">Baixa</option>
                         <option value="média" selected>Média</option>
                         <option value="alta">Alta</option>
                     </select>
                 </div>
-                
+
                 <div>
-                    <label class="block text-xs font-medium text-text-muted uppercase tracking-wide mb-2">Playbook</label>
-                    <input type="text" id="playbook" name="playbook" placeholder="Referência do playbook" class="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-background text-text-primary focus:outline-none focus:ring-2 focus:ring-primary">
+                    <label
+                        class="block text-xs font-medium text-text-muted uppercase tracking-wide mb-2">Playbook</label>
+                    <input type="text" id="playbook" name="playbook" placeholder="Referência do playbook"
+                        class="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-background text-text-primary focus:outline-none focus:ring-2 focus:ring-primary">
                 </div>
             </div>
-            
+
             <!-- Campo Requer Ação -->
             <div class="mt-4 p-4 rounded-lg border-2 border-warning/30 bg-warning/5">
                 <label class="flex items-start gap-3 cursor-pointer group">
-                    <input type="checkbox" id="requer_acao" name="requer_acao" 
-                           class="mt-1 w-5 h-5 rounded border-warning/50 text-warning focus:ring-warning focus:ring-2">
+                    <input type="checkbox" id="requer_acao" name="requer_acao"
+                        class="mt-1 w-5 h-5 rounded border-warning/50 text-warning focus:ring-warning focus:ring-2">
                     <div class="flex-1">
                         <div class="flex items-center gap-2">
                             <span class="material-icons text-warning text-lg">warning</span>
@@ -141,26 +164,28 @@
                             </span>
                         </div>
                         <p class="text-xs text-text-muted mt-1.5 leading-relaxed">
-                            Marque se esta ocorrência necessita de atenção imediata da equipe. 
+                            Marque se esta ocorrência necessita de atenção imediata da equipe.
                             Operadores serão notificados e um botão de ação aparecerá nas listagens.
                         </p>
                     </div>
                 </label>
             </div>
         </div>
-        
+
         <!-- Botões de Ação -->
         <div class="flex justify-end gap-4">
-            <a href="{{ url_for('index') }}" class="px-6 py-2 rounded-lg border border-slate-300 dark:border-slate-700 text-text-primary hover:bg-background-alt transition">
+            <a href="{{ url_for('index') }}"
+                class="px-6 py-2 rounded-lg border border-slate-300 dark:border-slate-700 text-text-primary hover:bg-background-alt transition">
                 Cancelar
             </a>
-            <button type="submit" class="px-4 py-2 rounded-lg bg-primary text-white text-sm font-medium hover:opacity-90 transition flex items-center gap-1.5">
+            <button type="submit"
+                class="px-4 py-2 rounded-lg bg-primary text-white text-sm font-medium hover:opacity-90 transition flex items-center gap-1.5">
                 <span class="material-icons text-base">save</span>
                 Registrar Ocorrência
             </button>
         </div>
     </form>
-    
+
     <!-- Conteúdo Tab Resolver -->
     <form id="form-resolver" class="tab-content hidden max-w-[960px] mx-auto space-y-6">
         <!-- Selecionar Ocorrência -->
@@ -168,20 +193,23 @@
             <h2 class="text-base font-medium text-text-primary mb-3">Selecionar Ocorrência que Requer Ação</h2>
             <p class="text-sm text-text-muted mb-4">
                 <span class="material-icons text-warning text-sm align-middle">info</span>
-                Apenas ocorrências marcadas como "Requer Ação Urgente" aparecem nesta lista. 
+                Apenas ocorrências marcadas como "Requer Ação Urgente" aparecem nesta lista.
                 As demais são registros de rotina e não necessitam resolução formal.
             </p>
-            
+
             <div>
-                <label class="block text-xs font-medium text-text-muted uppercase tracking-wide mb-2">Ocorrência*</label>
-                <select id="ocorrencia_resolver" name="ocorrencia_id" required class="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-background text-text-primary focus:outline-none focus:ring-2 focus:ring-primary">
+                <label
+                    class="block text-xs font-medium text-text-muted uppercase tracking-wide mb-2">Ocorrência*</label>
+                <select id="ocorrencia_resolver" name="ocorrencia_id" required
+                    class="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-background text-text-primary focus:outline-none focus:ring-2 focus:ring-primary">
                     <option value="">Selecione uma ocorrência que requer ação</option>
                     <!-- Aqui serão carregadas as ocorrências que requerem ação via JavaScript -->
                 </select>
             </div>
-            
+
             <!-- Preview da Ocorrência -->
-            <div id="preview-ocorrencia" class="hidden mt-4 p-4 rounded-lg bg-background border border-slate-200 dark:border-slate-800">
+            <div id="preview-ocorrencia"
+                class="hidden mt-4 p-4 rounded-lg bg-background border border-slate-200 dark:border-slate-800">
                 <h3 class="text-sm font-medium text-text-primary mb-2">Detalhes da Ocorrência</h3>
                 <div class="space-y-1 text-sm text-text-muted">
                     <p><strong>Usina:</strong> <span id="preview-usina">-</span></p>
@@ -193,58 +221,69 @@
                 </div>
             </div>
         </div>
-        
+
         <!-- Informações da Resolução -->
         <div class="bg-surface p-5 rounded-lg border border-slate-200 dark:border-slate-800 space-y-4">
             <h2 class="text-base font-medium text-text-primary mb-3">Informações da Resolução</h2>
-            
+
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                    <label class="block text-xs font-medium text-text-muted uppercase tracking-wide mb-2">Resolvido Por*</label>
-                    <select id="resolvida_por" name="resolvida_por" required class="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-background text-text-primary focus:outline-none focus:ring-2 focus:ring-primary">
+                    <label class="block text-xs font-medium text-text-muted uppercase tracking-wide mb-2">Resolvido
+                        Por*</label>
+                    <select id="resolvida_por" name="resolvida_por" required
+                        class="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-background text-text-primary focus:outline-none focus:ring-2 focus:ring-primary">
                         <option value="">Selecione o responsável</option>
                         {% for usuario in usuarios %}
                         <option value="{{ usuario.id }}">{{ usuario.nome }}</option>
                         {% endfor %}
                     </select>
                 </div>
-                
+
                 <div>
-                    <label class="block text-xs font-medium text-text-muted uppercase tracking-wide mb-2">Data/Hora da Resolução*</label>
+                    <label class="block text-xs font-medium text-text-muted uppercase tracking-wide mb-2">Data/Hora da
+                        Resolução*</label>
                     <div class="flex gap-2">
-                        <input type="datetime-local" id="data_resolucao" name="data_resolucao" required class="flex-1 px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-background text-text-primary focus:outline-none focus:ring-2 focus:ring-primary">
-                        <button type="button" id="btn-agora-resolucao" class="px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-700 text-text-primary hover:bg-background-alt transition flex items-center gap-1.5">
+                        <input type="datetime-local" id="data_resolucao" name="data_resolucao" required
+                            class="flex-1 px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-background text-text-primary focus:outline-none focus:ring-2 focus:ring-primary">
+                        <button type="button" id="btn-agora-resolucao"
+                            class="px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-700 text-text-primary hover:bg-background-alt transition flex items-center gap-1.5">
                             <span class="material-icons text-base">schedule</span>
                             Agora
                         </button>
                     </div>
                 </div>
             </div>
-            
+
             <div>
                 <label class="block text-sm font-medium text-text-primary mb-2">Descrição da Resolução*</label>
-                <textarea id="resolucao_descricao" name="resolucao_descricao" required rows="6" placeholder="Descreva em detalhes como a ocorrência foi resolvida, ações tomadas, equipamentos verificados, etc..." class="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-background text-text-primary focus:outline-none focus:ring-2 focus:ring-primary resize-none"></textarea>
+                <textarea id="resolucao_descricao" name="resolucao_descricao" required rows="6"
+                    placeholder="Descreva em detalhes como a ocorrência foi resolvida, ações tomadas, equipamentos verificados, etc..."
+                    class="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-background text-text-primary focus:outline-none focus:ring-2 focus:ring-primary resize-none"></textarea>
             </div>
         </div>
-        
+
         <!-- Botões de Ação -->
         <div class="flex justify-end gap-4">
-            <a href="{{ url_for('index') }}" class="px-6 py-2 rounded-lg border border-slate-300 dark:border-slate-700 text-text-primary hover:bg-background-alt transition">
+            <a href="{{ url_for('index') }}"
+                class="px-6 py-2 rounded-lg border border-slate-300 dark:border-slate-700 text-text-primary hover:bg-background-alt transition">
                 Cancelar
             </a>
-            <button type="submit" class="px-4 py-2 rounded-lg bg-success text-white text-sm font-medium hover:opacity-90 transition flex items-center gap-1.5">
+            <button type="submit"
+                class="px-4 py-2 rounded-lg bg-success text-white text-sm font-medium hover:opacity-90 transition flex items-center gap-1.5">
                 <span class="material-icons text-base">check_circle</span>
                 Marcar como Resolvida
             </button>
         </div>
     </form>
-    
+
     <!-- Mensagem de feedback -->
     <div id="mensagem" class="hidden fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50"></div>
 </div>
 
 <script>
-    (function() {
+    window.INITIAL_OCORRENCIAS_REQUER_ACAO = {{ ocorrencias_requer_acao | tojson | default ('[]') | safe }};
+
+    (function () {
         // Proteção contra múltiplas inicializações
         if (window.__ocorrenciasPageInitialized) return;
         window.__ocorrenciasPageInitialized = true;
@@ -530,7 +569,20 @@
                 if (d.previewBox) d.previewBox.classList.add('hidden');
 
                 try {
-                    const payload = await this._fetchJson(this.config.endpoints.ocorrenciasAbertas, { method: 'GET' });
+                    let payload;
+
+                    // Verifica se há dados iniciais injetados pelo server (evita requisição redundante)
+                    if (window.INITIAL_OCORRENCIAS_REQUER_ACAO) {
+                        console.log('[Ocorrencias] Usando dados pré-carregados');
+                        payload = window.INITIAL_OCORRENCIAS_REQUER_ACAO;
+                        // Limpa para que na próxima vez (ex: recarregar aba) busque do servidor se necessário
+                        // Ou mantém null se quiser que o comportamento de aba sempre busque novo. 
+                        // Neste caso, vamos consumir uma vez.
+                        window.INITIAL_OCORRENCIAS_REQUER_ACAO = null;
+                    } else {
+                        payload = await this._fetchJson(this.config.endpoints.ocorrenciasAbertas, { method: 'GET' });
+                    }
+
                     const lista = this._normalizarListaOcorrencias(payload);
                     const ocorrenciasComAcao = (lista || []).filter((oc) => oc && (oc.requer_acao === true || oc.requer_acao === 1));
 
@@ -547,7 +599,7 @@
                         const id = String(oc.id);
                         const option = document.createElement('option');
                         option.value = id;
-                        option.textContent = `#${oc.id} - ${oc.tipo} - ${oc.unidade} (${oc.status})`;
+                        option.textContent = `#${oc.id} - ${oc.usina_nome || 'Usina N/A'} - ${oc.tipo} - ${oc.unidade} (${oc.status})`;
                         option.dataset.ocorrencia = JSON.stringify(oc);
                         select.appendChild(option);
                         this.state.ocorrenciasPorId.set(id, oc);

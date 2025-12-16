@@ -157,6 +157,17 @@ class OpOcorrencia(BaseReader):
         return self._injetar_usina_nome(self.where_eq(where={"usina_id": usina_id, "id": (">", ultimo_id)}, order_by="id", desc=True, limit=limit))
 
     @desempenho
+    def listar_requer_acao(self) -> List[Dict[str, Any]]:
+        # retornar todas as ocorrências que requerem ação (requer_acao = 1)
+        # return self.where_eq(where={"requer_acao": 1}, order_by="created_at", desc=True, limit=200)
+        sql = f"SELECT * FROM {self.tabela} WHERE requer_acao = 1 ORDER BY created_at DESC LIMIT 200"
+        print(f"sql: {sql}")
+        resposta = self._run(sql)
+        print(f"resposta: {resposta}")
+        print('-' * 50)
+        return self._injetar_usina_nome(resposta)
+
+    @desempenho
     def listar_usina_por_periodo(
         self,
         usina_id: int,
@@ -190,6 +201,27 @@ class OpOcorrencia(BaseReader):
             order_by="created_at",
             desc=True,
             limit=limit
+        )
+
+    @desempenho
+    def listar_api(
+        self,
+        status_list: Optional[List[str]] = None,
+        requer_acao: Optional[int] = None,
+        limit: int = 50,
+    ) -> List[Dict[str, Any]]:
+        where = {}
+        if status_list:
+            if len(status_list) == 1:
+                where["status"] = status_list[0]
+            else:
+                where["status"] = ("IN", tuple(status_list))
+        
+        if requer_acao is not None:
+            where["requer_acao"] = requer_acao
+
+        return self._injetar_usina_nome(
+            self.where_eq(where=where, order_by="created_at", desc=True, limit=limit)
         )
 
 class OpParadas(BaseReader):

@@ -90,9 +90,6 @@ flowchart TD
 
 16. **`solicitar(tipo)`** - Função arrow anônima que serve como wrapper para solicitarStatus(). Registra log com timestamp e tipo de solicitação (manual, automático, inicial) antes de executar a solicitação
 
-
-
-
 #### KPI - Key Performance Indicator (Indicador chave de desempenho)
 
 Para cada `op_usina` e cada Unidade Geradora (UG):
