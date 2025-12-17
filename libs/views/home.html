@@ -1,13 +1,14 @@
 {% extends "base.html" %}
 {% set active_page = "home" %}
-{% from "components/macros.html" import stat_card, ocorrencia_item %}
+{% import "components/_cards.html" as cards %}
+{% from "components/macros.html" import ocorrencia_item %}
 
 {% block title %}Dashboard de Ocorrências — EngeSEP O&M{% endblock %}
 
 {% block content %}
 <div class="flex h-screen bg-background">
     <div class="flex-1 overflow-y-auto p-6 space-y-6">
-        
+
         <!-- Header -->
         <div class="flex justify-between items-center">
             <h1 class="text-lg font-medium text-text-primary">COG - Central de Operação de Geração</h1>
@@ -19,50 +20,74 @@
 
         <!-- Cards de Estatísticas -->
         <header class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-            {{ stat_card('Potência Ativa', vm.potencia_total_mw, unit='MW', text_color_class='text-text-primary', value_id='potencia-total-mw') }}
-            {{ stat_card('Ocorrências Abertas', vm.stats_por_status.get('aberta', 0), text_color_class='text-danger') }}
-            {{ stat_card('Em Andamento', vm.stats_por_status.get('em_andamento', 0), text_color_class='text-warning') }}
-            {{ stat_card('Resolvidas', vm.stats_por_status.get('resolvida', 0), text_color_class='text-success') }}
+            {{ cards.card('Potência Ativa', vm.potencia_total_mw, unit='MW', text_color_class='text-text-primary',
+            value_id='potencia-total-mw') }}
+            {{ cards.card('Ocorrências Abertas', vm.stats_por_status.get('aberta', 0), text_color_class='text-danger')
+            }}
+            {{ cards.card('Em Andamento', vm.stats_por_status.get('em_andamento', 0), text_color_class='text-warning')
+            }}
+            {{ cards.card('Resolvidas', vm.stats_por_status.get('resolvida', 0), text_color_class='text-success') }}
         </header>
 
         <!-- Conteúdo Principal -->
         <main class="space-y-6">
-            
+
             <!-- Grid: Status das Usinas e Ocorrências Recentes -->
             <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
-                
+
                 <!-- Seção: Status das Usinas -->
                 <section>
                     <h2 class="text-base font-medium mb-3 text-text-primary">Status das Usinas</h2>
                     <div class="space-y-3">
                         {% for usina in vm.usinas %}
                         <a href="{{ url_for('usina_page', sigla=usina.sigla) }}" class="block">
-                            <div class="bg-surface p-4 rounded-lg border border-slate-200 dark:border-slate-800 hover:border-primary/50 transition">
+                            <div
+                                class="bg-surface p-4 rounded-lg border border-slate-200 dark:border-slate-800 hover:border-primary/50 transition">
                                 <div class="flex justify-between items-start mb-3">
                                     <h3 class="text-sm font-medium text-text-primary">{{ usina.nome }}</h3>
-                                    <div class="flex flex-wrap gap-1 justify-end max-w-[60%]" data-role="status-operacional" data-usina-key="{{ (usina.nome or usina.sigla)|slugify }}">
-                                        <span class="bg-blue-500/20 text-blue-500 text-xs px-2 py-0.5 rounded inline-flex items-center gap-1">
-                                            <span class="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></span>Carregando...
+                                    <div class="flex flex-wrap gap-1 justify-end max-w-[60%]"
+                                        data-role="status-operacional"
+                                        data-usina-key="{{ (usina.nome or usina.sigla)|slugify }}">
+                                        <span
+                                            class="bg-blue-500/20 text-blue-500 text-xs px-2 py-0.5 rounded inline-flex items-center gap-1">
+                                            <span
+                                                class="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></span>Carregando...
                                         </span>
                                     </div>
                                 </div>
                                 <div class="grid grid-cols-2 gap-3 text-xs">
                                     <div>
                                         <p class="text-text-muted mb-0.5">Potência Ativa</p>
-                                        <div class="flex flex-wrap gap-2 text-xs text-text-primary" data-role="potencia-operacional" data-usina-key="{{ (usina.nome or usina.sigla)|slugify }}">
-                                            <span class="bg-blue-500/20 text-blue-500 px-2 py-0.5 rounded">Carregando...</span>
+                                        <div class="flex flex-wrap gap-2 text-xs text-text-primary"
+                                            data-role="potencia-operacional"
+                                            data-usina-key="{{ (usina.nome or usina.sigla)|slugify }}">
+                                            <span
+                                                class="bg-blue-500/20 text-blue-500 px-2 py-0.5 rounded">Carregando...</span>
                                         </div>
                                     </div>
-                                    <div><p class="text-text-muted mb-0.5">MTTR</p><p class="text-sm text-text-primary">{{ usina.mttr }}</p></div>
-                                    <div><p class="text-text-muted mb-0.5">Alarmes/hora</p><p class="text-sm text-text-primary">{{ "%.2f"|format(usina.alarmes_por_hora) }}</p></div>
-                                    <div><p class="text-text-muted mb-0.5">Alarmes Críticos</p><p class="text-sm {{ 'text-danger' if usina.alarmes_criticos > 0 else 'text-success' }}">{{ usina.alarmes_criticos }}</p></div>
+                                    <div>
+                                        <p class="text-text-muted mb-0.5">MTTR</p>
+                                        <p class="text-sm text-text-primary">{{ usina.mttr }}</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-text-muted mb-0.5">Alarmes/hora</p>
+                                        <p class="text-sm text-text-primary">{{ "%.2f"|format(usina.alarmes_por_hora) }}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <p class="text-text-muted mb-0.5">Alarmes Críticos</p>
+                                        <p
+                                            class="text-sm {{ 'text-danger' if usina.alarmes_criticos > 0 else 'text-success' }}">
+                                            {{ usina.alarmes_criticos }}</p>
+                                    </div>
                                 </div>
                             </div>
                         </a>
                         {% else %}
-                            <div class="bg-surface p-6 rounded-lg border border-slate-200 dark:border-slate-800 text-center">
-                                <p class="text-text-muted">Nenhuma usina cadastrada no sistema.</p>
-                            </div>
+                        <div
+                            class="bg-surface p-6 rounded-lg border border-slate-200 dark:border-slate-800 text-center">
+                            <p class="text-text-muted">Nenhuma usina cadastrada no sistema.</p>
+                        </div>
                         {% endfor %}
                     </div>
                 </section>
@@ -70,113 +95,38 @@
                 <section>
                     <div class="flex justify-between items-center mb-3">
                         <h2 class="text-base font-medium text-text-primary">Ocorrências Recentes</h2>
-                        <a href="{{ url_for('ocorrencias') }}" class="bg-primary hover:opacity-90 text-white text-xs font-medium py-2 px-3 rounded-lg transition flex items-center gap-1">
+                        <a href="{{ url_for('ocorrencias') }}"
+                            class="bg-primary hover:opacity-90 text-white text-xs font-medium py-2 px-3 rounded-lg transition flex items-center gap-1">
                             <span class="material-icons text-sm">add</span>Nova Ocorrência
                         </a>
                     </div>
                     <div class="home-ocorrencias-scroll space-y-3 overflow-y-auto pr-2 custom-scrollbar">
-                        {% if vm.ocorrencias_recentes and vm.ocorrencias_recentes|length > 0 %}
-                            {% for alarme in vm.ocorrencias_recentes %}
-                            <div class="ocorrencia-item flex items-start gap-3 p-3 rounded-lg border 
-                                {% if alarme.severidade == 'alta' or alarme.severidade == 'crítica' %}
-                                    border-danger/30 bg-danger/5
-                                {% elif alarme.severidade == 'média' %}
-                                    border-warning/30 bg-warning/5
-                                {% else %}
-                                    border-info/30 bg-info/5
-                                {% endif %}"
-                                data-tipo="{{ alarme.tipo }}"
-                                data-categoria="{{ alarme.categoria }}"
-                                data-status="{{ alarme.status }}"
-                                data-unidade="{{ alarme.unidade }}"
-                                data-tags="{{ alarme.tags }}"
-                                data-severidade="{{ alarme.severidade }}">
-                                
-                                <div class="w-2 h-2 rounded-full 
-                                    {% if alarme.severidade == 'alta' or alarme.severidade == 'crítica' %}
-                                        bg-danger
-                                    {% elif alarme.severidade == 'média' %}
-                                        bg-warning
-                                    {% else %}
-                                        bg-info
-                                    {% endif %} 
-                                    mt-1.5 flex-shrink-0"></div>
-                                <div class="flex-1">
-                                    <div class="flex justify-between items-start gap-2 mb-2">
-                                        <p class="text-sm font-medium text-text-primary">
-                                            <span class="font-semibold">{{ alarme.tipo }}</span>: {{ alarme.categoria }} - {{ alarme.usina_nome }} - {{ alarme.unidade }}
-                                        </p>
-                                        <div class="flex flex-wrap gap-1.5">
-                                            <span class="px-2 py-0.5 
-                                                {% if alarme.status == 'resolvida' %}
-                                                    bg-success/10 text-success
-                                                {% elif alarme.status == 'em_andamento' %}
-                                                    bg-info/10 text-info
-                                                {% elif alarme.status == 'aberta' %}
-                                                    bg-warning/10 text-warning
-                                                {% else %}
-                                                    bg-slate-100 text-slate-600
-                                                {% endif %}
-                                                text-xs rounded whitespace-nowrap capitalize">{{ alarme.status.replace('_', ' ') }}</span>
-                                            <span class="px-2 py-0.5 
-                                                {% if alarme.severidade == 'alta' or alarme.severidade == 'crítica' %}
-                                                    bg-danger/20 text-danger
-                                                {% elif alarme.severidade == 'média' %}
-                                                    bg-warning/20 text-warning
-                                                {% else %}
-                                                    bg-info/20 text-info
-                                                {% endif %}
-                                                text-xs rounded whitespace-nowrap capitalize">{{ alarme.severidade }}</span>
-                                            
-                                            {% if alarme.metadata %}
-                                                {% set metadata_dict = alarme.metadata if alarme.metadata is mapping else {} %}
-                                                {% if metadata_dict.get('requer_acao') %}
-                                                    <span class="px-2 py-0.5 bg-danger/10 text-danger text-xs rounded whitespace-nowrap font-semibold flex items-center gap-1">
-                                                        <span class="material-icons text-xs">warning</span>
-                                                        REQUER AÇÃO
-                                                    </span>
-                                                {% endif %}
-                                            {% endif %}
-                                        </div>
-                                    </div>
-                                    <p class="text-xs text-text-primary mt-1 line-clamp-2">{{ alarme.descricao[:150] }}{% if alarme.descricao|length > 150 %}...{% endif %}</p>
-                                    <p class="text-xs text-text-muted mt-1">{{ alarme.created_at.strftime('%d/%m/%Y, %H:%M:%S') }} por {{ alarme.origem|capitalize }}</p>
-                                    {% if alarme.tags %}
-                                    <div class="flex flex-wrap gap-1.5 mt-2">
-                                        {% for tag in alarme.tags.split(',') %}
-                                            {% if tag.strip() %}
-                                            <span class="px-2 py-0.5 bg-background-alt text-text-muted text-xs rounded">{{ tag.strip() }}</span>
-                                            {% endif %}
-                                        {% endfor %}
-                                    </div>
-                                    {% endif %}
-                                </div>
-                            </div>
-                            {% endfor %}
-                        {% else %}
-                            <div class="bg-surface p-6 rounded-lg border border-slate-200 dark:border-slate-800 text-center">
-                                <p class="text-text-muted">Nenhuma ocorrência registrada no sistema.</p>
-                            </div>
-                        {% endif %}
+                        {% with ocorrencias=vm.ocorrencias_recentes, empty_msg="Nenhuma ocorrência registrada no
+                        sistema." %}
+                        {% include "components/_ocorrencias.html" %}
+                        {% endwith %}
                     </div>
                 </section>
-                
+
             </div>
         </main>
-        
+
     </div>
 </div>
 
 <!-- Modal de Intervenção de Status -->
-<div id="status-intervention-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/50 backdrop-blur-sm">
-    <div class="bg-surface border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl w-full max-w-md p-6 space-y-4">
-        
+<div id="status-intervention-modal"
+    class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/50 backdrop-blur-sm">
+    <div
+        class="bg-surface border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl w-full max-w-md p-6 space-y-4">
+
         <div class="flex justify-between items-start">
             <div>
                 <h3 class="text-lg font-medium text-text-primary">Declarar Motivo da Parada</h3>
                 <p class="text-sm text-text-muted" id="modal-title-device">USINA - UG-XX</p>
             </div>
-            <button onclick="StatusUsinasModule.closeStatusModal()" class="text-text-muted hover:text-text-primary transition">
+            <button onclick="StatusUsinasModule.closeStatusModal()"
+                class="text-text-muted hover:text-text-primary transition">
                 <span class="material-icons">close</span>
             </button>
         </div>
@@ -186,24 +136,30 @@
             <input type="hidden" id="modal-usina-slug">
             <input type="hidden" id="modal-device-name">
 
-            <label class="flex items-center gap-3 p-3 rounded-lg border border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-background-alt transition">
-                <input type="radio" name="status-reason" id="reason-normal" value="NORMAL" class="w-4 h-4 text-primary bg-background border-slate-300 focus:ring-primary">
+            <label
+                class="flex items-center gap-3 p-3 rounded-lg border border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-background-alt transition">
+                <input type="radio" name="status-reason" id="reason-normal" value="NORMAL"
+                    class="w-4 h-4 text-primary bg-background border-slate-300 focus:ring-primary">
                 <div>
                     <span class="block text-sm font-medium text-text-primary">Normal / Reserva Operacional</span>
                     <span class="block text-xs text-text-muted">Máquina disponível, aguardando comando ou água.</span>
                 </div>
             </label>
 
-            <label class="flex items-center gap-3 p-3 rounded-lg border border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-background-alt transition">
-                <input type="radio" name="status-reason" id="reason-manutencao" value="MANUTENCAO" class="w-4 h-4 text-purple-500 bg-background border-slate-300 focus:ring-purple-500">
+            <label
+                class="flex items-center gap-3 p-3 rounded-lg border border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-background-alt transition">
+                <input type="radio" name="status-reason" id="reason-manutencao" value="MANUTENCAO"
+                    class="w-4 h-4 text-purple-500 bg-background border-slate-300 focus:ring-purple-500">
                 <div>
                     <span class="block text-sm font-medium text-text-primary">Manutenção</span>
                     <span class="block text-xs text-text-muted">Intervenção técnica programada ou corretiva.</span>
                 </div>
             </label>
 
-            <label class="flex items-center gap-3 p-3 rounded-lg border border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-background-alt transition">
-                <input type="radio" name="status-reason" id="reason-restricao" value="RESTRICAO" class="w-4 h-4 text-pink-500 bg-background border-slate-300 focus:ring-pink-500">
+            <label
+                class="flex items-center gap-3 p-3 rounded-lg border border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-background-alt transition">
+                <input type="radio" name="status-reason" id="reason-restricao" value="RESTRICAO"
+                    class="w-4 h-4 text-pink-500 bg-background border-slate-300 focus:ring-pink-500">
                 <div>
                     <span class="block text-sm font-medium text-text-primary">Restrição da Concessionária</span>
                     <span class="block text-xs text-text-muted">Impedimento externo (Rede, ONS, Ambiental).</span>
@@ -212,8 +168,10 @@
         </div>
 
         <div class="flex justify-end gap-2 pt-2">
-            <button onclick="StatusUsinasModule.closeStatusModal()" class="px-4 py-2 text-sm font-medium text-text-muted hover:bg-background-alt rounded-lg transition">Cancelar</button>
-            <button onclick="StatusUsinasModule.confirmStatusChange()" class="px-4 py-2 text-sm font-medium text-white bg-primary hover:bg-primary/90 rounded-lg shadow-sm transition">Confirmar</button>
+            <button onclick="StatusUsinasModule.closeStatusModal()"
+                class="px-4 py-2 text-sm font-medium text-text-muted hover:bg-background-alt rounded-lg transition">Cancelar</button>
+            <button onclick="StatusUsinasModule.confirmStatusChange()"
+                class="px-4 py-2 text-sm font-medium text-white bg-primary hover:bg-primary/90 rounded-lg shadow-sm transition">Confirmar</button>
         </div>
 
     </div>
@@ -221,263 +179,263 @@
 
 <!-- Script: Status das Usinas -->
 <script>
-// Usando um IIFE (Immediately Invoked Function Expression) para criar um escopo privado
-// e evitar poluir o escopo global.
-(function() {
-    // Proteção contra múltiplas inicializações
-    if (window.__statusUsinasInitialized) return;
-    window.__statusUsinasInitialized = true;
+    // Usando um IIFE (Immediately Invoked Function Expression) para criar um escopo privado
+    // e evitar poluir o escopo global.
+    (function () {
+        // Proteção contra múltiplas inicializações
+        if (window.__statusUsinasInitialized) return;
+        window.__statusUsinasInitialized = true;
 
-    const StatusUsinasModule = {
-        // --- Configuração Centralizada ---
-        config: {
-            maxSocketRetries: 50,
-            socketRetryIntervalMs: 400,
-            throttleMs: 5000,
-            autoRequestIntervalMs: 30000,
-            statusColorsMap: {
-                    'us (sincronizado)': {bg: 'bg-green-500/20', text: 'text-green-500', dot: 'bg-green-500'},
-                    'umd (marcha desexcitada)': {bg: 'bg-teal-500/20', text: 'text-teal-500', dot: 'bg-teal-500'},
-                    'ups (pronta para sincronização)': {bg: 'bg-yellow-500/20', text: 'text-yellow-500', dot: 'bg-yellow-500'},
-                    'upgm (pronta para giro mecânico)': {bg: 'bg-orange-500/20', text: 'text-orange-500', dot: 'bg-orange-500'},
-                    'up (parada)': {bg: 'bg-slate-500/20', text: 'text-slate-500', dot: 'bg-slate-500'},
-                    'sem conexão': {bg: 'bg-red-500/20', text: 'text-red-500', dot: 'bg-red-500'},
-                    'status indeterminado': {bg: 'bg-gray-500/20', text: 'text-gray-500', dot: 'bg-gray-500'},
-                    'carregando': {bg: 'bg-blue-500/20', text: 'text-blue-500', dot: 'bg-blue-500 animate-pulse'},
-                    'manutenção (parada)': {bg: 'bg-purple-500/20', text: 'text-purple-500', dot: 'bg-purple-500'},
-                    'restrição da concessionária (parada)': {bg: 'bg-pink-500/20', text: 'text-pink-500', dot: 'bg-pink-500'},
-            }
-        },
-
-        // --- Estado do Módulo ---
-        state: {
-            socket: null,
-            lastRequestTime: 0,
-            autoRequestIntervalId: null,
-            potenciaPorUsina: {},
-        },
-
-        // --- Métodos Principais ---
-        init() {
-            if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', () => this.tryConnectSocket());
-            } else {
-                this.tryConnectSocket();
-            }
-        },
-
-        tryConnectSocket(retries = 0) {
-            if (window.socket) {
-                this.state.socket = window.socket;
-                this.setupListeners();
-                // Solicita dados iniciais na conexão ou se já estiver conectado
-                if (this.state.socket.connected) {
-                    this.requestStatusUpdate('inicial');
-                } else {
-                    this.state.socket.once('connect', () => this.requestStatusUpdate('conexão'));
+        const StatusUsinasModule = {
+            // --- Configuração Centralizada ---
+            config: {
+                maxSocketRetries: 50,
+                socketRetryIntervalMs: 400,
+                throttleMs: 5000,
+                autoRequestIntervalMs: 30000,
+                statusColorsMap: {
+                    'us (sincronizado)': { bg: 'bg-green-500/20', text: 'text-green-500', dot: 'bg-green-500' },
+                    'umd (marcha desexcitada)': { bg: 'bg-teal-500/20', text: 'text-teal-500', dot: 'bg-teal-500' },
+                    'ups (pronta para sincronização)': { bg: 'bg-yellow-500/20', text: 'text-yellow-500', dot: 'bg-yellow-500' },
+                    'upgm (pronta para giro mecânico)': { bg: 'bg-orange-500/20', text: 'text-orange-500', dot: 'bg-orange-500' },
+                    'up (parada)': { bg: 'bg-slate-500/20', text: 'text-slate-500', dot: 'bg-slate-500' },
+                    'sem conexão': { bg: 'bg-red-500/20', text: 'text-red-500', dot: 'bg-red-500' },
+                    'status indeterminado': { bg: 'bg-gray-500/20', text: 'text-gray-500', dot: 'bg-gray-500' },
+                    'carregando': { bg: 'bg-blue-500/20', text: 'text-blue-500', dot: 'bg-blue-500 animate-pulse' },
+                    'manutenção (parada)': { bg: 'bg-purple-500/20', text: 'text-purple-500', dot: 'bg-purple-500' },
+                    'restrição da concessionária (parada)': { bg: 'bg-pink-500/20', text: 'text-pink-500', dot: 'bg-pink-500' },
                 }
-            } else if (retries < this.config.maxSocketRetries) {
-                setTimeout(() => this.tryConnectSocket(retries + 1), this.config.socketRetryIntervalMs);
-            } else {
-                console.error('[Status Usinas] Socket não encontrado. Abortando.');
-            }
-        },
+            },
 
-        setupListeners() {
-            if (!document.querySelector('[data-role="status-operacional"]')) return;
-            
-            // Limpa listeners e intervalos antigos para evitar duplicação
-            if (this.state.socket.off) this.state.socket.off('status_usinas_dados');
-            if (this.state.autoRequestIntervalId) clearInterval(this.state.autoRequestIntervalId);
+            // --- Estado do Módulo ---
+            state: {
+                socket: null,
+                lastRequestTime: 0,
+                autoRequestIntervalId: null,
+                potenciaPorUsina: {},
+            },
 
-            console.log('[Status Usinas] 🎧 Registrando listener para evento "status_usinas_dados"...');
-            this.state.socket.on('status_usinas_dados', (payload) => {
-                console.log('[Status Usinas] 📥 Evento "status_usinas_dados" RECEBIDO!', payload);
-                this.handleStatusPayload(payload);
-            });
-            console.log('[Status Usinas] ✅ Listener registrado com sucesso!');
-            this.state.autoRequestIntervalId = setInterval(() => this.requestStatusUpdate('automático'), this.config.autoRequestIntervalMs);
-            
-            // Cleanup ao sair da página
-            window.addEventListener('beforeunload', () => {
+            // --- Métodos Principais ---
+            init() {
+                if (document.readyState === 'loading') {
+                    document.addEventListener('DOMContentLoaded', () => this.tryConnectSocket());
+                } else {
+                    this.tryConnectSocket();
+                }
+            },
+
+            tryConnectSocket(retries = 0) {
+                if (window.socket) {
+                    this.state.socket = window.socket;
+                    this.setupListeners();
+                    // Solicita dados iniciais na conexão ou se já estiver conectado
+                    if (this.state.socket.connected) {
+                        this.requestStatusUpdate('inicial');
+                    } else {
+                        this.state.socket.once('connect', () => this.requestStatusUpdate('conexão'));
+                    }
+                } else if (retries < this.config.maxSocketRetries) {
+                    setTimeout(() => this.tryConnectSocket(retries + 1), this.config.socketRetryIntervalMs);
+                } else {
+                    console.error('[Status Usinas] Socket não encontrado. Abortando.');
+                }
+            },
+
+            setupListeners() {
+                if (!document.querySelector('[data-role="status-operacional"]')) return;
+
+                // Limpa listeners e intervalos antigos para evitar duplicação
+                if (this.state.socket.off) this.state.socket.off('status_usinas_dados');
                 if (this.state.autoRequestIntervalId) clearInterval(this.state.autoRequestIntervalId);
-            });
-        },
 
-        handleStatusPayload(payload) {
-            if (!payload || !payload.success) {
-                console.error('[Status Usinas] Erro ao receber dados:', payload?.error || 'Payload inválido');
-                return;
-            }
-            (payload.usinas || []).forEach(usina => {
-                if (!usina || !usina.slug) return;
+                console.log('[Status Usinas] 🎧 Registrando listener para evento "status_usinas_dados"...');
+                this.state.socket.on('status_usinas_dados', (payload) => {
+                    console.log('[Status Usinas] 📥 Evento "status_usinas_dados" RECEBIDO!', payload);
+                    this.handleStatusPayload(payload);
+                });
+                console.log('[Status Usinas] ✅ Listener registrado com sucesso!');
+                this.state.autoRequestIntervalId = setInterval(() => this.requestStatusUpdate('automático'), this.config.autoRequestIntervalMs);
 
-                const dispositivosDict = usina.dispositivos || {};
-                this.updateDOMForUsina(usina.slug, dispositivosDict);
-            });
-        },
-        
-        updateDOMForUsina(slug, dispositivosDict) {
-            const dispositivosArr = dispositivosDict
-                ? Object.values(dispositivosDict)
-                : [];
+                // Cleanup ao sair da página
+                window.addEventListener('beforeunload', () => {
+                    if (this.state.autoRequestIntervalId) clearInterval(this.state.autoRequestIntervalId);
+                });
+            },
 
-            const statusTarget = document.querySelector(`[data-role="status-operacional"][data-usina-key="${slug}"]`);
-            if (statusTarget) {
-                statusTarget.innerHTML = this._renderStatusBadges(dispositivosArr, slug);
-            }
+            handleStatusPayload(payload) {
+                if (!payload || !payload.success) {
+                    console.error('[Status Usinas] Erro ao receber dados:', payload?.error || 'Payload inválido');
+                    return;
+                }
+                (payload.usinas || []).forEach(usina => {
+                    if (!usina || !usina.slug) return;
 
-            const potenciaTarget = document.querySelector(`[data-role="potencia-operacional"][data-usina-key="${slug}"]`);
-            if (potenciaTarget) {
-                potenciaTarget.innerHTML = this._renderPotenciaBadges(dispositivosArr);
-            }
+                    const dispositivosDict = usina.dispositivos || {};
+                    this.updateDOMForUsina(usina.slug, dispositivosDict);
+                });
+            },
 
-            this.state.potenciaPorUsina[slug] = this._somarPotenciaDispositivos(dispositivosDict);
-            this._atualizarCardPotenciaTotal();
-        },
-        
-        requestStatusUpdate(type = 'manual') {
-            const now = Date.now();
-            if (now - this.state.lastRequestTime < this.config.throttleMs) {
-                console.warn(`[Status Usinas] Throttle: solicitação (${type}) ignorada.`);
-                return;
-            }
-            this.state.lastRequestTime = now;
-            console.log(`[Status Usinas] 📤 Emitindo evento "solicitar_status_usinas" (tipo: ${type})...`);
-            
-            this.state.socket.emit('solicitar_status_usinas');
-            console.log('[Status Usinas] ✅ Evento "solicitar_status_usinas" emitido!');
-        },
+            updateDOMForUsina(slug, dispositivosDict) {
+                const dispositivosArr = dispositivosDict
+                    ? Object.values(dispositivosDict)
+                    : [];
 
-        // --- Métodos de Renderização (Helpers) ---
-        _renderStatusBadges(dispositivos, usinaSlug) {
-            const fallbackColors = this._getColorByStatus('parada');
-            if (!dispositivos || dispositivos.length === 0) {
-                return `<span class="${fallbackColors.bg} ${fallbackColors.text} text-xs px-2 py-0.5 rounded inline-flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full ${fallbackColors.dot}"></span>Indisponível</span>`;
-            }
-            return dispositivos.map(disp => {
-                const nome = disp.nome || 'N/A';
-                const descricao = disp.descricao || 'Desconhecido';
-                const colors = this._getColorByStatus(descricao);
-                const deviceName = disp.nome || '';
-                
-                // Identificar se o status é editável (UP ou estados manuais)
-                const descLower = descricao.toLowerCase().trim();
-                const isEditable = ['up (parada)', 'manutenção (parada)', 'restrição da concessionária (parada)'].includes(descLower);
-                
-                const cursorStyle = isEditable ? 'cursor-pointer hover:ring-1 hover:ring-current' : '';
-                const clickAction = isEditable ? `onclick="event.preventDefault(); event.stopPropagation(); StatusUsinasModule.openStatusModal('${usinaSlug}', '${deviceName}', '${descricao}')"` : '';
-                const settingsIcon = isEditable ? '<span class="material-icons text-[10px] ml-1 opacity-70">settings</span>' : '';
-                
-                return `<span ${clickAction} class="${colors.bg} ${colors.text} ${cursorStyle} text-xs px-2 py-0.5 rounded inline-flex items-center gap-1 whitespace-nowrap transition-all" title="${isEditable ? 'Clique para alterar motivo da parada' : ''}">
+                const statusTarget = document.querySelector(`[data-role="status-operacional"][data-usina-key="${slug}"]`);
+                if (statusTarget) {
+                    statusTarget.innerHTML = this._renderStatusBadges(dispositivosArr, slug);
+                }
+
+                const potenciaTarget = document.querySelector(`[data-role="potencia-operacional"][data-usina-key="${slug}"]`);
+                if (potenciaTarget) {
+                    potenciaTarget.innerHTML = this._renderPotenciaBadges(dispositivosArr);
+                }
+
+                this.state.potenciaPorUsina[slug] = this._somarPotenciaDispositivos(dispositivosDict);
+                this._atualizarCardPotenciaTotal();
+            },
+
+            requestStatusUpdate(type = 'manual') {
+                const now = Date.now();
+                if (now - this.state.lastRequestTime < this.config.throttleMs) {
+                    console.warn(`[Status Usinas] Throttle: solicitação (${type}) ignorada.`);
+                    return;
+                }
+                this.state.lastRequestTime = now;
+                console.log(`[Status Usinas] 📤 Emitindo evento "solicitar_status_usinas" (tipo: ${type})...`);
+
+                this.state.socket.emit('solicitar_status_usinas');
+                console.log('[Status Usinas] ✅ Evento "solicitar_status_usinas" emitido!');
+            },
+
+            // --- Métodos de Renderização (Helpers) ---
+            _renderStatusBadges(dispositivos, usinaSlug) {
+                const fallbackColors = this._getColorByStatus('parada');
+                if (!dispositivos || dispositivos.length === 0) {
+                    return `<span class="${fallbackColors.bg} ${fallbackColors.text} text-xs px-2 py-0.5 rounded inline-flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full ${fallbackColors.dot}"></span>Indisponível</span>`;
+                }
+                return dispositivos.map(disp => {
+                    const nome = disp.nome || 'N/A';
+                    const descricao = disp.descricao || 'Desconhecido';
+                    const colors = this._getColorByStatus(descricao);
+                    const deviceName = disp.nome || '';
+
+                    // Identificar se o status é editável (UP ou estados manuais)
+                    const descLower = descricao.toLowerCase().trim();
+                    const isEditable = ['up (parada)', 'manutenção (parada)', 'restrição da concessionária (parada)'].includes(descLower);
+
+                    const cursorStyle = isEditable ? 'cursor-pointer hover:ring-1 hover:ring-current' : '';
+                    const clickAction = isEditable ? `onclick="event.preventDefault(); event.stopPropagation(); StatusUsinasModule.openStatusModal('${usinaSlug}', '${deviceName}', '${descricao}')"` : '';
+                    const settingsIcon = isEditable ? '<span class="material-icons text-[10px] ml-1 opacity-70">settings</span>' : '';
+
+                    return `<span ${clickAction} class="${colors.bg} ${colors.text} ${cursorStyle} text-xs px-2 py-0.5 rounded inline-flex items-center gap-1 whitespace-nowrap transition-all" title="${isEditable ? 'Clique para alterar motivo da parada' : ''}">
                     <span class="w-1.5 h-1.5 rounded-full ${colors.dot}"></span>
                     ${nome}: ${descricao}
                     ${settingsIcon}
                 </span>`;
-            }).join('');
-        },
+                }).join('');
+            },
 
-        _renderPotenciaBadges(dispositivos) {
-            if (!dispositivos || dispositivos.length === 0) {
-                return `<span class="text-text-muted">N/A</span>`;
-            }
-            return dispositivos
-                .sort((a, b) => (a?.nome || '').localeCompare(b?.nome || ''))
-                .map(disp => {
-                    const nome = disp?.nome || 'N/A';
-                    const potencia = typeof disp?.potencia_ativa_mw === 'number'
-                        ? `${disp.potencia_ativa_mw.toFixed(0)} MW`
-                        : 'N/A';
-                    return `<span class="bg-surface text-text-primary border border-slate-200 dark:border-slate-700 px-2 py-0.5 rounded">${nome}: ${potencia}</span>`;
-                })
-                .join('');
-        },
+            _renderPotenciaBadges(dispositivos) {
+                if (!dispositivos || dispositivos.length === 0) {
+                    return `<span class="text-text-muted">N/A</span>`;
+                }
+                return dispositivos
+                    .sort((a, b) => (a?.nome || '').localeCompare(b?.nome || ''))
+                    .map(disp => {
+                        const nome = disp?.nome || 'N/A';
+                        const potencia = typeof disp?.potencia_ativa_mw === 'number'
+                            ? `${disp.potencia_ativa_mw.toFixed(0)} MW`
+                            : 'N/A';
+                        return `<span class="bg-surface text-text-primary border border-slate-200 dark:border-slate-700 px-2 py-0.5 rounded">${nome}: ${potencia}</span>`;
+                    })
+                    .join('');
+            },
 
-        _somarPotenciaDispositivos(dispositivosDict) {
-            if (!dispositivosDict) return 0;
-            return Object.values(dispositivosDict).reduce((total, disp) => {
-                const potencia = typeof disp?.potencia_ativa_mw === 'number' ? disp.potencia_ativa_mw : 0;
-                return total + potencia;
-            }, 0);
-        },
+            _somarPotenciaDispositivos(dispositivosDict) {
+                if (!dispositivosDict) return 0;
+                return Object.values(dispositivosDict).reduce((total, disp) => {
+                    const potencia = typeof disp?.potencia_ativa_mw === 'number' ? disp.potencia_ativa_mw : 0;
+                    return total + potencia;
+                }, 0);
+            },
 
-        _atualizarCardPotenciaTotal() {
-            const valorMw = Object.values(this.state.potenciaPorUsina || {}).reduce((acc, val) => acc + val, 0);
-            const alvo = document.getElementById('potencia-total-mw');
-            if (!alvo) return;
-            alvo.textContent = valorMw > 0 ? valorMw.toFixed(0) : '0';
-        },
-        
-        _getColorByStatus(description) {
-            const descLower = (description || '').toLowerCase();
+            _atualizarCardPotenciaTotal() {
+                const valorMw = Object.values(this.state.potenciaPorUsina || {}).reduce((acc, val) => acc + val, 0);
+                const alvo = document.getElementById('potencia-total-mw');
+                if (!alvo) return;
+                alvo.textContent = valorMw > 0 ? valorMw.toFixed(0) : '0';
+            },
+
+            _getColorByStatus(description) {
+                const descLower = (description || '').toLowerCase();
                 const map = this.config.statusColorsMap;
-                if (map[descLower]) {return map[descLower];}
+                if (map[descLower]) { return map[descLower]; }
 
                 return map['up (parada)'];
             },
 
-        // --- Modal de Intervenção ---
-        openStatusModal(usinaSlug, deviceName, currentStatus) {
-             // Previne propagação se necessário, mas aqui é chamada direta
-             console.log(`[Status Usinas] Abrindo modal para ${usinaSlug}/${deviceName}`);
-             
-             const modal = document.getElementById('status-intervention-modal');
-             if (!modal) return;
-             
-             // Popula campos ocultos
-             document.getElementById('modal-usina-slug').value = usinaSlug;
-             document.getElementById('modal-device-name').value = deviceName;
-             
-             // Título
-             document.getElementById('modal-title-device').textContent = `${usinaSlug.toUpperCase()} - ${deviceName}`;
-             
-             // Resetar seleção
-             document.querySelectorAll('input[name="status-reason"]').forEach(el => el.checked = false);
-             document.getElementById('reason-normal').checked = true; // Default
-             
-             // Exibir modal
-             modal.classList.remove('hidden');
-        },
-        
-        closeStatusModal() {
-            const modal = document.getElementById('status-intervention-modal');
-            if (modal) modal.classList.add('hidden');
-        },
-        
-        confirmStatusChange() {
-            const usinaSlug = document.getElementById('modal-usina-slug').value;
-            const deviceName = document.getElementById('modal-device-name').value;
-            
-            const selectedOption = document.querySelector('input[name="status-reason"]:checked');
-            if (!selectedOption) return;
-            
-            const reason = selectedOption.value; // "MANUTENCAO", "RESTRICAO", "NORMAL"
-            
-            console.log(`[Status Usinas] Enviando intervenção para backend: ${usinaSlug}/${deviceName} -> ${reason}`);
-            
-            // Emitir evento via Socket para registrar no backend
-            if (this.state.socket && this.state.socket.connected) {
-                this.state.socket.emit('registrar_intervencao_status', {
-                    usina: usinaSlug,
-                    dispositivo: deviceName,
-                    motivo: reason,
-                    timestamp: Date.now()
-                });
-                
-                // Feedback visual
-                // O modal fecha, e a atualização virá do backend via broadcast
-            } else {
-                alert('Erro: Sem conexão com o servidor.');
+            // --- Modal de Intervenção ---
+            openStatusModal(usinaSlug, deviceName, currentStatus) {
+                // Previne propagação se necessário, mas aqui é chamada direta
+                console.log(`[Status Usinas] Abrindo modal para ${usinaSlug}/${deviceName}`);
+
+                const modal = document.getElementById('status-intervention-modal');
+                if (!modal) return;
+
+                // Popula campos ocultos
+                document.getElementById('modal-usina-slug').value = usinaSlug;
+                document.getElementById('modal-device-name').value = deviceName;
+
+                // Título
+                document.getElementById('modal-title-device').textContent = `${usinaSlug.toUpperCase()} - ${deviceName}`;
+
+                // Resetar seleção
+                document.querySelectorAll('input[name="status-reason"]').forEach(el => el.checked = false);
+                document.getElementById('reason-normal').checked = true; // Default
+
+                // Exibir modal
+                modal.classList.remove('hidden');
+            },
+
+            closeStatusModal() {
+                const modal = document.getElementById('status-intervention-modal');
+                if (modal) modal.classList.add('hidden');
+            },
+
+            confirmStatusChange() {
+                const usinaSlug = document.getElementById('modal-usina-slug').value;
+                const deviceName = document.getElementById('modal-device-name').value;
+
+                const selectedOption = document.querySelector('input[name="status-reason"]:checked');
+                if (!selectedOption) return;
+
+                const reason = selectedOption.value; // "MANUTENCAO", "RESTRICAO", "NORMAL"
+
+                console.log(`[Status Usinas] Enviando intervenção para backend: ${usinaSlug}/${deviceName} -> ${reason}`);
+
+                // Emitir evento via Socket para registrar no backend
+                if (this.state.socket && this.state.socket.connected) {
+                    this.state.socket.emit('registrar_intervencao_status', {
+                        usina: usinaSlug,
+                        dispositivo: deviceName,
+                        motivo: reason,
+                        timestamp: Date.now()
+                    });
+
+                    // Feedback visual
+                    // O modal fecha, e a atualização virá do backend via broadcast
+                } else {
+                    alert('Erro: Sem conexão com o servidor.');
+                }
+
+                this.closeStatusModal();
             }
-            
-            this.closeStatusModal();
-        }
         };
 
-    StatusUsinasModule.init();
-    
-    // Expor para o escopo global para que os onclicks do HTML funcionem
-    window.StatusUsinasModule = StatusUsinasModule;
-})();
+        StatusUsinasModule.init();
+
+        // Expor para o escopo global para que os onclicks do HTML funcionem
+        window.StatusUsinasModule = StatusUsinasModule;
+    })();
 </script>
 {% endblock %}

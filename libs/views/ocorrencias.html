@@ -699,7 +699,10 @@
                         this._mostrarToast('success', result.message || 'Ocorrência resolvida com sucesso!');
                         d.formResolver.reset();
                         if (d.previewBox) d.previewBox.classList.add('hidden');
-                        setTimeout(() => window.location.href = this.config.redirect.index, this.config.timeoutsMs.redirecionar);
+
+                        if (result.refresh) {
+                            this._carregarOcorrenciasAbertas();
+                        }
                         return;
                     }
                     this._mostrarToast('error', this._extrairMensagemErro(result, 'Erro ao resolver ocorrência'));

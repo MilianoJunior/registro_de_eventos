@@ -138,6 +138,15 @@ class CacheStore:
         cls._data = {}
         cls._expiry = {}
 
+    @classmethod
+    def delete_by_prefix(cls, prefix: str):
+        keys_to_delete = [k for k in cls._data.keys() if k.startswith(prefix)]
+        for k in keys_to_delete:
+            del cls._data[k]
+            if k in cls._expiry:
+                del cls._expiry[k]
+        print(f"[CACHE] DELETED_PREFIX prefix={prefix!r} count={len(keys_to_delete)}")
+
 class DadosContexto:
     """
     Gerencia o acesso aos dados usando cache global.
@@ -149,6 +158,12 @@ class DadosContexto:
         self._op_parada = OpParadas()
         self._op_usuario = OpUsuario()
         self.developer_mode = DEVELOPER_MODE
+
+    def invalidar_cache_ocorrencias(self):
+        """Limpa todo cache relacionado a ocorrências e status"""
+        CacheStore.delete_by_prefix('ocorrencias_')
+        CacheStore.delete_by_prefix('stats_status')
+        print("[CACHE] Cache de ocorrências invalidado")
 
     @desempenho
     def get_usinas(self) -> List[Dict]:

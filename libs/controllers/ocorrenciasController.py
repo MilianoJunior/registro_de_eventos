@@ -40,9 +40,6 @@ def _datetime_local_para_mysql(valor: Any) -> Optional[str]:
 
 class OcorrenciasController:
     def __init__(self):
-        self.ocorrencias_create: Optional[OpOcorrenciaCreate] = None
-        self.ocorrencias_read: Optional[OpOcorrencia] = None
-        self.ocorrencias_edit: Optional[OpOcorrenciaEdit] = None
         self.ocorrencias_create = OpOcorrenciaCreate()
         self.ocorrencias_read = OpOcorrencia()
         self.ocorrencias_edit = OpOcorrenciaEdit()
@@ -68,7 +65,6 @@ class OcorrenciasController:
         try:
             status_filter = request.args.get("status")
             requer_acao = request.args.get("requer_acao")
-            # Se tiver filtrando por requer_acao=true, tenta usar o cache do contexto
             ctx = DadosContexto()
             if requer_acao is not None and _bool_para_int(requer_acao) == 1 and not status_filter:
                 return jsonify(ctx.get_ocorrencias_requer_acao())
@@ -81,8 +77,7 @@ class OcorrenciasController:
             if requer_acao is not None:
                 requer_acao_val = _bool_para_int(requer_acao)
 
-            # Para filtros mais complexos ou fora do cache padrão, usa o reader direto (mas encapsulado)
-            assert self.ocorrencias_read is not None
+            limit = int(request.args.get("limit", 50))
             rows = self.ocorrencias_read.listar_api(
                 status_list=status_list,
                 requer_acao=requer_acao_val,
@@ -129,6 +124,8 @@ class OcorrenciasController:
             if not ocorrencia_id:
                 return jsonify({"success": False, "error": "Erro ao registrar ocorrência"}), 500
 
+            # Invalida cache para que a listagem atualize
+            DadosContexto().invalidar_cache_ocorrencias()
             return jsonify({"success": True, "message": "Ocorrência registrada com sucesso!", "id": ocorrencia_id}), 201
 
         except Exception as e:
@@ -146,13 +143,11 @@ class OcorrenciasController:
                     return jsonify({"success": False, "error": f"Campo obrigatório: {field}"}), 400
 
             # 1. Verifica se existe
-            assert self.ocorrencias_read is not None
             existente = self.ocorrencias_read.one({"id": int(ocorrencia_id)})
             if not existente:
                 return jsonify({"success": False, "error": "Ocorrência não encontrada"}), 404
 
             # 2. Tenta atualizar
-            assert self.ocorrencias_edit is not None
             rows = self.ocorrencias_edit.update_by_id(
                 int(ocorrencia_id),
                 {
@@ -165,7 +160,9 @@ class OcorrenciasController:
             )
 
             # Se rows for 0, mas o registro existe, é pq não houve mudança (idempotente) -> Sucesso
-            return jsonify({"success": True, "message": "Ocorrência resolvida com sucesso!"}), 200
+            # Se rows for 0, mas o registro existe, é pq não houve mudança (idempotente) -> Sucesso
+            DadosContexto().invalidar_cache_ocorrencias()
+            return jsonify({"success": True, "message": "Ocorrência resolvida com sucesso!", "refresh": True}), 200
 
         except Exception as e:
             return jsonify({"success": False, "error": str(e)}), 500

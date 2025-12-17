@@ -64,6 +64,10 @@ class BaseReader:
                 op, val = v
                 if str(op).upper() in ("IS NULL", "IS NOT NULL"):
                     parts.append(f"{col} {str(op).upper()}")
+                elif str(op).upper() == "IN" and isinstance(val, (list, tuple)):
+                    placeholders = ", ".join(["%s"] * len(val))
+                    parts.append(f"{col} IN ({placeholders})")
+                    params.extend(val)
                 else:
                     parts.append(f"{col} {op} %s")
                     params.append(val)

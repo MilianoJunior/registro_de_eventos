@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% set active_page = "usina_" ~ sigla %}
+{% import "components/_cards.html" as cards %}
 {% block title %}{{ usina.nome if usina else 'Usina' }} — EngeSEP O&M{% endblock %}
 
 {% block content %}
@@ -25,32 +26,33 @@
 
     <!-- Cards de Métricas Principais -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div class="bg-surface p-4 rounded-lg border border-slate-200 dark:border-slate-800"
-            data-usina-slug="{{ (usina.nome or usina.sigla)|slugify }}">
-            <p class="text-xs text-text-muted uppercase tracking-wide mb-1">Potência Ativa</p>
-            <p class="text-2xl font-medium text-text-primary"><span id="usina-potencia-total-mw">{{
-                    usina.potencia_ativa_mw }}</span> <span class="text-sm">MW</span></p>
-            <div id="usina-potencia-ugs" class="mt-2 flex flex-wrap gap-2 text-xs text-text-primary"></div>
-        </div>
+        {% call cards.card(
+        'Potência Ativa',
+        usina.potencia_ativa_mw,
+        unit='MW',
+        value_id='usina-potencia-total-mw',
+        attributes='data-usina-slug="' ~ ((usina.nome or usina.sigla)|slugify) ~ '"'
+        ) %}
+        <div id="usina-potencia-ugs" class="mt-2 flex flex-wrap gap-2 text-xs text-text-primary"></div>
+        {% endcall %}
 
-        <div class="bg-surface p-4 rounded-lg border border-slate-200 dark:border-slate-800">
-            <p class="text-xs text-text-muted uppercase tracking-wide mb-1">Incidentes Abertos</p>
-            <p
-                class="text-2xl font-medium {% if usina.incidentes_abertos > 0 %}text-danger{% else %}text-text-primary{% endif %}">
-                {{ usina.incidentes_abertos }}</p>
-        </div>
-        <div class="bg-surface p-4 rounded-lg border border-slate-200 dark:border-slate-800">
-            <p class="text-xs text-text-muted uppercase tracking-wide mb-1">Alarmes Críticos</p>
-            <p
-                class="text-2xl font-medium {% if usina.alarmes_criticos > 0 %}text-danger{% else %}text-text-primary{% endif %}">
-                {{ usina.alarmes_criticos }}</p>
-        </div>
-        <div class="bg-surface p-4 rounded-lg border border-slate-200 dark:border-slate-800">
-            <p class="text-xs text-text-muted uppercase tracking-wide mb-1">Alarmes de Atenção</p>
-            <p
-                class="text-2xl font-medium {% if usina.alarmes_atencao > 0 %}text-warning{% else %}text-text-primary{% endif %}">
-                {{ usina.alarmes_atencao }}</p>
-        </div>
+        {{ cards.card(
+        'Incidentes Abertos',
+        usina.incidentes_abertos,
+        text_color_class='text-danger' if usina.incidentes_abertos > 0 else 'text-text-primary'
+        ) }}
+
+        {{ cards.card(
+        'Alarmes Críticos',
+        usina.alarmes_criticos,
+        text_color_class='text-danger' if usina.alarmes_criticos > 0 else 'text-text-primary'
+        ) }}
+
+        {{ cards.card(
+        'Alarmes de Atenção',
+        usina.alarmes_atencao,
+        text_color_class='text-warning' if usina.alarmes_atencao > 0 else 'text-text-primary'
+        ) }}
     </div>
 
     <!-- Desempenho de Alarmes (EEMUA-191) -->
@@ -211,123 +213,13 @@
         <!-- Container com altura limitada e scroll -->
         <div id="timeline-filtrada-container"
             class="space-y-3 max-h-[600px] min-h-[200px] overflow-y-auto pr-2 custom-scrollbar">
-            {% if timeline_filtrada and timeline_filtrada|length > 0 %}
-            {% for alarme in timeline_filtrada %}
-            <!-- Item de Ocorrência (com data-attributes para filtragem) -->
-            <div class="ocorrencia-item flex items-start gap-3 p-3 rounded-lg border 
-                    {% if alarme.severidade == 'alta' or alarme.severidade == 'crítica' %}
-                        border-danger/30 bg-danger/5
-                    {% elif alarme.severidade == 'média' %}
-                        border-warning/30 bg-warning/5
-                    {% else %}
-                        border-info/30 bg-info/5
-                    {% endif %}" data-tipo="{{ alarme.tipo }}" data-categoria="{{ alarme.categoria }}"
-                data-status="{{ alarme.status }}" data-unidade="{{ alarme.unidade }}" data-tags="{{ alarme.tags }}"
-                data-severidade="{{ alarme.severidade }}">
-
-                <div class="w-2 h-2 rounded-full 
-                        {% if alarme.severidade == 'alta' or alarme.severidade == 'crítica' %}
-                            bg-danger
-                        {% elif alarme.severidade == 'média' %}
-                            bg-warning
-                        {% else %}
-                            bg-info
-                        {% endif %} 
-                        mt-1.5 flex-shrink-0"></div>
-                <div class="flex-1">
-                    <div class="flex justify-between items-start gap-2 mb-2">
-                        <p class="text-sm font-medium text-text-primary">
-                            <span class="font-semibold">{{ alarme.tipo }}</span>: {{ alarme.categoria }} - {{
-                            alarme.unidade }}
-                        </p>
-                        <div class="flex flex-wrap gap-1.5">
-                            <span class="px-2 py-0.5 
-                                    {% if alarme.status == 'resolvida' %}
-                                        bg-success/10 text-success
-                                    {% elif alarme.status == 'em_andamento' %}
-                                        bg-info/10 text-info
-                                    {% elif alarme.status == 'aberta' %}
-                                        bg-warning/10 text-warning
-                                    {% else %}
-                                        bg-slate-100 text-slate-600
-                                    {% endif %}
-                                    text-xs rounded whitespace-nowrap capitalize">{{ alarme.status.replace('_', ' ')
-                                }}</span>
-                            <span class="px-2 py-0.5 
-                                    {% if alarme.severidade == 'alta' or alarme.severidade == 'crítica' %}
-                                        bg-danger/20 text-danger
-                                    {% elif alarme.severidade == 'média' %}
-                                        bg-warning/20 text-warning
-                                    {% else %}
-                                        bg-info/20 text-info
-                                    {% endif %}
-                                    text-xs rounded whitespace-nowrap capitalize">{{ alarme.severidade }}</span>
-
-                            {# Badge Requer Ação #}
-                            {% if alarme.metadata %}
-                            {% set metadata_dict = alarme.metadata if alarme.metadata is mapping else {} %}
-                            {% if metadata_dict.get('requer_acao') %}
-                            <span
-                                class="px-2 py-0.5 bg-danger/10 text-danger text-xs rounded whitespace-nowrap font-semibold flex items-center gap-1">
-                                <span class="material-icons text-xs">warning</span>
-                                REQUER AÇÃO
-                            </span>
-                            {% endif %}
-                            {% endif %}
-                        </div>
-                    </div>
-                    <p class="text-xs text-text-primary mt-1 line-clamp-2">{{ alarme.descricao[:150] }}{% if
-                        alarme.descricao|length > 150 %}...{% endif %}</p>
-                    <p class="text-xs text-text-muted mt-1">{{ alarme.created_at.strftime('%d/%m/%Y, %H:%M:%S') }} por
-                        {{ alarme.origem|capitalize }}</p>
-                    {% if alarme.tags %}
-                    <div class="flex flex-wrap gap-1.5 mt-2">
-                        {% for tag in alarme.tags.split(',') %}
-                        {% if tag.strip() %}
-                        <span class="px-2 py-0.5 bg-background-alt text-text-muted text-xs rounded">{{ tag.strip()
-                            }}</span>
-                        {% endif %}
-                        {% endfor %}
-                    </div>
-                    {% endif %}
-                    {% if alarme.status != 'resolvida' and alarme.requer_acao %}
-                    <div class="flex gap-2 mt-2">
-                        {# Botão Assumir Responsabilidade (se requer ação e não tem responsável) #}
-                        {% if alarme.metadata %}
-                        {% set metadata_dict = alarme.metadata if alarme.metadata is mapping else {} %}
-                        {% if metadata_dict.get('requer_acao') and not metadata_dict.get('responsavel_id') %}
-                        <button onclick="assumirResponsabilidade('{{ alarme.id }}')"
-                            class="px-3 py-1.5 rounded-lg bg-danger text-white text-xs font-medium hover:opacity-90 transition flex items-center gap-1">
-                            <span class="material-icons text-xs">assignment_ind</span>
-                            Assumir Responsabilidade
-                        </button>
-                        {% endif %}
-                        {% endif %}
-
-                        <a href="{{ url_for('ocorrencias') }}?tab=resolver&ocorrencia_id={{ alarme.id }}"
-                            class="px-3 py-1.5 rounded-lg bg-success text-white text-xs font-medium hover:opacity-90 transition inline-flex items-center gap-1">
-                            <span class="material-icons text-xs">check_circle</span>
-                            Resolver
-                        </a>
-                    </div>
-                    {% endif %}
-                </div>
-            </div>
-            {% endfor %}
-            {% else %}
-            <p id="mensagem-vazia" class="text-center text-text-muted text-sm py-6">Nenhuma ocorrência encontrada</p>
-            {% endif %}
+            {% with ocorrencias=timeline_filtrada, empty_msg="Nenhuma ocorrência encontrada" %}
+            {% include "components/_ocorrencias.html" %}
+            {% endwith %}
         </div>
 
         <!-- JavaScript -->
         <script>
-            // -------------------------------------------------------------------
-            // FLUXO (RT Potência por UG)
-            // 1. init → entra no room e registra listener
-            // 2. solicitar → pede status mínimo da usina (throttle)
-            // 3. onPayload → agenda apply (raf)
-            // 4. apply → atualiza total + badges por UG (textContent, incremental)
-            // -------------------------------------------------------------------
             (function () {
                 const card = document.querySelector('[data-usina-slug]');
                 const usinaSlug = (card?.dataset?.usinaSlug || '').trim();
@@ -469,35 +361,6 @@
                 document.getElementById('filtro-unidade').value = '';
                 aplicarFiltros();
             }
-
-            // Assumir responsabilidade de uma ocorrência
-            async function assumirResponsabilidade(ocorrenciaId) {
-                if (!confirm('Deseja assumir a responsabilidade por esta ocorrência?')) {
-                    return;
-                }
-
-                try {
-                    const response = await fetch(`/api/ocorrencias/${ocorrenciaId}/assumir`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        }
-                    });
-
-                    const result = await response.json();
-
-                    if (result.success) {
-                        alert('Responsabilidade assumida com sucesso!');
-                        window.location.reload();
-                    } else {
-                        alert('Erro ao assumir responsabilidade: ' + (result.error || 'Erro desconhecido'));
-                    }
-                } catch (error) {
-                    console.error('Erro:', error);
-                    alert('Erro ao assumir responsabilidade. Tente novamente.');
-                }
-            }
-
             // Aplicar filtros ao pressionar Enter no campo de unidade
             document.getElementById('filtro-unidade').addEventListener('keypress', function (e) {
                 if (e.key === 'Enter') {
