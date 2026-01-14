@@ -22,20 +22,7 @@ Reduzir paradas e custo operacional em CGHs/PCHs transformando sinais e registro
 
 ### 🏠 Página - Home
 
-**Descrição:** Página principal que mostra uma visão geral e contém no máximo 6 usinas, divididas em 2 linhas e 3 colunas de forma responsiva. Será feito um roteamento dessa página home para mostrar mais usinas em outras páginas pelo navegador. É composta
-
-```mermaid
-flowchart TD
-  Rota[/GET \/ /] --> HC[homeController.home]
-  HC --> VM[HomePageViewModel.carregar]
-  VM -->|Dados| DC[DadosContexto]
-  DC --> U[get_usinas]
-  DC --> O[get_ocorrencias_recentes (limit=10)]
-  DC --> K[get_kpis_mttr]
-  DC --> S[get_stats_status]
-  VM --> TPL[render home.html]
-  TPL --> UI[Cards + Lista + Sidebar]
-```
+**Descrição:** Página principal que mostra uma visão geral e contém no máximo 6 usinas, divididas em 2 linhas e 3 colunas de forma responsiva. Será feito um roteamento dessa página home para mostrar mais usinas em outras páginas pelo navegador.
 
 #### Componentes que Compoem a página Home
 
