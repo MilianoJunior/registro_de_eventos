@@ -1,0 +1,229 @@
+<!-- Tailwind Config removed to use standard variables -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+    .custom-scrollbar::-webkit-scrollbar {
+        height: 8px;
+        width: 8px;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+        background-color: #475569;
+        border-radius: 4px;
+    }
+</style>
+
+<!-- Main Content Area (Sidebar Removed) -->
+<div
+    class="flex flex-col w-full min-h-screen bg-[var(--color-bg)] text-[var(--color-text)] font-sans antialiased transition-colors duration-200">
+    <!-- Content Scrollable Area -->
+    <div class="p-6 space-y-6">
+        <!-- <div class="flex-1 p-4 md:p-6 lg:p-8"> -->
+
+        {% import 'components/_cards.html' as cards %}
+
+        <!-- KPI Cards -->
+        {% set cads_kpis = [
+        {
+        'title': 'Total RATs (' ~ current_month ~ ')',
+        'value': kpis.total_rats_month
+        },
+        {
+        'title': 'Horas Totais',
+        'value': kpis.total_hours_month,
+        'unit': 'h',
+        'description': 'Acumulado em ' ~ current_month
+        },
+        {
+        'title': 'Usina com mais Horas',
+        'value': kpis.top_plant.obra_nome if kpis.top_plant else '-',
+        'description': (kpis.top_plant.total_hours|round(1) if kpis.top_plant else 0) ~ 'h trabalhadas'
+        },
+        {
+        'title': 'Tempo Médio',
+        'value': kpis.avg_time_str,
+        'description': 'Por RAT finalizada'
+        },
+        {
+        'title': 'Pendência Assinatura',
+        'value': kpis.pending_signatures,
+        'description': 'Requer atenção imediata',
+        'text_color_class': 'text-red-600 dark:text-red-400',
+        'extra_classes': 'border-red-200 dark:border-red-900/50 shadow-sm relative overflow-hidden group'
+        }
+        ] %}
+
+        <div class="cards-rats">
+            {% for card_data in cads_kpis %}
+            {{ cards.card(
+            title=card_data.title,
+            value=card_data.value,
+            unit=card_data.unit,
+            description=card_data.description,
+            text_color_class=card_data.text_color_class,
+            extra_classes=card_data.extra_classes
+            ) }}
+            {% endfor %}
+        </div>
+
+        <!-- Main Layout Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+
+            <!-- Left Column: Charts & Lists -->
+            <div class="lg:col-span-1 flex flex-col gap-6">
+                <!-- Priority Chart -->
+                <div style="background-color: var(--color-surface);"
+                    class="p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col items-center">
+                    <h3 class="text-sm font-semibold text-[var(--color-text)] mb-2 w-full text-left">Distribuição por
+                        Prioridade
+                    </h3>
+                    <div class="relative h-40 w-40">
+                        <canvas id="priorityChart"></canvas>
+                    </div>
+                    <div class="mt-2 flex justify-center gap-4 text-xs">
+                        <div class="flex items-center gap-1">
+                            <span class="w-2 h-2 rounded-full bg-red-500"></span>
+                            <span class="text-[var(--color-text-muted)]">Alta</span>
+                        </div>
+                        <div class="flex items-center gap-1">
+                            <span class="w-2 h-2 rounded-full bg-yellow-500"></span>
+                            <span class="text-[var(--color-text-muted)]">Baixa</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tech Hours Chart -->
+                <div style="background-color: var(--color-surface);"
+                    class="p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col">
+                    <h3 class="text-sm font-semibold text-[var(--color-text)] mb-4">Horas por Técnico</h3>
+                    <div class="flex-1 min-h-[100px] max-h-[120px] relative">
+                        <canvas id="techHoursChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Top Clients -->
+                <div style="background-color: var(--color-surface);"
+                    class="p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm h-fit">
+                    <h3 class="text-sm font-semibold text-[var(--color-text)] mb-6">Top 5 Clientes Recorrentes
+                    </h3>
+                    <div class="space-y-5">
+                        {% for client in top_clients %}
+                        <div>
+                            <div class="flex justify-between text-xs mb-1">
+                                <span class="text-[var(--color-text-muted)]">{{ client.obra_nome }}</span>
+                                <span class="text-[var(--color-text-muted)] font-medium">{{ client.count }}
+                                    RATs</span>
+                            </div>
+                            <div class="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-1.5">
+                                <div class="{{ ['bg-primary', 'bg-cyan-500', 'bg-indigo-500', 'bg-violet-500', 'bg-fuchsia-500'][loop.index0 % 5] }} h-1.5 rounded-full"
+                                    style="width: {{ client.percentage }}%"></div>
+                            </div>
+                        </div>
+                        {% else %}
+                        <p class="text-xs text-[var(--color-text-muted)]">Nenhum dado disponível.</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Table -->
+            {% include 'components/_tabela_rats.html' %}
+        </div>
+
+    </div>
+</div>
+
+<script>
+    async function changePage(e) {
+        e.preventDefault();
+        const btn = e.currentTarget;
+        const page = btn.getAttribute('data-page');
+        if (!page || page < 1) return;
+
+        try {
+            // Add loading state opacity
+            const container = document.getElementById('rat-table-container');
+            container.style.opacity = '0.5';
+            container.style.pointerEvents = 'none';
+
+            const response = await fetch(`/rats?page=${page}&partial=true`);
+            if (response.ok) {
+                const html = await response.text();
+                // Create a temporary container to extract the new content
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = html;
+
+                // If the response is the full table container, replace the current one
+                // The partial returns the root element <div id="rat-table-container">...</div>
+                // So we replace the current container with the new one
+                if (tempDiv.firstElementChild) {
+                    container.replaceWith(tempDiv.firstElementChild);
+                }
+            } else {
+                console.error('Failed to load page');
+            }
+        } catch (error) {
+            console.error('Error fetching data:', error);
+            // Restore opacity in case of error
+            const container = document.getElementById('rat-table-container');
+            if (container) {
+                container.style.opacity = '1';
+                container.style.pointerEvents = 'auto';
+            }
+        }
+    }
+
+    // Initialize Charts with dynamic data
+    const chartData = JSON.parse('{{ charts | safe }}');
+
+    // Priority Donut Chart
+    const priorityCtx = document.getElementById('priorityChart').getContext('2d');
+    new Chart(priorityCtx, {
+        type: 'doughnut',
+        data: {
+            labels: chartData.priority.labels,
+            datasets: [{
+                data: chartData.priority.data,
+                backgroundColor: ['#ef4444', '#f59e0b', '#3b82f6'],
+                borderWidth: 0,
+                hoverOffset: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false }
+            },
+            cutout: '70%',
+        }
+    });
+
+    // Tech Hours Vertical Bar Chart
+    const techHoursCtx = document.getElementById('techHoursChart').getContext('2d');
+    new Chart(techHoursCtx, {
+        type: 'bar',
+        data: {
+            labels: chartData.tech_hours.labels,
+            datasets: [{
+                label: 'Horas',
+                data: chartData.tech_hours.data,
+                backgroundColor: '#6366f1',
+                borderRadius: 3,
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: { beginAtZero: true, grid: { color: 'rgba(148, 163, 184, 0.1)' }, ticks: { color: '#94a3b8' } },
+                y: { grid: { display: false }, ticks: { color: '#94a3b8' } }
+            },
+            plugins: { legend: { display: false } }
+        }
+    });
+</script>

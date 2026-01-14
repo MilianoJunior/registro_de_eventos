@@ -91,20 +91,39 @@
                         {% endfor %}
                     </div>
                 </section>
-                <!-- Seção: Ocorrências Recentes -->
-                <section>
-                    <div class="flex justify-between items-center mb-3">
-                        <h2 class="text-base font-medium text-text-primary">Ocorrências Recentes</h2>
-                        <a href="{{ url_for('ocorrencias') }}"
-                            class="bg-primary hover:opacity-90 text-white text-xs font-medium py-2 px-3 rounded-lg transition flex items-center gap-1">
-                            <span class="material-icons text-sm">add</span>Nova Ocorrência
-                        </a>
+
+
+                <section class="dashboard-split-container gap-3">
+                    <!-- Seção: Ocorrências Recentes (50% altura) -->
+                    <div class="dashboard-split-item">
+                        <div class="flex justify-between items-center mb-3">
+                            <h2 class="text-base font-medium text-text-primary">Ocorrências Recentes</h2>
+                            <a href="{{ url_for('ocorrencias') }}"
+                                class="bg-primary hover:opacity-90 text-white text-xs font-medium py-2 px-3 rounded-lg transition flex items-center gap-1">
+                                <span class="material-icons text-sm">add</span>Nova Ocorrência
+                            </a>
+                        </div>
+                        <div class="dashboard-split-content custom-scrollbar gap-3">
+                            {% with ocorrencias=vm.ocorrencias_recentes, empty_msg="Nenhuma ocorrência registrada no
+                            sistema." %}
+                            {% include "components/_ocorrencias.html" %}
+                            {% endwith %}
+                        </div>
                     </div>
-                    <div class="home-ocorrencias-scroll space-y-3 overflow-y-auto pr-2 custom-scrollbar">
-                        {% with ocorrencias=vm.ocorrencias_recentes, empty_msg="Nenhuma ocorrência registrada no
-                        sistema." %}
-                        {% include "components/_ocorrencias.html" %}
-                        {% endwith %}
+
+                    <!-- Seção: Temperaturas (50% altura) -->
+                    <div class="dashboard-split-item">
+                        <div class="flex justify-between items-center mb-3">
+                            <h2 class="text-base font-medium text-text-primary">Temperaturas</h2>
+                        </div>
+                        <div class="dashboard-split-content custom-scrollbar">
+                            <div class="temp-grid-container">
+                                {% for temperatura in ['test', 'test2', 'test3',
+                                'test4','test5','test6','test7','test8','test9','test10'] %}
+                                {% include "components/_temperaturas.html" %}
+                                {% endfor %}
+                            </div>
+                        </div>
                     </div>
                 </section>
 

@@ -2,6 +2,7 @@
 
 from .status_usina import _1_register_status_usina_handler
 from .testar_leitura import register_testar_leitura_handler
+from .ai_generation import register_ai_generation_handler
 from libs.controllers.decorador import desempenho
 
 
@@ -10,6 +11,7 @@ def register_socket_handlers(socketio):
     """Registra todos os handlers Socket.IO da aplicação."""
     register_testar_leitura_handler(socketio)
     _1_register_status_usina_handler(socketio)
+    register_ai_generation_handler(socketio)
 
 
 __all__ = ["register_socket_handlers"]

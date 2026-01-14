@@ -1,0 +1,1023 @@
+<div class="flex-1 overflow-y-auto p-4 md:p-8 scroll-smooth">
+    <div class="max-w-6xl mx-auto w-full space-y-6 pb-24">
+        <section
+            class="rounded-xl rat-bg-surface border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
+            <div
+                class="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center dark:bg-slate-800/50">
+                <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary">domain</span>
+                    <h3 class="rat-text-primary text-lg font-bold">Cliente &amp; Obra</h3>
+                </div>
+            </div>
+            <div class="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <label class="flex flex-col gap-2">
+                    <span class="text-sm font-medium rat-text-muted">Cliente</span>
+                    <div class="relative">
+                        <select id="select-cliente" onchange="atualizarDadosCliente()"
+                            class="rat-input rat-select cursor-pointer">
+                            <option value="" selected disabled>Selecione um cliente...</option>
+                            {% for cliente in clientes %}
+                            <option value="{{ cliente.id }}">{{ cliente.nome_razao }}</option>
+                            {% endfor %}
+                        </select>
+
+                    </div>
+                </label>
+                <label class="flex flex-col gap-2">
+                    <span class="text-sm font-medium rat-text-muted">Obra / Usina</span>
+                    <div class="relative">
+                        <select id="select-obra" class="rat-input rat-select cursor-pointer">
+                            <option value="" selected disabled>Selecione a obra...</option>
+                        </select>
+
+                    </div>
+                </label>
+                <label class="flex flex-col gap-2">
+                    <span class="text-sm font-medium rat-text-muted">Cidade / UF</span>
+                    <input id="input-cidade" class="rat-input cursor-not-allowed" readonly="" type="text" value="" />
+                </label>
+                <label class="flex flex-col gap-2">
+                    <span class="text-sm font-medium rat-text-muted">CNPJ</span>
+                    <input id="input-cnpj" class="rat-input cursor-not-allowed" readonly="" type="text" value="" />
+                </label>
+                <label class="flex flex-col gap-2">
+                    <span class="text-sm font-medium rat-text-muted">Protocolo</span>
+                    <input class="rat-input cursor-not-allowed" readonly="" type="text" value="{{ protocolo }}" />
+                </label>
+            </div>
+        </section>
+        <section
+            class="rounded-xl rat-bg-surface border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
+            <div class="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary">assignment</span>
+                <h3 class="rat-text-primary text-lg font-bold">Resumo do Chamado</h3>
+            </div>
+            <div class="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <label class="flex flex-col gap-2">
+                    <span class="text-sm font-medium rat-text-muted">Data da Solicitação</span>
+                    <input class="rat-input dark:[color-scheme:dark]" type="date" value="{{ data_atual }}" />
+                </label>
+                <label class="flex flex-col gap-2">
+                    <span class="text-sm font-medium rat-text-muted">Solicitante</span>
+                    <input class="rat-input placeholder:text-gray-600" placeholder="Nome do contato" type="text" />
+                </label>
+                <label class="flex flex-col gap-2">
+                    <span class="text-sm font-medium rat-text-muted">Tipo de Atividade</span>
+                    <div class="relative">
+                        <select id="select-atividade" class="rat-input rat-select cursor-pointer">
+                            <option>Manutenção Preventiva</option>
+                            <option>Manutenção Corretiva</option>
+                            <option>Instalação</option>
+                            <option>Consultoria</option>
+                        </select>
+
+                    </div>
+                </label>
+                <label class="flex flex-col gap-2">
+                    <span class="text-sm font-medium rat-text-muted">Prioridade</span>
+                    <div class="relative">
+                        <select id="select-prioridade" class="rat-input rat-select cursor-pointer">
+                            <option>Alta</option>
+                            <option>Média</option>
+                            <option>Baixa</option>
+                        </select>
+
+                    </div>
+                </label>
+                <div class="md:col-span-2 lg:col-span-4 flex items-center gap-4 py-2">
+                    <span class="text-sm font-medium rat-text-muted">Equipamento em Garantia?</span>
+                    <label class="inline-flex items-center cursor-pointer">
+                        <input id="input-garantia" class="rat-toggle-input" type="checkbox" value="" />
+                        <div class="rat-toggle-track"></div>
+                        <span class="ms-3 text-sm font-medium rat-text-primary">Sim</span>
+                    </label>
+                </div>
+                <label class="md:col-span-2 lg:col-span-4 flex flex-col gap-2">
+                    <span class="text-sm font-medium rat-text-muted">Relato do Cliente (Defeito
+                        Reclamado)</span>
+                    <textarea id="txt-relato" class="rat-input resize-none placeholder-slate-400"
+                        placeholder="Descreva brevemente o problema relatado pelo cliente..." rows="3"></textarea>
+                </label>
+            </div>
+        </section>
+        <section
+            class="rounded-xl rat-bg-surface border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
+            <div class="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
+                <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary">schedule</span>
+                    <h3 class="rat-text-primary text-lg font-bold">Horas de Serviço</h3>
+                </div>
+                <button id="btn-adicionar-horas"
+                    class="text-xs font-bold text-primary hover:text-white bg-primary/10 hover:bg-primary/20 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1">
+                    <span class="material-symbols-outlined text-sm">add</span> Adicionar Horas
+                </button>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800">
+                            <th class="p-4 text-xs font-medium rat-text-muted uppercase tracking-wider">
+                                Data</th>
+                            <th class="p-4 text-xs font-medium rat-text-muted uppercase tracking-wider">
+                                Hora Início</th>
+                            <th class="p-4 text-xs font-medium rat-text-muted uppercase tracking-wider">
+                                Hora Fim</th>
+                            <th class="p-4 text-xs font-medium rat-text-muted uppercase tracking-wider">
+                                Executante</th>
+                            <th class="p-4 text-xs font-medium rat-text-muted uppercase tracking-wider w-1/3">
+                                Observações</th>
+                            <th class="p-4 text-xs font-medium rat-text-muted uppercase tracking-wider w-10">
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbody-horas" class="divide-y divide-slate-200 dark:divide-slate-800">
+                        <tr class="group hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-colors">
+                            <td class="p-3"><input class="rat-input text-sm input-data" type="date" /></td>
+                            <td class="p-3"><input class="rat-input text-sm input-hora-inicio" type="time"
+                                    onchange="calcularTotalHoras()" /></td>
+                            <td class="p-3"><input class="rat-input text-sm input-hora-fim" type="time"
+                                    onchange="calcularTotalHoras()" /></td>
+                            <td class="p-3">
+                                <select class="rat-input rat-select text-sm input-executante">
+                                    <option value="" selected disabled>Selecione...</option>
+                                    {% for usuario in usuarios %}
+                                    <option value="{{ usuario.id }}">{{ usuario.nome }}</option>
+                                    {% endfor %}
+                                </select>
+                            </td>
+                            <td class="p-3"><input class="rat-input text-sm" placeholder="Notas" type="text" /></td>
+                            <td class="p-3 text-center">
+                                <button class="rat-text-muted hover:text-red-500 transition-colors"
+                                    onclick="removerLinhaHoras(this)">
+                                    <span class="material-symbols-outlined text-lg">delete</span>
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div
+                class="p-4 dark:bg-slate-800/50 border-t border-slate-200 dark:border-slate-800 flex justify-between items-center">
+                <div class="flex items-center gap-2 w-1/3">
+                    <span class="text-sm font-medium rat-text-muted">Deslocamento:</span>
+                    <input id="input-deslocamento" type="text" class="rat-input text-sm h-9 px-3"
+                        placeholder="Ex: 150km ou Remoto">
+                </div>
+                <p class="text-sm rat-text-muted">Total de Horas: <span id="total-horas"
+                        class="rat-text-primary font-bold">00:00</span>
+                </p>
+            </div>
+        </section>
+        <section
+            class="rounded-xl rat-bg-surface border border-slate-200 dark:border-slate-800 overflow-visible shadow-sm">
+            <div class="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
+                <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary">inventory_2</span>
+                    <h3 class="rat-text-primary text-lg font-bold">Materiais Utilizados</h3>
+                </div>
+                <button id="btn-adicionar-material"
+                    class="text-xs font-bold text-primary hover:text-white bg-primary/10 hover:bg-primary/20 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1">
+                    <span class="material-symbols-outlined text-sm">add</span> Adicionar Material
+                </button>
+            </div>
+            <div class="overflow-visible">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <thead>
+                            <tr class="dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800">
+                                <th class="p-4 text-xs font-medium rat-text-muted uppercase tracking-wider w-24">
+                                    Cód.</th>
+                                <th class="p-4 text-xs font-medium rat-text-muted uppercase tracking-wider">
+                                    Descrição</th>
+                                <th class="p-4 text-xs font-medium rat-text-muted uppercase tracking-wider">
+                                    Fabricante</th>
+                                <th class="p-4 text-xs font-medium rat-text-muted uppercase tracking-wider w-20">
+                                    Qtd</th>
+                                <th class="p-4 text-xs font-medium rat-text-muted uppercase tracking-wider w-24">
+                                    Unidade</th>
+                                <th class="p-4 text-xs font-medium rat-text-muted uppercase tracking-wider w-10">
+                                </th>
+                            </tr>
+                        </thead>
+                    <tbody id="tbody-materiais" class="divide-y divide-slate-200 dark:divide-slate-800">
+                        <tr class="group hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-colors relative">
+                            <td class="p-3"><input class="rat-input text-sm input-codigo" placeholder="SKU" type="text"
+                                    readonly /></td>
+                            <td class="p-3 relative">
+                                <input class="rat-input text-sm input-descricao" placeholder="Buscar produto..."
+                                    type="text" autocomplete="off" oninput="buscarProduto(this)" />
+                                <div
+                                    class="absolute top-11 left-0 right-0 rat-bg-surface border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl z-50 hidden results-container max-h-60 overflow-y-auto">
+                                    <!-- Results go here -->
+                                </div>
+                            </td>
+                            <td class="p-3"><input class="rat-input text-sm input-fabricante" placeholder="Marca"
+                                    type="text" readonly /></td>
+                            <td class="p-3"><input class="rat-input text-sm text-center input-qtd" type="number"
+                                    value="1" step="0.01" /></td>
+                            <td class="p-3">
+                                <input class="rat-input text-sm input-unidade" type="text" readonly />
+                            </td>
+                            <td class="p-3 text-center">
+                                <button class="rat-text-muted hover:text-red-500 transition-colors"
+                                    onclick="removerLinhaMaterial(this)">
+                                    <span class="material-symbols-outlined text-lg">delete</span>
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+        <section
+            class="rounded-xl rat-bg-surface border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
+            <div class="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
+                <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary">article</span>
+                    <h3 class="rat-text-primary text-lg font-bold">Relatório Técnico</h3>
+                </div>
+                <button type="button" onclick="gerarRelatorioIA()" id="btn-ia-gerar"
+                    class="text-xs font-bold text-white bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 px-3 py-1.5 rounded-lg transition-all shadow-md flex items-center gap-1 group">
+                    <span class="material-symbols-outlined text-sm group-hover:animate-pulse">auto_awesome</span>
+                    Preencher com IA
+                </button>
+            </div>
+            <div class="p-6 grid grid-cols-1 gap-6">
+                <label class="flex flex-col gap-2">
+                    <span class="text-sm font-medium rat-text-muted">Descrição das Atividades
+                        Realizadas</span>
+                    <textarea id="txt-descricao"
+                        class="w-full rat-input rounded-xl p-4 focus:ring-2 focus:ring-primary resize-none placeholder:text-gray-600"
+                        placeholder="Detalhamento técnico do serviço executado, medições, testes, etc..."
+                        rows="6"></textarea>
+                </label>
+                <label class="flex flex-col gap-2">
+                    <span class="text-sm font-medium rat-text-muted">Conclusão e Pendências</span>
+                    <textarea id="txt-conclusao" class="rat-input resize-none placeholder:text-gray-600"
+                        placeholder="Equipamento liberado? Restou alguma pendência?" rows="4"></textarea>
+                </label>
+            </div>
+        </section>
+        <!-- Fotos & Assinaturas -->
+        <section
+            class="rounded-xl rat-bg-surface border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
+            <div class="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary">draw</span>
+                <h3 class="rat-text-primary text-lg font-bold">Fotos & Assinaturas</h3>
+            </div>
+
+            <div class="p-6 space-y-8">
+                <!-- Evidências Fotográficas (Drag & Drop) -->
+                <div>
+                    <h4 class="text-sm font-medium rat-text-muted mb-2">Evidências Fotográficas</h4>
+
+                    <div id="drop-area"
+                        class="border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-xl rat-bg-main h-48 flex flex-col items-center justify-center transition-colors cursor-pointer hover:border-primary hover:bg-slate-100 dark:hover:bg-slate-800"
+                        onclick="document.getElementById('input-foto').click()"
+                        ondragover="event.preventDefault(); this.classList.add('border-primary', 'bg-slate-100', 'dark:bg-slate-800')"
+                        ondragleave="this.classList.remove('border-primary', 'bg-slate-100', 'dark:bg-slate-800')"
+                        ondrop="handleDrop(event)">
+                        <span class="material-symbols-outlined text-4xl rat-text-muted mb-3">cloud_upload</span>
+                        <p class="text-sm text-primary font-bold">Clique para enviar <span
+                                class="rat-text-muted font-normal">ou arraste e solte</span></p>
+                        <p class="text-xs rat-text-muted mt-1">PNG, JPG até 10MB</p>
+                        <input type="file" id="input-foto" accept="image/*" class="hidden" onchange="uploadFoto(this)">
+                    </div>
+
+                    <!-- Grid de Fotos Pré-visualizadas -->
+                    <div id="grid-fotos" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 mt-4">
+                        <!-- Fotos adicionadas aparecerão aqui via JS -->
+                    </div>
+                </div>
+
+                <!-- Assinaturas -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="flex flex-col gap-2">
+                        <span class="text-sm font-medium rat-text-muted">Assinatura do Técnico</span>
+                        <div class="bg-white rounded-xl h-40 w-full relative group shadow-inner overflow-hidden">
+                            <canvas id="canvas-tecnico" class="w-full h-full cursor-crosshair touch-none"></canvas>
+                            <div class="absolute inset-0 flex items-center justify-center pointer-events-none"
+                                id="placeholder-tecnico">
+                                <p class="text-gray-300 text-sm font-medium select-none">Assine aqui</p>
+                            </div>
+                            <button type="button" onclick="limparAssinatura('tecnico')"
+                                class="absolute top-2 right-2 text-gray-400 hover:text-red-500 bg-gray-100 rounded p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                                title="Limpar">
+                                <span class="material-symbols-outlined text-sm">close</span>
+                            </button>
+                            <div class="absolute bottom-8 left-4 right-4 border-b border-gray-300 pointer-events-none">
+                            </div>
+                        </div>
+                        <input id="nome-tecnico" class="rat-input text-sm mt-1" placeholder="Nome Legível do Técnico"
+                            type="text" />
+                    </div>
+                    <div class="flex flex-col gap-2">
+                        <span class="text-sm font-medium rat-text-muted">Assinatura do Cliente</span>
+                        <div class="bg-white rounded-xl h-40 w-full relative group shadow-inner overflow-hidden">
+                            <canvas id="canvas-cliente" class="w-full h-full cursor-crosshair touch-none"></canvas>
+                            <div class="absolute inset-0 flex items-center justify-center pointer-events-none"
+                                id="placeholder-cliente">
+                                <p class="text-gray-300 text-sm font-medium select-none">Assine aqui</p>
+                            </div>
+                            <button type="button" onclick="limparAssinatura('cliente')"
+                                class="absolute top-2 right-2 text-gray-400 hover:text-red-500 bg-gray-100 rounded p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                                title="Limpar">
+                                <span class="material-symbols-outlined text-sm">close</span>
+                            </button>
+                            <div class="absolute bottom-8 left-4 right-4 border-b border-gray-300 pointer-events-none">
+                            </div>
+                        </div>
+                        <input id="nome-cliente" class="rat-input text-sm mt-1" placeholder="Nome Legível do Cliente"
+                            type="text" />
+                    </div>
+                </div>
+
+            </div>
+        </section>
+    </div>
+</div>
+<div class="flex-shrink-0 rat-bg-surface border-t border-slate-200 dark:border-slate-800 p-4 lg:px-8 shadow-2xl z-20">
+    <div class="max-w-6xl mx-auto flex items-center justify-between">
+        <button
+            class="h-12 px-6 rounded-xl rat-text-muted font-bold hover:rat-text-primary hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            onclick="document.location.href = '/rats'">
+            Cancelar
+        </button>
+        <div class="flex gap-4">
+            <button
+                class="h-12 px-8 rounded-xl bg-primary text-white font-bold hover:bg-blue-600 transition-colors shadow-[0_0_15px_rgba(19,127,236,0.3)] flex items-center gap-2">
+                <span class="material-symbols-outlined">check_circle</span>
+                Salvar
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Recebe os dados do Python convertidos para JSON
+    const dadosClientes = {{ clientes_json | safe }};
+
+    function atualizarDadosCliente() {
+        const select = document.getElementById('select-cliente');
+        const clienteId = parseInt(select.value);
+
+        // Encontra o cliente selecionado na lista
+        const cliente = dadosClientes.find(c => c.id === clienteId);
+
+        if (cliente) {
+            // Preenche CNPJ e Cidade
+            document.getElementById('input-cnpj').value = cliente.cnpj || '';
+            document.getElementById('input-cidade').value = cliente.cidade || '';
+
+            // Atualiza o Select de Obras
+            const selectObra = document.getElementById('select-obra');
+            selectObra.innerHTML = '<option value="" selected disabled>Selecione a obra...</option>';
+
+            if (cliente.obras) {
+                // Assume que obras podem vir separadas por vírgula se for string, 
+                // ou ajustamos conforme seu banco. Se for só uma string:
+                const obra = cliente.obras;
+                // Cria a option
+                const option = document.createElement('option');
+                option.value = obra;
+                option.text = obra;
+                option.selected = true; // Já seleciona se for única
+                selectObra.appendChild(option);
+            }
+        }
+    }
+</script>
+<script>
+    // Script e Lógica para Horas de Serviço
+    document.getElementById('btn-adicionar-horas').addEventListener('click', function () {
+        const tbody = document.getElementById('tbody-horas');
+        // Clona a primeira linha para manter o estilo
+        const novaLinha = tbody.rows[0].cloneNode(true);
+
+        // Limpa os valores dos inputs e selects
+        const inputs = novaLinha.querySelectorAll('input, select');
+        inputs.forEach(input => {
+            input.value = '';
+            // Reatribui o evento onchange, embora o cloneNode já deva trazer se in-line, 
+            // mas é bom garantir ou se usarmos addEventListener no futuro.
+            // Aqui como está inline no HTML (onchange="..."), o clone funciona.
+        });
+
+        tbody.appendChild(novaLinha);
+    });
+
+    function removerLinhaHoras(btn) {
+        const row = btn.closest('tr');
+        const tbody = document.getElementById('tbody-horas');
+
+        // Impede remover a última linha restante
+        if (tbody.rows.length > 1) {
+            row.remove();
+            calcularTotalHoras();
+        } else {
+            // Se for a única linha, apenas limpa os valores
+            const inputs = row.querySelectorAll('input');
+            inputs.forEach(input => input.value = '');
+            calcularTotalHoras();
+        }
+    }
+
+    function calcularTotalHoras() {
+        const tbody = document.getElementById('tbody-horas');
+        let totalMinutos = 0;
+
+        for (let i = 0; i < tbody.rows.length; i++) {
+            const row = tbody.rows[i];
+            const inicio = row.querySelector('.input-hora-inicio').value;
+            const fim = row.querySelector('.input-hora-fim').value;
+
+            if (inicio && fim) {
+                const [hInicio, mInicio] = inicio.split(':').map(Number);
+                const [hFim, mFim] = fim.split(':').map(Number);
+
+                const minutosInicio = hInicio * 60 + mInicio;
+                const minutosFim = hFim * 60 + mFim;
+
+                let diferenca = minutosFim - minutosInicio;
+
+                // Se o horário final for menor que o inicial, assume que passou da meia-noite
+                // (Opcional: Descomentar se quiser essa lógica)
+                // if (diferenca < 0) {
+                //    diferenca += 24 * 60;
+                // }
+
+                // Se diferenca for positiva (ou tratada), soma
+                if (diferenca > 0) {
+                    totalMinutos += diferenca;
+                }
+            }
+        }
+
+        const horasTotal = Math.floor(totalMinutos / 60);
+        const minutosTotal = totalMinutos % 60;
+
+        const textoTotal = `${String(horasTotal).padStart(2, '0')}:${String(minutosTotal).padStart(2, '0')}`;
+        document.getElementById('total-horas').innerText = textoTotal;
+    }
+
+    // Script e Lógica para Materiais Utilizados
+    document.getElementById('btn-adicionar-material').addEventListener('click', function () {
+        const tbody = document.getElementById('tbody-materiais');
+        // Clona a primeira linha para manter o estilo
+        const novaLinha = tbody.rows[0].cloneNode(true);
+
+        const inputs = novaLinha.querySelectorAll('input');
+        inputs.forEach(input => {
+            if (input.type === 'number') {
+                input.value = '1';
+            } else {
+                input.value = '';
+            }
+        });
+
+        // Limpar lista de resultados clonada
+        const resultsContainer = novaLinha.querySelector('.results-container');
+        if (resultsContainer) {
+            resultsContainer.innerHTML = '';
+            resultsContainer.classList.add('hidden');
+        }
+
+        tbody.appendChild(novaLinha);
+    });
+
+    function removerLinhaMaterial(btn) {
+        const row = btn.closest('tr');
+        const tbody = document.getElementById('tbody-materiais');
+
+        if (tbody.rows.length > 1) {
+            row.remove();
+        } else {
+            const inputs = row.querySelectorAll('input');
+            inputs.forEach(input => {
+                if (input.type === 'number') {
+                    input.value = '1';
+                } else {
+                    input.value = '';
+                }
+            });
+        }
+    }
+
+    let searchTimeout = null;
+
+    async function buscarProduto(input) {
+        const tr = input.closest('tr');
+        const resultsDiv = tr.querySelector('.results-container');
+        const query = input.value;
+
+        if (query.length < 2) {
+            resultsDiv.classList.add('hidden');
+            return;
+        }
+
+        // Debounce
+        if (searchTimeout) clearTimeout(searchTimeout);
+
+        searchTimeout = setTimeout(async () => {
+            try {
+                const response = await fetch(`/produtos/buscar?q=${encodeURIComponent(query)}`);
+                const data = await response.json();
+
+                resultsDiv.innerHTML = '';
+                if (data.results && data.results.length > 0) {
+                    data.results.forEach(prod => {
+                        const div = document.createElement('div');
+                        div.className = "px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer text-sm rat-text-primary";
+                        div.innerHTML = `
+                            <div class="font-bold rat-text-primary">${prod.codigo_produto}</div>
+                            <div class="text-xs rat-text-muted">${prod.descricao}</div>
+                            <div class="text-[10px] text-gray-500">${prod.marca || ''}</div>
+                        `;
+                        div.onclick = () => selecionarProduto(tr, prod);
+                        resultsDiv.appendChild(div);
+                    });
+                    resultsDiv.classList.remove('hidden');
+                } else {
+                    resultsDiv.innerHTML = '<div class="px-3 py-2 text-xs text-gray-500">Nenhum produto encontrado.</div>';
+                    resultsDiv.classList.remove('hidden');
+                }
+            } catch (error) {
+                console.error('Erro ao buscar produtos:', error);
+            }
+        }, 300);
+    }
+
+    function selecionarProduto(tr, produto) {
+        tr.querySelector('.input-codigo').value = produto.codigo_produto || '';
+        tr.querySelector('.input-descricao').value = produto.descricao || '';
+        tr.querySelector('.input-fabricante').value = produto.marca || '';
+        tr.querySelector('.input-unidade').value = produto.unidade || 'UN';
+
+        tr.querySelector('.results-container').classList.add('hidden');
+    }
+
+    // Fechar resultados ao clicar fora
+    document.addEventListener('click', function (e) {
+        if (!e.target.closest('.results-container') && !e.target.closest('.input-descricao')) {
+            document.querySelectorAll('.results-container').forEach(el => el.classList.add('hidden'));
+        }
+    });
+
+    // Funcionalidade de Salvar RAT
+
+
+    // Lógica para Fotos (Drag & Drop Atualizada)
+    function handleDrop(e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const dropArea = document.getElementById('drop-area');
+        dropArea.classList.remove('border-primary', 'bg-[#181d23]');
+
+        if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+            // Processa apenas o primeiro arquivo por enquanto ou pode adaptar para multiplos
+            const input = document.getElementById('input-foto');
+            input.files = e.dataTransfer.files;
+            uploadFoto(input);
+        }
+    }
+
+    async function uploadFoto(input) {
+        if (input.files && input.files[0]) {
+            const file = input.files[0];
+            const formData = new FormData();
+            formData.append('file', file);
+
+            // Feedback simples
+            const dropArea = document.getElementById('drop-area');
+            const originalText = dropArea.innerHTML;
+            dropArea.innerHTML = '<span class="material-symbols-outlined text-4xl animate-spin text-primary">progress_activity</span>';
+
+            try {
+                const response = await fetch('/rat/upload_foto', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    adicionarCardFoto(result.url, file.name);
+                } else {
+                    customAlert('Erro', 'Erro ao enviar foto: ' + result.message, 'error');
+                }
+            } catch (error) {
+                console.error('Erro no upload:', error);
+                customAlert('Erro', 'Erro ao conectar com o servidor para upload.', 'error');
+            } finally {
+                input.value = ''; // Limpar input
+                dropArea.innerHTML = originalText; // Restaurar texto
+            }
+        }
+    }
+
+    function adicionarCardFoto(url, originalName) {
+        // Remover hidden se fosse usado, mas agora não usamos msg-sem-fotos
+        const grid = document.getElementById('grid-fotos');
+
+        const div = document.createElement('div');
+        div.className = 'foto-item group relative bg-[#181d23] border border-[#283039] rounded-lg overflow-hidden flex flex-col transition-all hover:scale-105';
+        div.innerHTML = `
+            <div class="relative aspect-video bg-black/50">
+                <img src="${url}" class="w-full h-full object-cover" data-path="${url}">
+                <button onclick="removerFoto(this)" class="absolute top-1 right-1 bg-red-500/80 hover:bg-red-600 text-white rounded-full p-1 transition-colors shadow-lg opacity-0 group-hover:opacity-100">
+                    <span class="material-symbols-outlined text-sm">close</span>
+                </button>
+            </div>
+            <div class="p-2">
+                <input type="text" placeholder="Legenda..." class="w-full bg-transparent text-xs text-white placeholder-text-secondary focus:outline-none border-b border-transparent focus:border-primary pb-1 transition-colors">
+            </div>
+        `;
+        grid.appendChild(div);
+    }
+
+    function removerFoto(btn) {
+        const item = btn.closest('.foto-item');
+        item.remove();
+        // Não precisamos mais verificar msg-sem-fotos
+    }
+
+    // Logic for Signatures
+    const signaturePads = {};
+
+    function initSignatureCanvas(canvasId, placeholderId) {
+        const canvas = document.getElementById(canvasId);
+        const placeholder = document.getElementById(placeholderId);
+        const ctx = canvas.getContext('2d');
+        let isDrawing = false;
+
+        // Set canvas resolution to match display size
+        function resizeCanvas() {
+            // Only resize if dimensions changed to avoid clearing content unnecessarily during minor layout shifts
+            if (canvas.width !== canvas.offsetWidth || canvas.height !== canvas.offsetHeight) {
+                // Note: Resizing clears the canvas. 
+                // If we needed to keep content, we'd need to save it and redraw.
+                // For now, we accept that resizing window clears signature (common trade-off in simple implementations).
+                canvas.width = canvas.offsetWidth;
+                canvas.height = canvas.offsetHeight;
+                ctx.lineWidth = 2;
+                ctx.lineCap = 'round';
+                ctx.strokeStyle = '#000000';
+            }
+        }
+
+        // Initial setup
+        resizeCanvas();
+        // Debounced resize could be better, but simple listener for now:
+        // window.addEventListener('resize', resizeCanvas); 
+
+        function getPos(e) {
+            const rect = canvas.getBoundingClientRect();
+            // Handle both mouse and touch
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            return {
+                x: clientX - rect.left,
+                y: clientY - rect.top
+            };
+        }
+
+        function startDrawing(e) {
+            isDrawing = true;
+            placeholder.style.display = 'none';
+            const pos = getPos(e);
+            ctx.beginPath();
+            ctx.moveTo(pos.x, pos.y);
+            e.preventDefault(); // Prevent scrolling on touch
+        }
+
+        function stopDrawing() {
+            if (isDrawing) {
+                isDrawing = false;
+                ctx.closePath();
+            }
+        }
+
+        function draw(e) {
+            if (!isDrawing) return;
+            e.preventDefault();
+            const pos = getPos(e);
+            ctx.lineTo(pos.x, pos.y);
+            ctx.stroke();
+        }
+
+        canvas.addEventListener('mousedown', startDrawing);
+        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('mouseup', stopDrawing);
+        canvas.addEventListener('mouseout', stopDrawing);
+
+        canvas.addEventListener('touchstart', startDrawing, { passive: false });
+        canvas.addEventListener('touchmove', draw, { passive: false });
+        canvas.addEventListener('touchend', stopDrawing);
+
+        signaturePads[canvasId] = { canvas, ctx, placeholder };
+    }
+
+    function limparAssinatura(tipo) {
+        const canvasId = `canvas-${tipo}`;
+        const placeholderId = `placeholder-${tipo}`;
+        const canvas = document.getElementById(canvasId);
+        const ctx = canvas.getContext('2d');
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        document.getElementById(placeholderId).style.display = 'flex';
+    }
+
+    // Initialize signatures when DOM is ready (already at bottom of body)
+    initSignatureCanvas('canvas-tecnico', 'placeholder-tecnico');
+    initSignatureCanvas('canvas-cliente', 'placeholder-cliente');
+
+    async function salvarRat() {
+        // Coleta de Dados Básicos
+        const clienteSelect = document.getElementById('select-cliente');
+        const obraSelect = document.getElementById('select-obra');
+        const atividadeSelect = document.getElementById('select-atividade');
+        const prioridadeSelect = document.getElementById('select-prioridade');
+
+        const protocolo = document.querySelector('input[value="{{ protocolo }}"]').value;
+        const dataSolicitacao = document.querySelector('input[type="date"]').value;
+        const solicitanteElement = document.getElementById('input-solicitante');
+        const solicitante = solicitanteElement ? solicitanteElement.value : document.querySelector('input[placeholder="Nome do contato"]').value;
+
+        const garantiaCheckbox = document.getElementById('input-garantia');
+        const emGarantia = garantiaCheckbox ? garantiaCheckbox.checked : false;
+
+        const relatoClienteElement = document.getElementById('txt-relato');
+        const relatoCliente = relatoClienteElement ? relatoClienteElement.value : "";
+
+        const descricaoAtividadesElement = document.getElementById('txt-descricao');
+        const descricaoAtividades = descricaoAtividadesElement ? descricaoAtividadesElement.value : "";
+
+        const conclusaoElement = document.getElementById('txt-conclusao');
+        const conclusao = conclusaoElement ? conclusaoElement.value : "";
+
+        // Validação Básica
+        if (!clienteSelect.value || !obraSelect.value) {
+            customAlert('Atenção', 'Por favor, selecione o Cliente e a Obra.', 'warning');
+            return;
+        }
+
+        // Coleta de Horas
+        const horas = [];
+        const linhasHoras = document.querySelectorAll('#tbody-horas tr');
+        linhasHoras.forEach(row => {
+            const dataInput = row.querySelector('.input-data');
+            const inicioInput = row.querySelector('.input-hora-inicio');
+            const fimInput = row.querySelector('.input-hora-fim');
+            const executanteInput = row.querySelector('.input-executante');
+            const obsInput = row.querySelector('input[placeholder="Notas"]');
+
+            if (dataInput && inicioInput && fimInput && executanteInput) {
+                const data = dataInput.value;
+                const inicio = inicioInput.value;
+                const fim = fimInput.value;
+                const executante = executanteInput.value;
+                const obs = obsInput ? obsInput.value : "";
+
+                if (data && inicio && fim && executante) {
+                    horas.push({
+                        data: data,
+                        hora_inicio: inicio,
+                        hora_fim: fim,
+                        executante_id: executante,
+                        observacoes: obs
+                    });
+                }
+            }
+        });
+
+        // Coleta de Materiais
+        const materiais = [];
+        const linhasMateriais = document.querySelectorAll('#tbody-materiais tr');
+        linhasMateriais.forEach(row => {
+            const inputs = row.querySelectorAll('input');
+
+            // Expected inputs order: codigo, descricao, fabricante, qtd, unidade
+            if (inputs.length >= 5) {
+                const codigo = inputs[0].value;
+                const descricao = inputs[1].value;
+                const fabricante = inputs[2].value;
+                const qtd = inputs[3].value;
+                const unidade = inputs[4].value;
+
+                if (descricao && qtd) {
+                    materiais.push({
+                        codigo: codigo,
+                        descricao: descricao,
+                        fabricante: fabricante,
+                        quantidade: qtd,
+                        unidade: unidade
+                    });
+                }
+            }
+        });
+
+        // Coleta de Fotos
+        const fotos = [];
+        const itemsFotos = document.querySelectorAll('.foto-item');
+        itemsFotos.forEach(item => {
+            const img = item.querySelector('img');
+            const legendaInput = item.querySelector('input[type="text"]');
+
+            if (img && img.dataset.path) {
+                fotos.push({
+                    caminho: img.dataset.path,
+                    legenda: legendaInput ? legendaInput.value : ''
+                });
+            }
+        });
+
+        // Coleta de Assinaturas
+        const canvasTecnico = document.getElementById('canvas-tecnico');
+        const canvasCliente = document.getElementById('canvas-cliente');
+        const nomeTecnico = document.getElementById('nome-tecnico').value;
+        const nomeCliente = document.getElementById('nome-cliente').value;
+
+        // Função auxiliar para verificar se canvas está vazio
+        const isCanvasBlank = (canvas) => {
+            const context = canvas.getContext('2d');
+            const pixelBuffer = new Uint32Array(
+                context.getImageData(0, 0, canvas.width, canvas.height).data.buffer
+            );
+            return !pixelBuffer.some(color => color !== 0);
+        };
+
+        const assinaturaTecnico = !isCanvasBlank(canvasTecnico) ? canvasTecnico.toDataURL('image/png') : '';
+        const assinaturaCliente = !isCanvasBlank(canvasCliente) ? canvasCliente.toDataURL('image/png') : '';
+
+        const payload = {
+            cliente_id: clienteSelect.value,
+            obra_nome: obraSelect.value,
+            protocolo: protocolo,
+            data_solicitacao: dataSolicitacao,
+            solicitante: solicitante,
+            tipo_atividade: atividadeSelect ? atividadeSelect.value : '',
+            prioridade: prioridadeSelect ? prioridadeSelect.value : '',
+            em_garantia: emGarantia,
+            relato_cliente: relatoCliente,
+            descricao_atividades: descricaoAtividades,
+            conclusao: conclusao,
+            deslocamento: document.getElementById('input-deslocamento') ? document.getElementById('input-deslocamento').value : '',
+            servicos: horas,
+            materiais: materiais,
+            fotos: fotos,
+            assinatura_tecnico: assinaturaTecnico,
+            assinatura_cliente: assinaturaCliente,
+            nome_tecnico_legivel: nomeTecnico,
+            nome_cliente_legivel: nomeCliente
+        };
+
+        try {
+            const response = await fetch('/rat/salvar', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                customAlert('Sucesso', `RAT ${result.protocolo} salva com sucesso!`, 'success', () => {
+                    window.location.href = '/rats';
+                });
+            } else {
+                customAlert('Erro', `Erro ao salvar: ${result.message}`, 'error');
+            }
+        } catch (error) {
+            console.error('Erro na requisição:', error);
+            customAlert('Erro', 'Erro ao conectar com o servidor.', 'error');
+        } finally {
+            // restore button
+        }
+    }
+
+
+    // -------- Integração IA Socket.IO --------
+
+    // Variável para guardar referência ao socket
+    let socketQA = null;
+
+    document.addEventListener("DOMContentLoaded", () => {
+        // Aguarda um pequeno delay para garantir que o script do base.html (rodapé) rodou
+        // Ou verifica diretamente se window.socket já existe.
+        const initSocket = () => {
+            if (window.socket) {
+                socketQA = window.socket;
+                console.log("✅ Socket IA vinculado com sucesso.");
+
+                // Configura listeners
+                socketQA.on('relatorio_gerado_sucesso', (data) => {
+                    const btn = document.getElementById('btn-ia-gerar');
+                    if (btn) {
+                        btn.disabled = false;
+                        btn.innerHTML = '<span class="material-symbols-outlined text-sm group-hover:animate-pulse">auto_awesome</span> Preencher com IA';
+                    }
+
+                    const txtDesc = document.getElementById('txt-descricao');
+                    const txtConclusao = document.getElementById('txt-conclusao');
+
+                    if (txtDesc && data.descricao) txtDesc.value = data.descricao;
+                    if (txtConclusao && data.conclusao) txtConclusao.value = data.conclusao;
+                });
+
+                socketQA.on('erro_ia', (data) => {
+                    const btn = document.getElementById('btn-ia-gerar');
+                    if (btn) {
+                        btn.disabled = false;
+                        btn.innerHTML = '<span class="material-symbols-outlined text-sm">error</span> Erro';
+                    }
+                    customAlert('Erro IA', data.message, 'error');
+                });
+
+            } else {
+                console.warn("Socket.IO ainda não disponível. Retentando em 500ms...");
+                setTimeout(initSocket, 500);
+            }
+        };
+
+        // Inicia verificação
+        initSocket();
+    });
+
+    function gerarRelatorioIA() {
+        if (!socketQA) {
+            customAlert('Erro', "Conexão Socket.IO não inicializada. Tente recarregar a página.", 'error');
+            return;
+        }
+
+        const btn = document.getElementById('btn-ia-gerar');
+        const originalText = '<span class="material-symbols-outlined text-sm group-hover:animate-pulse">auto_awesome</span> Preencher com IA';
+
+        const relato = document.getElementById('txt-relato').value;
+        const atividadeSelect = document.getElementById('select-atividade');
+        const deslocamento = document.getElementById('input-deslocamento') ? document.getElementById('input-deslocamento').value : '';
+
+        if (!relato) {
+            customAlert('Atenção', 'Por favor, preencha o Relato do Cliente antes de gerar com IA.', 'warning');
+            return;
+        }
+
+        // Coleta de Horas
+        const horas = [];
+        document.querySelectorAll('#tbody-horas tr').forEach(row => {
+            const inputs = row.querySelectorAll('input');
+            const executanteSelect = row.querySelector('select');
+
+            if (inputs.length >= 2 && inputs[0].value) {
+                horas.push({
+                    data: inputs[0].value,
+                    inicio: inputs[1].value,
+                    fim: inputs[2].value,
+                    executante: executanteSelect ? executanteSelect.options[executanteSelect.selectedIndex].text : '',
+                    observacao: ''
+                });
+            }
+        });
+
+        // Coleta de Materiais
+        const materiais = [];
+        document.querySelectorAll('#tbody-materiais tr').forEach(row => {
+            const desc = row.querySelector('.input-descricao').value;
+            const qtd = row.querySelector('.input-qtd').value;
+            const un = row.querySelector('.input-unidade').value;
+
+            if (desc) {
+                materiais.push({
+                    descricao: desc,
+                    quantidade: qtd,
+                    unidade: un
+                });
+            }
+        });
+
+        btn.disabled = true;
+        btn.innerHTML = '<span class="material-symbols-outlined text-sm animate-spin">refresh</span> Gerando...';
+
+        socketQA.emit('gerar_relatorio_ia', {
+            relato_cliente: relato,
+            tipo_atividade: atividadeSelect ? atividadeSelect.value : 'Atendimento',
+            deslocamento: deslocamento,
+            servicos: horas,
+            materiais: materiais
+        });
+
+        // Timeout reset
+        setTimeout(() => {
+            if (btn.disabled) {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            }
+        }, 20000);
+    }
+
+    // Bind no botão de salvar
+    document.querySelector('button.bg-primary.text-white.shadow-\\[0_0_15px_rgba\\(19\\,127\\,236\\,0\\.3\\)\\]').addEventListener('click', salvarRat);
+
+</script>

@@ -7,7 +7,7 @@ count = 0
 
 
 
-def estrutura_pastas_arquivos(caminho, prefixo="", imprimir=False):
+def estrutura_pastas_arquivos(caminho, prefixo="", imprimir=False, lista_arquivos=None):
     """
     Função recursiva que imprime o nome das pastas e o código dos arquivos Python, HTML, CSS e JavaScript encontrados.
     :param caminho: Caminho do diretório a ser listado.
@@ -29,13 +29,43 @@ def estrutura_pastas_arquivos(caminho, prefixo="", imprimir=False):
             cont += 1
             if not imprimir:
                 print(f"{prefixo}{item}/")
-            estrutura_pastas_arquivos(item_path, prefixo + "    ├── ", imprimir)
+            estrutura_pastas_arquivos(item_path, prefixo + "    ├── ", imprimir, lista_arquivos)
         elif os.path.isfile(item_path) and any([item.endswith(ext) for ext in list_include]):
             # Se o item é um arquivo Python, HTML, CSS ou JavaScript, imprime o nome do arquivo
             cont += 1
             if not imprimir:
                 print(f"{prefixo}{item}")
                 # print(f"{prefixo}├── {item}")
+
+            if lista_arquivos is not None:
+                if item in lista_arquivos:
+                    print(f"{prefixo}{item}")
+                    try:
+                        with open(item_path, 'r', encoding='utf-8') as arquivo:
+                            conteudo = arquivo.read()
+                            count += 1
+                            print('¨¨' * 50)
+                            print(f'{count} - Conteúdo do arquivo {item}:')
+                            print('¨¨' * 50)
+                            print(conteudo)
+                            total_linhas += len(conteudo.splitlines())
+                            print(f'Quantidade de linhas do arquivo {item}: {len(conteudo.splitlines())} totalizando {total_linhas} linhas.')
+                    except UnicodeDecodeError:
+                        try:
+                            with open(item_path, 'r', encoding='latin1') as arquivo:
+                                conteudo = arquivo.read()
+                                count += 1
+                                print('¨¨' * 50)
+                                print(f'{count} - Conteúdo do arquivo {item}:')
+                                print('¨¨' * 50)
+                                print(conteudo)
+                                total_linhas += len(conteudo.splitlines())
+                                print(f'Quantidade de linhas do arquivo {item}: {len(conteudo.splitlines())} totalizando {total_linhas} linhas.')
+                        except Exception as e:
+                            print(f"Erro ao ler o arquivo {item}: {str(e)}")
+                continue
+
+
             if imprimir and any([item.endswith(ext) for ext in list_imprimir]):
                 try:
                     with open(item_path, 'r', encoding='utf-8') as arquivo:
@@ -118,9 +148,7 @@ def listar_bibliotecas(caminho):
 
     return bibliotecas
 
-'''
-Preciso mapear a rota 
-'''
+
 
 # Caminho do diretório do projeto
 # caminho_projeto = os.getcwd()
@@ -139,9 +167,61 @@ path = os.getcwd()
 # estrutura_pastas_arquivos(path, "")
 estrutura_pastas_arquivos(path, "")
 print('-' * 50)
-estrutura_pastas_arquivos(path, "", imprimir=True)
+# estrutura_pastas_arquivos(path, "", imprimir=True)
+print('-' * 50)
+lista = ['rats_crud.py','ratsController.py','rats.html']
+estrutura_pastas_arquivos(path, "", imprimir=True, lista_arquivos=lista)
 # print('-' * 50)
 # print('Métodos e funções dos arquivos Python:')
+'''
+Testes criar rateio
+
+  Campo cliente e obra
+  1. Verificar se busca os clientes e preenche os outros campos automaticamente. OK
+
+  Resumo do chamado
+  1. Nada para verificar . OK
+
+  Horas de serviço
+  1. Verificar adicionar horas - OK
+  2. Adicionar o campo km rodados ou remoto, tenho que mudar o banco de dados - OK
+
+  Materiais utilizados
+  1. Verificar adicionar materiais - OK
+  2. Verificar se busca os materiais e preenche os outros campos automaticamente - OK
+
+  Relatório Técnico
+  1. Adicionar a IA para preenher automaticamente o relatório técnico, no campo descrição e conclusão - ok
+
+  Fotos e assinaturas
+  1. Verificar se busca as fotos e preenche e aparece a legenda - ok
+
+  Salvar
+  1. Verificar se salva - ok
+
+Teste de Editar Rat
+
+  Horas de serviço
+  1. Verificar adicionar horas - ok
+  2. Alterar o campo km rodados ou remoto, tenho que mudar o banco de dados - ok
+
+  Materiais utilizados
+  1. Verificar adicionar materiais - ok
+  2. Verificar se busca os materiais e preenche os outros campos automaticamente - ok
+
+  Relatório Técnico
+  1. Adicionar a IA para preenher automaticamente o relatório técnico, no campo descrição e conclusão - ok
+
+  Fotos e assinaturas
+  1. Verificar se busca as fotos e preenche e aparece a legenda - ok
+
+  Salvar
+  1. Verificar se salva - ok
+
+Implementar o mecanismo de busca na tabela de RATs
+Corrigir o redirecionamento quando é salvo um novo rat para a página inicial do rat - ok
+quando salvo um novo rat, recebo um alert de sucesso, temos que usar um alert personalizado - ok
+'''
 '''
 Carga de clientes (frontend)
   Quantos operadores simultâneos no pior caso? (10? 50? 200?)

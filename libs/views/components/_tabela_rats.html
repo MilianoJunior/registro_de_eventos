@@ -1,0 +1,696 @@
+<div id="rat-table-container" class="rat-table-container lg:col-span-3">
+    <div class="rat-table-header-panel">
+        <h3 class="text-sm font-semibold text-[var(--color-text)]">Histórico Recente</h3>
+        <div class="flex gap-2">
+            <input type="text" placeholder="Buscar por cliente, técnico ou ID..." class="rat-search-input"
+                id="search-rats-input" value="{{ search_query }}" onkeyup="debounceFilterRats()">
+        </div>
+    </div>
+    <div class="rat-table-wrapper">
+        <table class="rat-table">
+            <thead>
+                <tr>
+                    <th>Protocolo</th>
+                    <th>Data</th>
+                    <th>Cliente / Obra</th>
+                    <th>Técnico</th>
+                    <th>Tipo</th>
+                    <th>Solicitação</th>
+                    <th>Financeiro</th>
+                    <th class="text-right">Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for rat in lista_rats %}
+                <tr>
+                    <td class="rat-table-primary-text">#{{ rat.protocolo }}</td>
+                    <td>{{ rat.data_formatada }}</td>
+                    <td>
+                        <div class="rat-table-primary-text">{{ rat.obra_nome or 'N/A' }}</div>
+                    </td>
+                    <td>
+                        <div class="flex items-center gap-2">
+                            <div class="rat-user-avatar">
+                                {{ rat.tecnico_nome[:2].upper() if rat.tecnico_nome else '??' }}
+                            </div>
+                            <span>{{ rat.tecnico_nome }}</span>
+                        </div>
+                    </td>
+                    <td>
+                        <span
+                            class="rat-badge {{ 'rat-badge-blue' if rat.tipo_atividade == 'Manutenção Corretiva' else 'rat-badge-default' }}">
+                            {{ rat.tipo_atividade or 'Geral' }}
+                        </span>
+                    </td>
+                    <td class="rat-col-solicitacao">
+                        <div class="rat-table-primary-text truncate" title="{{ rat.solicitante }}">
+                            {{ rat.solicitante or 'N/I' }}
+                        </div>
+                        <div class="text-xs truncate" title="{{ rat.relato_cliente }}">
+                            {{ rat.relato_cliente or '-' }}
+                        </div>
+                    </td>
+                    <td>
+                        {% set status = rat.status_financeiro or 'pendente_faturamento' %}
+                        {% set status_colors = {
+                        'nao_faturavel': 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300',
+                        'pendente_faturamento': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30
+                        dark:text-yellow-300',
+                        'aguardando_pagamento': 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
+                        'liquidado': 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
+                        'inadimplente': 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
+                        } %}
+                        <div class="relative w-full min-w-[140px] group">
+                            <span
+                                class="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-current opacity-60 group-hover:opacity-100 transition-opacity">
+                                <span class="material-icons text-[18px]">expand_more</span>
+                            </span>
+                            <select onchange="atualizarStatusFinanceiro(this, {{ rat.id }})"
+                                class="appearance-none w-full text-xs font-bold rounded-lg pl-3 pr-8 py-2 border border-transparent hover:brightness-95 focus:brightness-100 focus:border-primary/30 focus:ring-2 focus:ring-primary/20 cursor-pointer outline-none transition-all shadow-sm {{ status_colors.get(status, 'bg-gray-100 text-gray-800') }}">
+                                <option value="nao_faturavel"
+                                    class="bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200" {% if
+                                    status=='nao_faturavel' %}selected{% endif %}>Não Faturável</option>
+                                <option value="pendente_faturamento"
+                                    class="bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200" {% if
+                                    status=='pendente_faturamento' %}selected{% endif %}>Pendente</option>
+                                <option value="aguardando_pagamento"
+                                    class="bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200" {% if
+                                    status=='aguardando_pagamento' %}selected{% endif %}>Aguardando</option>
+                                <option value="liquidado"
+                                    class="bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200" {% if
+                                    status=='liquidado' %}selected{% endif %}>Liquidado</option>
+                                <option value="inadimplente"
+                                    class="bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200" {% if
+                                    status=='inadimplente' %}selected{% endif %}>Inadimplente</option>
+                            </select>
+                        </div>
+                    </td>
+                    <td class="text-right">
+                        <div class="rat-actions">
+                            <button onclick="verRat({{ rat.id }})" class="rat-action-btn text-blue-500"
+                                title="Detalhes">
+                                <span class="material-icons text-[18px]">visibility</span>
+                            </button>
+                            <a href="/rat/pdf/{{ rat.id }}?mode=preview" target="_blank"
+                                class="rat-action-btn text-purple-500" title="PDF">
+                                <span class="material-icons text-[18px]">picture_as_pdf</span>
+                            </a>
+                            <a href="/modificarrat/{{ rat.id }}" class="rat-action-btn text-emerald-500" title="Editar">
+                                <span class="material-icons text-[18px]">edit</span>
+                            </a>
+                            <button onclick="confirmarExclusao({{ rat.id }})"
+                                class="rat-action-btn text-red-500 hover:bg-red-500/10" title="Excluir">
+                                <span class="material-icons text-[18px]">delete</span>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="8" class="text-center py-8 text-[var(--color-text-muted)]">Nenhum RAT encontrado.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="rat-footer">
+        <span class="text-xs text-[var(--color-text-muted)]">
+            Página <span class="font-bold text-[var(--color-text)]">{{ current_page }}</span> de <span
+                class="font-bold text-[var(--color-text)]">{{ total_pages }}</span>
+        </span>
+        <div class="flex gap-2">
+            <button data-page="{{ current_page - 1 }}" onclick="changePage(event)" class="rat-pagination-btn"
+                {{ 'disabled' if current_page <=1 }}>
+                <span class="material-icons text-sm">chevron_left</span> Anterior
+            </button>
+            <button data-page="{{ current_page + 1 }}" onclick="changePage(event)" class="rat-pagination-btn"
+                {{ 'disabled' if current_page>= total_pages }}>
+                Próxima <span class="material-icons text-sm">chevron_right</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Confirmação de Exclusão -->
+<div id="modal-delete-auth" class="fixed inset-0 z-50 flex items-center justify-center hidden">
+    <div class="fixed inset-0 bg-black/75 transition-opacity backdrop-blur-sm" onclick="fecharModalDelete()"></div>
+    <div
+        class="relative rat-bg-surface rounded-xl shadow-2xl p-6 w-full max-w-sm m-4 border border-slate-200 dark:border-slate-800">
+        <h3 class="text-lg font-bold text-[var(--color-text)] mb-2">Confirmar Exclusão</h3>
+        <p class="text-sm text-[var(--color-text-muted)] mb-4">
+            Esta ação é irreversível. Digite a senha administrativa para confirmar.
+        </p>
+        <input type="password" id="delete-password"
+            class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-4 py-2 text-[var(--color-text)] focus:ring-2 focus:ring-red-500 mb-4"
+            placeholder="Senha...">
+        <div class="flex justify-end gap-3">
+            <button onclick="fecharModalDelete()"
+                class="px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-lg text-sm font-medium hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+                Cancelar
+            </button>
+            <button onclick="executarExclusao()"
+                class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg text-sm font-medium transition-colors shadow-sm flex items-center gap-2">
+                Excluir
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Visualização RAT -->
+<div id="modal-ver-rat" class="fixed inset-0 z-[60] flex items-center justify-center hidden"
+    aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <!-- Backdrop with blur -->
+
+    <div class="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onclick="fecharModalRat()"></div>
+
+    <!-- Modal Panel -->
+    <div
+        class="relative w-full max-w-5xl max-h-[90vh] flex flex-col rat-bg-surface rounded-2xl shadow-2xl transform transition-all m-4 overflow-hidden border border-slate-700/50">
+
+        <!-- Header Sticky -->
+        <div
+            class="flex-none px-8 py-5 border-b border-slate-700/50 rat-bg-surface flex justify-between items-start z-10 shadow-sm">
+            <div>
+                <div class="flex items-center gap-3 mb-2">
+                    <span
+                        class="px-3 py-1 rounded-full bg-primary/20 text-blue-400 text-xs font-bold uppercase tracking-wider border border-primary/20">
+                        RAT #<span id="modal-protocolo">--</span>
+                    </span>
+                    <span class="text-sm text-[var(--color-text-muted)] font-medium flex items-center gap-1">
+                        <span class="material-icons text-[14px]">event</span>
+                        <span id="modal-data">--/--/----</span>
+                    </span>
+                </div>
+                <h2 class="text-2xl font-bold text-[var(--color-text)] leading-tight" id="modal-cliente">Cliente</h2>
+                <div class="flex items-center gap-2 text-sm text-[var(--color-text-muted)] mt-1">
+                    <span class="material-icons text-[16px]">location_on</span>
+                    <span id="modal-obra">Obra</span>
+                </div>
+            </div>
+            <button onclick="fecharModalRat()"
+                class="text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors p-1 rounded-full hover:bg-white/5 outline-none">
+                <span class="material-icons text-2xl">close</span>
+            </button>
+        </div>
+
+        <!-- Scrollable Content -->
+        <div class="flex-1 overflow-y-auto custom-scrollbar rat-bg-main">
+            <div class="p-8 space-y-8">
+                <!-- Section: Info Geral -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- Card: Solicitação -->
+                    <div
+                        class="md:col-span-1 rat-bg-surface p-5 rounded-xl border border-slate-700/50 shadow-sm h-full">
+                        <h3
+                            class="text-xs font-bold text-[var(--color-text-muted)] uppercase tracking-wider mb-4 border-b border-slate-700/50 pb-2 flex items-center gap-2">
+                            <span class="material-icons text-[16px]">info</span> Detalhes
+                        </h3>
+                        <div class="space-y-4">
+                            <div>
+                                <span class="text-xs text-[var(--color-text-muted)] block mb-1">Solicitante</span>
+                                <span id="modal-solicitante"
+                                    class="text-sm font-medium text-[var(--color-text)] block rat-bg-main px-3 py-2 rounded-lg border border-slate-700/30"></span>
+                            </div>
+                            <div>
+                                <span class="text-xs text-[var(--color-text-muted)] block mb-1">Atividade</span>
+                                <span id="modal-atividade"
+                                    class="text-sm font-medium text-[var(--color-text)] block rat-bg-main px-3 py-2 rounded-lg border border-slate-700/30"></span>
+                            </div>
+                            <div>
+                                <span class="text-xs text-[var(--color-text-muted)] block mb-1">Prioridade</span>
+                                <span id="modal-prioridade"
+                                    class="text-sm font-medium text-[var(--color-text)] block rat-bg-main px-3 py-2 rounded-lg border border-slate-700/30"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card: Relato & Descrição -->
+                    <div class="md:col-span-2 space-y-6">
+                        <!-- Relato -->
+                        <div class="rat-bg-surface p-5 rounded-xl border border-slate-700/50 shadow-sm">
+                            <h3
+                                class="text-xs font-bold text-[var(--color-text-muted)] uppercase tracking-wider mb-3 flex items-center gap-2">
+                                <span class="material-icons text-[16px]">record_voice_over</span> Relato do Cliente
+                            </h3>
+                            <p id="modal-relato"
+                                class="text-sm text-[var(--color-text)] leading-relaxed rat-bg-main p-4 rounded-lg border border-slate-700/30">
+                            </p>
+                        </div>
+
+                        <!-- Descrição -->
+                        <div class="rat-bg-surface p-5 rounded-xl border border-slate-700/50 shadow-sm">
+                            <h3
+                                class="text-xs font-bold text-[var(--color-text-muted)] uppercase tracking-wider mb-3 flex items-center gap-2">
+                                <span class="material-icons text-[16px]">engineering</span> Descrição Técnica
+                            </h3>
+                            <p id="modal-descricao"
+                                class="text-sm text-[var(--color-text)] leading-relaxed whitespace-pre-wrap rat-bg-main p-4 rounded-lg min-h-[80px] border border-slate-700/30">
+                            </p>
+                        </div>
+
+                        <!-- Conclusão -->
+                        <div class="rat-bg-surface p-5 rounded-xl border border-slate-700/50 shadow-sm">
+                            <h3
+                                class="text-xs font-bold text-[var(--color-text-muted)] uppercase tracking-wider mb-3 flex items-center gap-2">
+                                <span class="material-icons text-[16px]">check_circle</span> Conclusão
+                            </h3>
+                            <p id="modal-conclusao"
+                                class="text-sm text-[var(--color-text)] leading-relaxed rat-bg-main p-4 rounded-lg border border-slate-700/30">
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section: Serviços -->
+                <div class="rat-bg-surface rounded-xl border border-slate-700/50 shadow-sm overflow-hidden">
+                    <div
+                        class="px-5 py-4 border-b border-slate-700/50 flex items-center justify-between rat-bg-surface">
+                        <h3 class="text-sm font-bold text-[var(--color-text)] flex items-center gap-2">
+                            <span class="material-icons text-primary text-[18px]">schedule</span> Horas de Serviço
+                        </h3>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm">
+                            <thead
+                                class="rat-bg-main text-xs uppercase text-[var(--color-text-muted)] font-semibold border-b border-slate-700/50">
+                                <tr>
+                                    <th class="px-5 py-3 w-32 font-medium">Data</th>
+                                    <th class="px-5 py-3 w-24 font-medium">Início</th>
+                                    <th class="px-5 py-3 w-24 font-medium">Fim</th>
+                                    <th class="px-5 py-3 w-48 font-medium">Executante</th>
+                                    <th class="px-5 py-3 font-medium">Observações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="modal-tbody-servicos"
+                                class="divide-y divide-slate-700/30 text-[var(--color-text-muted)]"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Section: Materiais -->
+                <div class="rat-bg-surface rounded-xl border border-slate-700/50 shadow-sm overflow-hidden">
+                    <div
+                        class="px-5 py-4 border-b border-slate-700/50 flex items-center justify-between rat-bg-surface">
+                        <h3 class="text-sm font-bold text-[var(--color-text)] flex items-center gap-2">
+                            <span class="material-icons text-emerald-500 text-[18px]">inventory_2</span> Materiais
+                        </h3>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm">
+                            <thead
+                                class="rat-bg-main text-xs uppercase text-[var(--color-text-muted)] font-semibold border-b border-slate-700/50">
+                                <tr>
+                                    <th class="px-5 py-3 w-32 font-medium">Código</th>
+                                    <th class="px-5 py-3 font-medium">Descrição</th>
+                                    <th class="px-5 py-3 w-24 text-right font-medium">Qtd.</th>
+                                    <th class="px-5 py-3 w-24 text-center font-medium">Un.</th>
+                                </tr>
+                            </thead>
+                            <tbody id="modal-tbody-materiais"
+                                class="divide-y divide-slate-700/30 text-[var(--color-text-muted)]"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Section: Fotos & Assinaturas Grid -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <!-- Fotos -->
+                    <div>
+                        <h3 class="text-sm font-bold text-[var(--color-text)] mb-4 flex items-center gap-2">
+                            <span class="material-icons text-blue-400 text-[18px]">photo_library</span> Relatório
+                            Fotográfico
+                        </h3>
+                        <div id="modal-grid-fotos" class="grid grid-cols-2 sm:grid-cols-3 gap-3"></div>
+                        <p id="modal-no-fotos"
+                            class="text-sm text-[var(--color-text-muted)] italic rat-bg-surface p-6 rounded-xl border border-slate-700/50 text-center border-dashed">
+                            Nenhuma foto registrada.
+                        </p>
+                    </div>
+
+                    <!-- Assinaturas -->
+                    <div>
+                        <h3 class="text-sm font-bold text-[var(--color-text)] mb-4 flex items-center gap-2">
+                            <span class="material-icons text-purple-400 text-[18px]">draw</span> Assinaturas
+                        </h3>
+                        <div class="space-y-4">
+                            <!-- Técnico -->
+                            <div class="rat-bg-surface rounded-xl border border-slate-700/50 p-4">
+                                <p
+                                    class="text-xs font-bold text-[var(--color-text-muted)] uppercase tracking-wider mb-2">
+                                    Técnico Responsável</p>
+                                <div
+                                    class="h-24 flex items-center justify-center rat-bg-main rounded-lg border border-dashed border-slate-700/50 overflow-hidden relative">
+                                    <img id="modal-assinatura-tec" class="hf-full object-contain hidden max-h-full"
+                                        src="" alt="Assinatura Técnico" />
+                                    <span id="modal-no-sig-tec"
+                                        class="text-xs text-[var(--color-text-muted)]">Pendente</span>
+                                </div>
+                            </div>
+                            <!-- Cliente -->
+                            <div class="rat-bg-surface rounded-xl border border-slate-700/50 p-4">
+                                <p
+                                    class="text-xs font-bold text-[var(--color-text-muted)] uppercase tracking-wider mb-2">
+                                    Cliente / Responsável</p>
+                                <div
+                                    class="h-24 flex items-center justify-center rat-bg-main rounded-lg border border-dashed border-slate-700/50 overflow-hidden relative">
+                                    <img id="modal-assinatura-cli" class="h-full object-contain hidden max-h-full"
+                                        src="" alt="Assinatura Cliente" />
+                                    <span id="modal-no-sig-cli"
+                                        class="text-xs text-[var(--color-text-muted)]">Pendente</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Footer Actions -->
+        <div class="flex-none px-8 py-5 border-t border-slate-700/50 rat-bg-surface flex justify-end gap-3 z-10">
+            <button onclick="fecharModalRat()"
+                class="px-5 py-2.5 bg-white/5 border border-white/10 rounded-xl text-sm font-medium text-[var(--color-text)] hover:bg-white/10 transition-colors shadow-sm">
+                Fechar
+            </button>
+            <a id="btn-print-pdf" href="#" target="_blank"
+                class="px-5 py-2.5 bg-primary hover:bg-blue-600 text-white rounded-xl text-sm font-medium transition-colors shadow-lg shadow-blue-500/20 flex items-center gap-2">
+                <span class="material-icons text-[18px]">print</span>
+                Imprimir PDF
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Toast Container -->
+
+
+<script>
+    let ratIdToDelete = null;
+
+    function confirmingDelete(id) {
+        ratIdToDelete = id;
+        document.getElementById('modal-delete-auth').classList.remove('hidden');
+        document.getElementById('delete-password').value = '';
+        document.getElementById('delete-password').focus();
+    }
+
+    function confirmarExclusao(id) {
+        confirmingDelete(id);
+    }
+
+    function fecharModalDelete() {
+        document.getElementById('modal-delete-auth').classList.add('hidden');
+        ratIdToDelete = null;
+    }
+
+    async function executarExclusao() {
+        if (!ratIdToDelete) return;
+
+        const password = document.getElementById('delete-password').value;
+        if (!password) {
+            customAlert('Aviso', 'Por favor, digite a senha.', 'warning');
+            return;
+        }
+
+        try {
+            const response = await fetch('/rat/deletar', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ rat_id: ratIdToDelete, password: password })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                fecharModalDelete(); // Close password modal first
+                customAlert('Sucesso', 'RAT excluído com sucesso.', 'success', () => {
+                    window.location.reload();
+                });
+            } else {
+                fecharModalDelete();
+                customAlert('Erro', 'Erro: ' + (data.message || 'Falha na exclusão.'), 'error');
+            }
+        } catch (error) {
+            console.error('Erro:', error);
+            fecharModalDelete();
+            customAlert('Erro', 'Erro ao processar exclusão.', 'error');
+        }
+    }
+
+    async function verRat(id) {
+        try {
+            // Mostrar loading ou algo similar se quiser
+            const response = await fetch(`/rat/ver/${id}`);
+            const data = await response.json();
+
+            if (response.ok) {
+                preencherModal(data);
+                document.getElementById('modal-ver-rat').classList.remove('hidden');
+                document.body.style.overflow = 'hidden'; // Evitar scroll no fundo
+            } else {
+                customAlert('Erro', 'Erro ao carregar RAT: ' + data.message, 'error');
+            }
+        } catch (error) {
+            console.error('Erro na requisição:', error);
+            customAlert('Erro', 'Erro ao buscar detalhes do RAT.', 'error');
+        }
+    }
+
+    function fecharModalRat() {
+        document.getElementById('modal-ver-rat').classList.add('hidden');
+        document.body.style.overflow = 'auto';
+    }
+
+    function preencherModal(data) {
+        const rat = data.rat;
+        const servicos = data.servicos;
+        const materiais = data.materiais;
+
+        // Cabeçalho
+        document.getElementById('modal-protocolo').innerText = rat.protocolo;
+        document.getElementById('modal-data').innerText = rat.data_formatada || rat.data_emissao;
+        document.getElementById('modal-cliente').innerText = rat.obra_nome;
+        document.getElementById('modal-obra').innerText = `Obra: ${rat.obra_nome}`;
+
+        // Link PDF
+        const btnPrint = document.getElementById('btn-print-pdf');
+        if (btnPrint) btnsPrint = btnPrint.href = `/rat/pdf/${rat.id}?mode=preview`;
+
+        // Info
+        document.getElementById('modal-solicitante').innerText = rat.solicitante || '-';
+        document.getElementById('modal-atividade').innerText = rat.tipo_atividade || '-';
+        document.getElementById('modal-prioridade').innerText = rat.prioridade || '-';
+
+        // Textos
+        // Usar innerText para tratar quebras de linha corretamente em CSS whitespace-pre-wrap ou usar textContent
+        document.getElementById('modal-relato').innerText = rat.relato_cliente || 'Nenhum relato informado.';
+        document.getElementById('modal-descricao').innerText = rat.descricao_atividades || 'Nenhuma descrição técnica informada.';
+        document.getElementById('modal-conclusao').innerText = rat.conclusao || 'Nenhuma conclusão informada.';
+
+        // Serviços
+        const tbodyServicos = document.getElementById('modal-tbody-servicos');
+        tbodyServicos.innerHTML = '';
+        if (servicos && servicos.length > 0) {
+            servicos.forEach(svc => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors";
+                tr.innerHTML = `
+<td class="px-5 py-3 text-slate-600 dark:text-slate-300 font-medium">${svc.data_servico || '-'}</td>
+<td class="px-5 py-3 text-slate-600 dark:text-slate-300 font-mono text-xs">${svc.hora_inicio || '--:--'}</td>
+<td class="px-5 py-3 text-slate-600 dark:text-slate-300 font-mono text-xs">${svc.hora_fim || '--:--'}</td>
+<td class="px-5 py-3 text-slate-600 dark:text-slate-300">${svc.executante_nome || svc.executante_id || '-'}</td>
+<td class="px-5 py-3 text-slate-500 dark:text-slate-400 italic text-xs max-w-[300px] break-words">${svc.observacoes ||
+                    '-'}</td>
+`;
+                tbodyServicos.appendChild(tr);
+            });
+        } else {
+            tbodyServicos.innerHTML = '<tr><td colspan="5" class="px-6 py-4 text-center text-slate-400 text-sm italic">Nenhum serviço registrado.</td></tr>';
+        }
+
+        // Materiais
+        const tbodyMateriais = document.getElementById('modal-tbody-materiais');
+        tbodyMateriais.innerHTML = '';
+        if (materiais && materiais.length > 0) {
+            materiais.forEach(mat => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors";
+                tr.innerHTML = `
+<td class="px-5 py-3 text-slate-600 dark:text-slate-300 font-mono text-xs">${mat.codigo_engesep || '-'}</td>
+<td class="px-5 py-3 text-slate-600 dark:text-slate-300 font-medium">${mat.descricao || '-'}</td>
+<td class="px-5 py-3 text-slate-600 dark:text-slate-300 font-bold text-right">${mat.quantidade ?
+                        parseFloat(mat.quantidade).toFixed(2) : '-'}</td>
+<td class="px-5 py-3 text-slate-500 dark:text-slate-400 text-xs text-center">${mat.unidade || 'UN'}</td>
+`;
+                tbodyMateriais.appendChild(tr);
+            });
+        } else {
+            tbodyMateriais.innerHTML = '<tr><td colspan="4" class="px-6 py-4 text-center text-slate-400 text-sm italic">Nenhum material utilizado.</td></tr>';
+        }
+
+        // Fotos
+        const gridFotos = document.getElementById('modal-grid-fotos');
+        const noFotosMsg = document.getElementById('modal-no-fotos');
+        const fotos = data.fotos;
+
+        gridFotos.innerHTML = '';
+        if (fotos && fotos.length > 0) {
+            noFotosMsg.classList.add('hidden');
+            fotos.forEach(foto => {
+                const div = document.createElement('div');
+                div.className = "relative group aspect-square bg-slate-100 dark:bg-slate-800 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-800 cursor-zoom-in";
+                div.innerHTML = `
+<img src="${foto.caminho_arquivo}"
+    class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+    alt="${foto.legenda || 'Foto RAT'}">
+${foto.legenda ? `<div
+    class="absolute bottom-0 left-0 right-0 bg-black/60 p-1 text-[10px] text-white truncate text-center">${foto.legenda}
+</div>` : ''}
+`;
+                // Simple open in new tab for zoom
+                div.onclick = () => window.open(foto.caminho_arquivo, '_blank');
+                gridFotos.appendChild(div);
+            });
+        } else {
+            noFotosMsg.classList.remove('hidden');
+        }
+
+        // Assinaturas
+        const sigTecImg = document.getElementById('modal-assinatura-tec');
+        const sigTecNo = document.getElementById('modal-no-sig-tec');
+
+        if (rat.caminho_assinatura_tec) {
+            sigTecImg.src = rat.caminho_assinatura_tec;
+            sigTecImg.classList.remove('hidden');
+            sigTecNo.classList.add('hidden');
+        } else {
+            sigTecImg.classList.add('hidden');
+            sigTecNo.classList.remove('hidden');
+        }
+
+        const sigCliImg = document.getElementById('modal-assinatura-cli');
+        const sigCliNo = document.getElementById('modal-no-sig-cli');
+
+        if (rat.caminho_assinatura_cli) {
+            sigCliImg.src = rat.caminho_assinatura_cli;
+            sigCliImg.classList.remove('hidden');
+            sigCliNo.classList.add('hidden');
+        } else {
+            sigCliImg.classList.add('hidden');
+            sigCliNo.classList.remove('hidden');
+        }
+    }
+
+    const statusColors = {
+        'nao_faturavel': 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300',
+        'pendente_faturamento': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
+        'aguardando_pagamento': 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
+        'liquidado': 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
+        'inadimplente': 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
+    };
+
+    async function atualizarStatusFinanceiro(selectElement, ratId) {
+        const novoStatus = selectElement.value;
+        const oldClass = selectElement.className;
+
+        // Feedback visual imediato (loading?) ou apenas troca a cor
+        // Vamos trocar a cor imediatamente para "feels snappy"
+        // Remove old generic classes first if any? No, just reset to base + new color
+        const baseClasses = "appearance-none w-full text-xs font-bold rounded-lg pl-3 pr-8 py-2 border border-transparent hover:brightness-95 focus:brightness-100 focus:border-primary/30 focus:ring-2 focus:ring-primary/20 cursor-pointer outline-none transition-all shadow-sm";
+        selectElement.className = `${baseClasses} ${statusColors[novoStatus] || ''}`;
+
+        try {
+            const response = await fetch('/rat/atualizar_status_financeiro', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ rat_id: ratId, novo_status: novoStatus })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                // Revert on error
+                customAlert('Erro', 'Erro ao atualizar status: ' + data.message, 'error');
+                // Reload or revert UI? Reload is safer for sync
+                // location.reload();
+            } else {
+                // Sucesso
+                customAlert('Sucesso', 'Status atualizado com sucesso', 'success');
+                console.log('Status atualizado com sucesso');
+            }
+        } catch (error) {
+            console.error('Erro na requisição:', error);
+            customAlert('Erro', 'Erro de conexão ao atualizar status.', 'error');
+            // Reverter?
+        }
+    }
+
+
+    let searchTimeout = null;
+
+    // Server-side debounced search
+    function debounceFilterRats() {
+        const input = document.getElementById('search-rats-input');
+        const term = input.value;
+
+        if (searchTimeout) clearTimeout(searchTimeout);
+
+        searchTimeout = setTimeout(() => {
+            fetchRats(1, term);
+        }, 500); // Wait 500ms after user stops typing
+    }
+
+    function changePage(event) {
+        const btn = event.currentTarget;
+        if (btn.disabled) return;
+        const page = btn.dataset.page;
+        const input = document.getElementById('search-rats-input');
+        const term = input ? input.value : '';
+        fetchRats(page, term);
+    }
+
+    async function fetchRats(page, term) {
+        try {
+            // Add loading indicator opacity to table
+            const tableContainer = document.querySelector('.rat-table-wrapper');
+            if (tableContainer) tableContainer.style.opacity = '0.5';
+
+            let url = `/rats?partial=true&page=${page}`;
+            if (term) {
+                url += `&q=${encodeURIComponent(term)}`;
+            }
+
+            const response = await fetch(url);
+            if (response.ok) {
+                const html = await response.text();
+
+                // Let's replace the whole container.
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = html;
+
+                const newTableWrapper = tempDiv.querySelector('.rat-table-wrapper');
+                const newFooter = tempDiv.querySelector('.rat-footer');
+
+                if (newTableWrapper) {
+                    document.querySelector('.rat-table-wrapper').innerHTML = newTableWrapper.innerHTML;
+                }
+                if (newFooter) {
+                    document.querySelector('.rat-footer').innerHTML = newFooter.innerHTML;
+                }
+
+                // Update URL history without reload
+                let newUrl = window.location.pathname + `?page=${page}`;
+                if (term) newUrl += `&q=${encodeURIComponent(term)}`;
+                window.history.pushState({ path: newUrl }, '', newUrl);
+
+            } else {
+                console.error('Erro ao buscar dados');
+            }
+        } catch (error) {
+            console.error(error);
+        } finally {
+            const tableContainer = document.querySelector('.rat-table-wrapper');
+            if (tableContainer) tableContainer.style.opacity = '1';
+        }
+    }
+</script>

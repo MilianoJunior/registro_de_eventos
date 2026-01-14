@@ -1,6 +1,6 @@
 {% if ocorrencias and ocorrencias|length > 0 %}
 {% for alarme in ocorrencias %}
-<div class="ocorrencia-item flex items-start gap-3 p-3 rounded-lg border 
+<div class="ocorrencia-item flex items-start gap-3 p-3 rounded-lg border mb-3
                                 {% if alarme.severidade == 'alta' or alarme.severidade == 'crítica' %}
                                     border-danger/30 bg-danger/5
                                 {% elif alarme.severidade == 'média' %}
@@ -27,18 +27,6 @@
                 {{ alarme.usina_nome }} - {{ alarme.unidade }}
             </p>
             <div class="flex flex-wrap gap-1.5">
-                <span class="px-2 py-0.5 
-                                                {% if alarme.status == 'resolvida' %}
-                                                    bg-success/10 text-success
-                                                {% elif alarme.status == 'em_andamento' %}
-                                                    bg-info/10 text-info
-                                                {% elif alarme.status == 'aberta' %}
-                                                    bg-warning/10 text-warning
-                                                {% else %}
-                                                    bg-slate-100 text-slate-600
-                                                {% endif %}
-                                                text-xs rounded whitespace-nowrap capitalize">{{
-                    alarme.status.replace('_', ' ') }}</span>
                 <span class="px-2 py-0.5 
                                                 {% if alarme.severidade == 'alta' or alarme.severidade == 'crítica' %}
                                                     bg-danger/20 text-danger

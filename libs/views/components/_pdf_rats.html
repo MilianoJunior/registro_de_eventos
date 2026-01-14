@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>RAT - {{ rat.protocolo }}</title>
+
+    <style>
+        @page {
+            size: A4;
+            margin: 12mm 12mm 14mm 12mm;
+
+            @bottom-right {
+                content: "Página " counter(page) " de " counter(pages);
+                font-family: Helvetica, Arial, sans-serif;
+                font-size: 8pt;
+                color: #94a3b8;
+            }
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Helvetica, Arial, sans-serif;
+            font-size: 9.5pt;
+            color: #0f172a;
+            line-height: 1.35;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --primary: #004680;
+            --gray-50: #f8fafc;
+            --gray-200: #e2e8f0;
+            --gray-500: #64748b;
+            --text: #0f172a;
+        }
+
+        img {
+            max-width: 100%;
+            height: auto;
+        }
+
+        /* Helpers */
+        .text-center {
+            text-align: center;
+        }
+
+        .text-right {
+            text-align: right;
+        }
+
+        .font-bold {
+            font-weight: 700;
+        }
+
+        .avoid-break {
+            page-break-inside: avoid;
+        }
+
+        /* Header (tabela = previsível no WeasyPrint) */
+        .header {
+            width: 100%;
+            border-bottom: 1px solid var(--gray-200);
+            padding-bottom: 8px;
+            margin-bottom: 10px;
+        }
+
+        .header td {
+            vertical-align: middle;
+            border: none;
+            padding: 0;
+        }
+
+        .logo-wrapper {
+            background: var(--primary);
+            padding: 8px 14px;
+            border-radius: 7px;
+            display: inline-block;
+        }
+
+        .logo {
+            height: 36px;
+            width: auto;
+            display: block;
+        }
+
+        .header-title {
+            font-size: 15pt;
+            color: var(--primary);
+            font-weight: 700;
+            letter-spacing: .3px;
+            margin: 0;
+            text-transform: uppercase;
+        }
+
+        .protocol {
+            font-size: 10pt;
+            font-weight: 700;
+            color: var(--text);
+            margin-top: 2px;
+        }
+
+        .issued {
+            font-size: 8pt;
+            color: var(--gray-500);
+            margin-top: 2px;
+        }
+
+        /* Seções */
+        .section-header {
+            background: var(--primary);
+            color: white;
+            text-align: center;
+            font-weight: 700;
+            padding: 6px 10px;
+            text-transform: uppercase;
+            font-size: 9.5pt;
+            border-radius: 4px;
+            margin: 10px 0 6px 0;
+            letter-spacing: .35px;
+        }
+
+        /* Tabelas */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 0 0 8px 0;
+            border-radius: 6px;
+        }
+
+        th,
+        td {
+            border: 1px solid var(--gray-200);
+            padding: 6px 8px;
+            vertical-align: top;
+            font-size: 8.5pt;
+        }
+
+        thead th {
+            background: #6d6d6d;
+            color: white;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 7.8pt;
+            letter-spacing: .4px;
+        }
+
+        /* Header-table (cliente/obra/cnpj/cidade) */
+        .label-cell {
+            background: var(--primary);
+            color: white;
+            font-weight: 700;
+            text-transform: uppercase;
+            width: 13%;
+            font-size: 7.6pt;
+            letter-spacing: .3px;
+            vertical-align: middle;
+        }
+
+        .value-cell {
+            font-weight: 700;
+            color: var(--text);
+            vertical-align: middle;
+        }
+
+        /* Cards */
+        .card {
+            border: 1px solid var(--gray-200);
+            border-radius: 6px;
+            padding: 8px;
+            background: white;
+        }
+
+        .card-title {
+            background: #6d6d6d;
+            color: white;
+            font-weight: 700;
+            font-size: 7.8pt;
+            text-transform: uppercase;
+            padding: 4px 8px;
+            border-radius: 4px;
+            margin: -8px -8px 8px -8px;
+            text-align: center;
+            letter-spacing: .3px;
+        }
+
+        .field {
+            border-bottom: 1px solid var(--gray-200);
+            padding: 6px 0;
+        }
+
+        .field:last-child {
+            border-bottom: none;
+        }
+
+        .mini-label {
+            font-size: 7.5pt;
+            color: var(--gray-500);
+        }
+
+        .mini-value {
+            font-size: 8.8pt;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        /* Descritivo */
+        .description-box {
+            border: 1px solid var(--gray-200);
+            background: var(--gray-50);
+            border-radius: 6px;
+            padding: 10px;
+            margin: 8px 0;
+            page-break-inside: avoid;
+        }
+
+        .description-box strong {
+            display: block;
+            margin-bottom: 4px;
+            color: var(--primary);
+        }
+
+        /* Layout “Horas de Serviços”: 2 colunas via tabela sem borda */
+        .no-border {
+            border: none !important;
+        }
+
+        /* Fotos: 2 colunas via tabela (evita flex/grid bugado) */
+        .photo-table td {
+            border: none;
+            padding: 6px;
+            width: 50%;
+            vertical-align: top;
+        }
+
+        .photo-item {
+            border: 1px solid var(--gray-200);
+            border-radius: 6px;
+            padding: 6px;
+            page-break-inside: avoid;
+        }
+
+        .photo-img {
+            width: 100%;
+            height: 210px;
+            /* controla o “card” */
+            object-fit: cover;
+            /* corta sem distorcer */
+            display: block;
+            border-radius: 4px;
+        }
+
+        .photo-caption {
+            margin-top: 6px;
+            font-size: 8pt;
+            color: var(--gray-500);
+        }
+
+        /* Assinaturas */
+        .signatures {
+            margin-top: 14px;
+            page-break-inside: avoid;
+        }
+
+        .sign-table td {
+            width: 50%;
+            border: none;
+            padding: 10px 8px;
+            vertical-align: bottom;
+        }
+
+        .signature-line {
+            height: 60px;
+            border-bottom: 1px solid var(--gray-500);
+            margin-bottom: 6px;
+            position: relative;
+        }
+
+        .signature-img {
+            max-height: 55px;
+            width: auto;
+            position: absolute;
+            bottom: 2px;
+            left: 0;
+        }
+
+        .signature-name {
+            font-weight: 700;
+            font-size: 9pt;
+        }
+
+        .signature-role {
+            font-size: 8pt;
+            color: var(--gray-500);
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- HEADER -->
+    <table class="header">
+        <tr>
+            <td style="width:42%;">
+                <span class="logo-wrapper">
+                    <img src="{{ logo_path }}" alt="Engesep" class="logo" />
+                </span>
+            </td>
+            <td class="text-right">
+                <div class="header-title">RELATÓRIO DE ASSISTÊNCIA TÉCNICA</div>
+                <div class="protocol">Protocolo: #{{ rat.protocolo }}</div>
+                <div class="issued">Emitido em: {{ rat.data_emissao_formatada }}</div>
+            </td>
+        </tr>
+    </table>
+
+    <!-- DADOS CLIENTE / OBRA -->
+    <table class="avoid-break">
+        <tr>
+            <td class="label-cell">CLIENTE</td>
+            <td class="value-cell">{{ rat.cliente_nome or '-' }}</td>
+            <td class="label-cell">CNPJ</td>
+            <td class="value-cell">{{ rat.cliente_cnpj or '-' }}</td>
+        </tr>
+        <tr>
+            <td class="label-cell">OBRA</td>
+            <td class="value-cell">{{ rat.obra_nome or '-' }}</td>
+            <td class="label-cell">CIDADE</td>
+            <td class="value-cell">{{ rat.cliente_cidade or '-' }}</td>
+        </tr>
+    </table>
+
+    <!-- RESUMO -->
+    <div class="section-header">RESUMO - CHAMADO</div>
+
+    <table class="avoid-break" style="border:none;">
+        <tr>
+            <td class="no-border" style="width:50%; padding:0 6px 0 0;">
+                <div class="card">
+                    <div class="card-title">DADOS GERAIS</div>
+
+                    <div class="field">
+                        <div class="mini-label">Data Solicitada: <span style="color:var(--primary);">{{
+                                rat.data_solicitacao or '-' }}</span></div>
+                    </div>
+
+                    <div class="field">
+                        <div class="mini-label">Tipo Atividade: <span class="mini-value">{{ rat.tipo_atividade or
+                                '-' }}</span></div>
+                    </div>
+
+                    <div class="field">
+                        <div class="mini-label">Prioridade: <span class="mini-value">{{ rat.prioridade or
+                                'Média' }}</span></div>
+                    </div>
+
+                    <div class="field">
+                        <div class="mini-label">Solicitante: <span class="mini-value">{{ rat.solicitante or
+                                '-' }}</span></div>
+                    </div>
+
+                    <div class="field">
+                        <div class="mini-label">Local: <span class="mini-value">{{ rat.obra_nome or '-'
+                                }}</span></div>
+                    </div>
+
+                    <div class="field">
+                        <div class="mini-label">Garantia: <span class="mini-value">{{ 'SIM' if
+                                rat.em_garantia else 'NÃO' }}</span></div>
+                    </div>
+                </div>
+            </td>
+
+            <td class="no-border" style="width:50%; padding:0 0 0 6px;">
+                <div class="card">
+                    <div class="card-title">RELATO CLIENTE</div>
+                    <div style="min-height:160px; font-size:8.8pt;">
+                        {{ rat.relato_cliente or '-' }}
+                    </div>
+                </div>
+            </td>
+        </tr>
+    </table>
+
+    <!-- HORAS DE SERVIÇOS -->
+    <div class="section-header">HORAS DE SERVIÇOS</div>
+
+    <table style="border:none;" class="avoid-break">
+        <tr>
+            <td class="no-border" style="width:70%; padding:0 6px 0 0; border-radius: 6px;">
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width:5%;">D</th>
+                            <th style="width:20%;">Data</th>
+                            <th style="width:13%;">Início(hrs)</th>
+                            <th style="width:13%;">Fim(hrs)</th>
+                            <th style="width:13%;">Tempo</th>
+                            <th style="width:32%;">Obs.</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for svc in servicos %}
+                        <tr>
+                            <td class="text-center">D{{ loop.index }}</td>
+                            <td>{{ svc.data_servico_formatada }}</td>
+                            <td>{{ svc.hora_inicio }}</td>
+                            <td>{{ svc.hora_fim }}</td>
+                            <td class="text-center">{{ svc.tempo_decorrido }}</td>
+                            <td>{{ svc.observacoes or '' }}</td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="6" class="text-center">Nenhum registro.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+            </td>
+
+            <td class="no-border" style="width:30%; padding:0 0 0 6px;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th colspan="2" class="text-center">EXECUTANTE</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="mini-label" style="width:35%;">Nome</td>
+                            <td class="mini-value">{{ rat.tecnico_nome or '-' }}</td>
+                        </tr>
+                        <tr>
+                            <td class="mini-label">Cargo</td>
+                            <td class="mini-value">Técnico</td>
+                        </tr>
+                        <tr>
+                            <td class="mini-label">Deslocamento</td>
+                            <td class="mini-value">{{ rat.deslocamento or '-' }}</td>
+                        </tr>
+                        <tr>
+                            <td class="mini-label">Horas</td>
+                            <td class="mini-value">{{ rat.total_horas or '0.0' }}h</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+            </td>
+        </tr>
+    </table>
+
+    <!-- MATERIAIS -->
+    <div class="section-header">MATERIAIS UTILIZADOS</div>
+
+    <table class="avoid-break">
+        <thead>
+            <tr>
+                <th style="width:15%;">Código</th>
+                <th style="width:45%;">Descrição</th>
+                <th style="width:20%;">Fabricante</th>
+                <th style="width:10%;" class="text-center">Qtd.</th>
+                <th style="width:10%;" class="text-center">Un.</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for mat in materiais %}
+            <tr>
+                <td>{{ mat.codigo_engesep or '-' }}</td>
+                <td>{{ mat.descricao }}</td>
+                <td>{{ mat.fabricante or '-' }}</td>
+                <td class="text-center">{{ mat.quantidade }}</td>
+                <td class="text-center">{{ mat.unidade }}</td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="5" class="text-center">Nenhum material utilizado.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- RELATÓRIO DESCRITIVO -->
+    <div class="section-header">RELATÓRIO DESCRITIVO</div>
+
+    <div class="description-box">
+        <strong>Atividades Realizadas</strong>
+        {{ rat.descricao_atividades or 'Não informado.' }}
+    </div>
+
+    <div class="description-box">
+        <strong>Conclusão / Pendências</strong>
+        {{ rat.conclusao or 'Não informado.' }}
+    </div>
+
+    <!-- FOTOS -->
+    {% if fotos %}
+    <div style="page-break-before: always;"></div>
+    <div class="section-header">RELATÓRIO FOTOGRÁFICO</div>
+
+    <table class="photo-table">
+        {% for foto in fotos %}
+        {% if loop.index0 % 2 == 0 %}<tr>{% endif %}
+            <td>
+                <div class="photo-item">
+                    <img src="{{ foto.caminho_absoluto }}" class="photo-img" alt="Foto {{ loop.index }}">
+                    <div class="photo-caption">{{ foto.legenda or ('Foto ' ~ loop.index) }}</div>
+                </div>
+            </td>
+            {% if loop.index0 % 2 == 1 %}
+        </tr>{% endif %}
+        {% endfor %}
+        {% if fotos|length % 2 == 1 %}
+        <td></td>
+        </tr>
+        {% endif %}
+    </table>
+    {% endif %}
+
+    <!-- ASSINATURAS -->
+    <div class="signatures">
+        <div class="section-header">ASSINATURAS</div>
+
+        <table class="sign-table">
+            <tr>
+                <td>
+                    <div class="signature-line">
+                        {% if rat.caminho_assinatura_tec_absoluto %}
+                        <img src="{{ rat.caminho_assinatura_tec_absoluto }}" class="signature-img"
+                            alt="Assinatura Técnico">
+                        {% endif %}
+                    </div>
+                    <div class="signature-name">{{ rat.tecnico_nome or 'Técnico Responsável' }}</div>
+                    <div class="signature-role">Técnico Engesep</div>
+                </td>
+
+                <td>
+                    <div class="signature-line">
+                        {% if rat.caminho_assinatura_cli_absoluto %}
+                        <img src="{{ rat.caminho_assinatura_cli_absoluto }}" class="signature-img"
+                            alt="Assinatura Cliente">
+                        {% endif %}
+                    </div>
+                    <div class="signature-name">{{ rat.solicitante or 'Responsável Cliente' }}</div>
+                    <div class="signature-role">Representante do Cliente</div>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+</body>
+
+</html>

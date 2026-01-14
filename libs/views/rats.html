@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% set active_page = "home" %}
+{% import "components/_cards.html" as cards %}
+{% from "components/macros.html" import ocorrencia_item %}
+
+{% block title %}Dashboard de Ocorrências — EngeSEP O&M{% endblock %}
+
+{% block content %}
+<main class="flex-1 flex flex-col h-full overflow-hidden relative">
+    <div class="flex-shrink-0 bg-[var(--color-bg)] border-b border-slate-200 dark:border-slate-800 z-10 pt-6">
+        <div class="px-6 max-w-6xl mx-auto w-full">
+            <nav aria-label="Tabs" class="flex gap-6">
+                <!-- Tab: Informações -->
+                <a href="/rats" class="group inline-flex items-center pb-3 px-1 border-b-2 font-medium text-sm transition
+                            {% if page == 'inforat' %}
+                                border-primary text-primary
+                            {% else %}
+                                border-transparent text-text-muted hover:text-text-primary hover:border-slate-300
+                            {% endif %}">
+                    <span
+                        class="material-icons mr-1 text-base align-middle {% if page == 'inforat' %} text-primary {% endif %}">info</span>
+                    Informações
+                </a>
+
+                <!-- Tab: Criar RAT -->
+                <a href="/criarrat" class="group inline-flex items-center pb-3 px-1 border-b-2 font-medium text-sm transition
+                            {% if page == 'criarrat' %}
+                                border-primary text-primary
+                            {% else %}
+                                border-transparent text-text-muted hover:text-text-primary hover:border-slate-300
+                            {% endif %}">
+                    <span
+                        class="material-icons mr-1 text-base align-middle {% if page == 'criarrat' %} text-primary {% endif %}">add_circle</span>
+                    Criar RAT
+                </a>
+
+                <!-- Tab: Modificar -->
+                <a href="/modificarrat" class="group inline-flex items-center pb-3 px-1 border-b-2 font-medium text-sm transition
+                            {% if page == 'modificarrat' %}
+                                border-primary text-primary
+                            {% else %}
+                                border-transparent text-text-muted hover:text-text-primary hover:border-slate-300
+                            {% endif %}">
+                    <span
+                        class="material-icons mr-1 text-base align-middle {% if page == 'modificarrat' %} text-primary {% endif %}">edit</span>
+                    Modificar
+                </a>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Dynamic Content -->
+    <div class="flex-1 overflow-y-auto custom-scrollbar relative">
+        {% if page == 'inforat' %}
+        {% include 'components/_info_rats.html' %}
+        {% elif page == 'criarrat' %}
+        {% include 'components/_criar_rats.html' %}
+        {% elif page == 'modificarrat' %}
+        {% include 'components/_modificar_rats.html' %}
+        {% endif %}
+    </div>
+    {% include 'components/_alert.html' %}
+</main>
+</div>
+{% endblock %}

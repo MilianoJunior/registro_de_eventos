@@ -11,7 +11,8 @@
 # 9. carregar_configuracao → carrega configurações (GET)
 # -------------------------------------------------------------------
 
-from flask import render_template, jsonify, Response, request
+from flask import render_template, jsonify, Response, request, send_from_directory
+import os
 from main import app
 from libs.controllers.homeController import HomeController
 from libs.controllers.usinasController import UsinasController
@@ -19,6 +20,7 @@ from libs.controllers.usinasController import UsinasController
 from libs.controllers.ocorrenciasController import OcorrenciasController
 # from libs.controllers.analiseController import AnaliseController
 from libs.controllers.configController import ConfigController
+from libs.controllers.ratsController import RatsController
 from libs.controllers.decorador import desempenho
 
 from flask import render_template
@@ -28,6 +30,53 @@ usinasController = UsinasController()
 ocorrenciasController = OcorrenciasController()
 # analiseController = AnaliseController()
 configController = ConfigController()
+ratsController = RatsController()
+
+
+@app.route('/rats')
+def rats():
+    return ratsController.inforat()
+
+@app.route('/criarrat')
+def criarrat():
+    return ratsController.criarrat()
+
+@app.route('/rat/salvar', methods=['POST'])
+def salvar_rat():
+    return ratsController.salvarrat()
+
+@app.route('/rat/upload_foto', methods=['POST'])
+def upload_foto():
+    return ratsController.upload_foto()
+
+@app.route('/rat/ver/<int:rat_id>', methods=['GET'])
+def ver_rat(rat_id):
+    return ratsController.ver_rat(rat_id)
+
+@app.route('/modificarrat', defaults={'rat_id': None})
+@app.route('/modificarrat/<int:rat_id>')
+def modificarrat(rat_id):
+    return ratsController.modificarrat(rat_id)
+
+@app.route('/produtos/buscar', methods=['GET'])
+def buscar_produtos():
+    return ratsController.buscar_produtos()
+
+@app.route('/rat/atualizar', methods=['POST'])
+def atualizar_rat():
+    return ratsController.atualizar_rat()
+
+@app.route('/rat/atualizar_status_financeiro', methods=['POST'])
+def atualizar_status_financeiro():
+    return ratsController.atualizar_status_financeiro()
+
+@app.route('/rat/deletar', methods=['POST'])
+def deletar_rat():
+    return ratsController.deletar_rat()
+
+@app.route('/rat/pdf/<int:rat_id>', methods=['GET'])
+def gerar_pdf(rat_id):
+    return ratsController.gerar_pdf(rat_id)
 
 @app.route("/favicon.ico")
 def favicon():
@@ -36,6 +85,12 @@ def favicon():
 @app.route("/.well-known/appspecific/com.chrome.devtools.json")
 def chrome_devtools_probe():
     return Response(status=204)
+
+@app.route('/assets/<path:filename>')
+def serve_assets(filename):
+    # Serve files from the assets directory located at the project root
+    assets_folder = os.path.join(os.getcwd(), 'assets')
+    return send_from_directory(assets_folder, filename)
 
 @app.route("/")
 @desempenho

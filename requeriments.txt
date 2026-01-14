@@ -25,3 +25,7 @@ python-dateutil==2.8.2
 # httpx
 httpx
 
+# adicionar as bibliotecas do rat
+werkzeug
+WeasyPrint
+

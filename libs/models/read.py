@@ -162,13 +162,8 @@ class OpOcorrencia(BaseReader):
 
     @desempenho
     def listar_requer_acao(self) -> List[Dict[str, Any]]:
-        # retornar todas as ocorrências que requerem ação (requer_acao = 1)
-        # return self.where_eq(where={"requer_acao": 1}, order_by="created_at", desc=True, limit=200)
         sql = f"SELECT * FROM {self.tabela} WHERE requer_acao = 1 ORDER BY created_at DESC LIMIT 200"
-        print(f"sql: {sql}")
         resposta = self._run(sql)
-        print(f"resposta: {resposta}")
-        print('-' * 50)
         return self._injetar_usina_nome(resposta)
 
     @desempenho
@@ -228,15 +223,19 @@ class OpOcorrencia(BaseReader):
             self.where_eq(where=where, order_by="created_at", desc=True, limit=limit)
         )
 
+
+
 class OpParadas(BaseReader):
     tabela = "op_paradas"
     colunas_padrao = ["id", "timestamp", "dados"]
     order_padrao = "timestamp"
     desc_padrao = True
 
+    def __init__(self, db: Optional[Database] = None):
+        super().__init__(db)
+        self._cache_dados_brutos: Dict[str, List[Dict[str, Any]]] = {}
+
     def _parse_dados_paradas(self, raw: Any) -> Optional[Dict[str, Any]]:
-        if raw is None:
-            return None
         if isinstance(raw, dict):
             return raw
         if isinstance(raw, str):
@@ -300,69 +299,126 @@ class OpParadas(BaseReader):
         minutos = int(mttr_min % 60)
         return f"{horas}h {minutos}m" if horas > 0 else f"{minutos} min"
 
+    def _get_dados_brutos_periodo(self, periodo: str) -> List[Dict[str, Any]]:
+        """Busca snapshots de paradas (que contêm temperaturas) dado um período, com cache local."""
+        janela = _periodo_para_intervalo(periodo)
+        sql = (
+            "SELECT timestamp, dados FROM op_paradas "
+            "WHERE timestamp >= %s ORDER BY timestamp ASC"
+        )
+        data = self._run(sql, (janela,))
+        self._cache_dados_brutos[periodo] = data
+        return data
+
     @desempenho
     def get_indicadores_manutencao(self, periodo: str = 'diario') -> Dict[str, Any]:
         """Calcula MTTR (Tempo médio para reparo) por usina, a partir de snapshots em `op_paradas`."""
         try:
-            janela = _periodo_para_intervalo(periodo)
-            sql = (
-                "SELECT timestamp, dados FROM op_paradas "
-                "WHERE timestamp >= %s ORDER BY timestamp ASC"
-            )
+            rows = self._get_dados_brutos_periodo(periodo)
+
             estado_anterior: Dict[str, Dict[str, bool]] = {}
             totais: Dict[str, Dict[str, float]] = {}
 
-            self.db.connect()
-            cur = None
-            try:
-                cur = self.db.connection.cursor(dictionary=True)
-                cur.execute(sql, (janela,))
-
-                anterior: Optional[Dict[str, Any]] = None
-                for atual in cur:
-                    if anterior is None:
-                        anterior = atual
-                        continue
-
-                    ts_ant = anterior.get("timestamp")
-                    ts_atual = atual.get("timestamp")
-                    if not isinstance(ts_ant, datetime) or not isinstance(ts_atual, datetime):
-                        anterior = atual
-                        continue
-
-                    dt_minutos = (ts_atual - ts_ant).total_seconds() / 60.0
-                    if dt_minutos <= 0 or dt_minutos > 60.0:
-                        anterior = atual
-                        continue
-
-                    raw = anterior.get("dados")
-                    if not self._payload_pode_conter_manutencao(raw):
-                        anterior = atual
-                        continue
-
-                    dados = self._parse_dados_paradas(raw)
-                    if not dados:
-                        anterior = atual
-                        continue
-
-                    lista_usinas = dados.get("usinas") or []
-                    if isinstance(lista_usinas, list):
-                        self._acumular_manutencao_por_usina(totais, estado_anterior, lista_usinas, dt_minutos)
-
+            anterior: Optional[Dict[str, Any]] = None
+            for atual in rows:
+                if anterior is None:
                     anterior = atual
+                    continue
 
-            finally:
-                if cur:
-                    try:
-                        cur.close()
-                    except Exception:
-                        pass
-                self.db.close()
+                ts_ant = anterior.get("timestamp")
+                ts_atual = atual.get("timestamp")
+                if not isinstance(ts_ant, datetime) or not isinstance(ts_atual, datetime):
+                    anterior = atual
+                    continue
+
+                dt_minutos = (ts_atual - ts_ant).total_seconds() / 60.0
+                if dt_minutos <= 0 or dt_minutos > 60.0:
+                    anterior = atual
+                    continue
+
+                raw = anterior.get("dados")
+                if not self._payload_pode_conter_manutencao(raw):
+                    anterior = atual
+                    continue
+
+                dados = self._parse_dados_paradas(raw)
+                if not dados:
+                    anterior = atual
+                    continue
+
+                lista_usinas = dados.get("usinas") or []
+                if isinstance(lista_usinas, list):
+                    self._acumular_manutencao_por_usina(totais, estado_anterior, lista_usinas, dt_minutos)
+
+                anterior = atual
 
             return {slug: {"mttr_str": self._formatar_mttr(t["tempo_manutencao"], t["eventos"])} for slug, t in totais.items()}
 
         except Exception as e:
             raise Exception(f"Erro em get_indicadores_manutencao: {e}")
+
+    def get_temperaturas(self) -> List[Dict[str, Any]]:
+        '''
+            temperaturas.append({
+                'nome'      : nome_ponto,
+                'historico' : dict(hist),                # converte defaultdict→dict p/ evitar referências externas
+                'atual'     : medidas.get('value'),
+                'alarme'    : medidas.get('alarmes'),
+                'trip'      : medidas.get('trip'),
+            })
+        '''
+        if len(self._cache_dados_brutos) == 0:
+            self._get_dados_brutos_periodo('diario')
+
+        temperaturas = []
+        lista_snapshots = self._cache_dados_brutos.get('diario', [])
+        import random
+        
+        for d in lista_snapshots:
+            print('snapshot', d)
+            print(' ')
+            dados = self._parse_dados_paradas(d.get("dados"))
+            lista_usinas = dados.get("usinas") or []
+            for usina in lista_usinas:
+                nome = usina.get("nome", "Desconhecida")
+                slug = usina.get("slug", "Desconhecido")
+                print('usina', nome)
+                print(usina)
+                dispositivos = usina.get("dispositivos") or {}
+                for nome_disp, info in dispositivos.items():
+                    nome_disp = info.get("nome", "Desconhecido")
+                    temperaturas = info.get("temperaturas") or {"Enrolamento Fase A": random.randint(0, 100), "Enrolamento Fase B": random.randint(0, 100), "Enrolamento Fase C": random.randint(0, 100)}
+                    historico = {}
+                    # for nome_sensor, medidas in temperaturas.items():
+                    #     historico[nome_sensor] = medidas.get('historico')
+
+                    
+                    # print('    dispositivo', nome_disp)
+                    # print('  ',info)
+                    # print('¨¨¨¨¨')
+                
+            print('----------------')
+            # for usina in lista_usinas:
+            #     nome_usina = usina.get("nome", "Desconhecida")
+            #     dispositivos = usina.get("dispositivos") or {}
+            #     for nome_disp, info in dispositivos.items():
+            #         sensores_temperaturas = dados[usina][nome_disp]['temperaturas']
+            #         historico = {}
+            #         for nome_sensor, medidas in sensores_temperaturas.items():
+            #             historico[nome_sensor] = medidas.get('historico')
+            #         temperaturas.append({
+            #             'nome'      : f"{nome_usina} - {nome_disp}",
+            #             'atual'     : temp_atual,
+            #             'alarme'    : alarme,
+            #             'trip'      : info.get('trip_temp'),
+            #             'risco'     : 0
+            #         })
+        print('--')
+        print('temperaturas')
+        for i, t in enumerate(temperaturas):
+            print(f'{i}: {t}')
+        print('--')
+        return temperaturas
 '''
 {
   "usinas": [
@@ -448,7 +504,15 @@ class OpParadas(BaseReader):
           "nome": "UG-01",
           "descricao": "US (sincronizado)",
           "tempo_leitura": 0.3802525997161865,
-          "potencia_ativa_mw": 2597
+          "potencia_ativa_mw": 2597,
+          "temperaturas": {
+            "Enrolamento Fase A": 25,
+            "Enrolamento Fase B": 26,
+            "Enrolamento Fase C": 27,
+            "Manc. Casq. Rad. Guia": 28,
+            "Mancal Comb. Casq": 29,
+            }
+          
         },
         "UG-02": {
           "erro": null,
@@ -463,4 +527,22 @@ class OpParadas(BaseReader):
   "success": true,
   "timestamp": 1763403234.8251688
 }
+temperaturas = [
+    {
+        "nome": "CGH APARECIDA UG-01 - Enrolamento Fase A",
+        "historico": { "13:01": 25, "13:02": 26, "13:03": 27 },
+        "atual": None,
+        "alarme": None,
+        "trip": None,
+        "risco": None
+    },
+    {
+        "nome": "CGH APARECIDA UG-01 - Enrolamento Fase B",
+        "historico": { "13:01": 25, "13:02": 26, "13:03": 27 },
+        "atual": None,
+        "alarme": None,
+        "trip": None,
+        "risco": None
+    },
+]
 '''

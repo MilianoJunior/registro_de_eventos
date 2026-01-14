@@ -1,50 +1,77 @@
 <aside id="sidebar" class="w-64 flex flex-col bg-[var(--sidebar-bg)] border-r border-slate-200 dark:border-slate-800">
-  <div class="flex items-center h-16 border-b border-slate-200 dark:border-slate-800 px-4">
-      <h1 class="text-base font-medium text-text-primary flex items-center">
-          <span class="text-white">Enge<span class="text-blue-400">SEP</span></span>
-          <span class="font-normal text-slate-400 ml-2 text-sm">O&M</span>
-      </h1>
-      <button
-        id="sidebar-toggle-close"
-        type="button"
-        class="ml-auto p-2 rounded-lg text-text-muted hover:text-text-primary hover:bg-background-alt transition"
-        aria-label="Fechar menu lateral"
-        title="Fechar menu"
-      >
-        <span class="material-icons text-base">chevron_left</span>
-      </button>
-  </div>
+    <div class="flex items-center h-16 border-b border-slate-200 dark:border-slate-800 px-4">
+        <h1 class="text-base font-medium text-text-primary flex items-center">
+            <span class="text-white">Enge<span class="text-blue-400">SEP</span></span>
+            <span class="font-normal text-slate-400 ml-2 text-sm">O&M</span>
+        </h1>
+        <button id="sidebar-toggle-close" type="button"
+            class="ml-auto p-2 rounded-lg text-text-muted hover:text-text-primary hover:bg-background-alt transition"
+            aria-label="Fechar menu lateral" title="Fechar menu">
+            <span class="material-icons text-base">chevron_left</span>
+        </button>
+    </div>
     <nav class="flex-1 space-y-1 p-3">
-        <a class="flex items-center px-3 py-2 rounded-lg text-sm sidebar-item-active" href="{{ url_for('index') }}">
+        <a class="flex items-center px-3 py-2 rounded-lg text-sm text-text-muted hover:text-text-primary sidebar-item"
+            href="{{ url_for('index') }}">
             <span class="material-icons text-base">dashboard</span>
             <span class="ml-2.5">Visão Gerals</span>
         </a>
-        <a class="flex items-center px-3 py-2 rounded-lg text-sm text-text-muted hover:text-text-primary sidebar-item" href="{{ url_for('ocorrencias') }}">
+        <a class="flex items-center px-3 py-2 rounded-lg text-sm text-text-muted hover:text-text-primary sidebar-item"
+            href="{{ url_for('ocorrencias') }}">
             <span class="material-icons text-base">add_circle_outline</span>
             <span class="ml-2.5">Ocorrências</span>
         </a>
-        <a class="flex items-center px-3 py-2 rounded-lg text-sm text-text-muted hover:text-text-primary sidebar-item" href="{{ url_for('configuracoes') }}">
+        <a class="flex items-center px-3 py-2 rounded-lg text-sm text-text-muted hover:text-text-primary sidebar-item"
+            href="{{ url_for('rats') }}">
+            <span class="material-icons text-base">add_circle_outline</span>
+            <span class="ml-2.5">RATs</span>
+        </a>
+        <a class="flex items-center px-3 py-2 rounded-lg text-sm text-text-muted hover:text-text-primary sidebar-item"
+            href="{{ url_for('configuracoes') }}">
             <span class="material-icons text-base">engineering</span>
             <span class="ml-2.5">Configurar Usinas</span>
         </a>
-      <div class="pt-3 mt-3 border-t border-slate-200 dark:border-slate-800">
-          <h6 class="px-3 text-xs font-medium text-text-muted uppercase tracking-wide mb-1.5">Usinas</h6>
-          {% set lista_usinas = (vm.usinas if (vm is defined and vm.usinas is defined) else usinas) %}
-          <div class="space-y-0.5">
-              {% if lista_usinas %}
-                  {% for usina in lista_usinas %}
-                      <a class="flex items-center px-3 py-2 rounded-lg text-sm text-text-muted hover:text-text-primary sidebar-item" href="{{ url_for('usina_page', sigla=usina.sigla) }}" data-usina-id="{{ usina.id }}">
-                          <span class="material-icons text-base">factory</span>
-                          <span class="ml-2.5">{{ usina.nome }}</span>
-                      </a>
-                  {% endfor %}
-              {% else %}
-                  <p class="px-3 py-2 text-xs text-text-muted">Nenhuma usina disponível</p>
-              {% endif %}
-          </div>
-      </div>
-  </nav>
-  <div class="p-3 border-t border-slate-200 dark:border-slate-800">
-      <p class="text-center text-xs text-text-muted">© 2025 EngeSEP</p>
-  </div>
+        <div class="pt-3 mt-3 border-t border-slate-200 dark:border-slate-800">
+            <h6 class="px-3 text-xs font-medium text-text-muted uppercase tracking-wide mb-1.5">Usinas</h6>
+            {% set lista_usinas = (vm.usinas if (vm is defined and vm.usinas is defined) else usinas) %}
+            <div class="space-y-0.5">
+                {% if lista_usinas %}
+                {% for usina in lista_usinas %}
+                <a class="flex items-center px-3 py-2 rounded-lg text-sm text-text-muted hover:text-text-primary sidebar-item"
+                    href="{{ url_for('usina_page', sigla=usina.sigla) }}" data-usina-id="{{ usina.id }}">
+                    <span class="material-icons text-base">factory</span>
+                    <span class="ml-2.5">{{ usina.nome }}</span>
+                </a>
+                {% endfor %}
+                {% else %}
+                <p class="px-3 py-2 text-xs text-text-muted">Nenhuma usina disponível</p>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+    <div class="p-3 border-t border-slate-200 dark:border-slate-800">
+        <p class="text-center text-xs text-text-muted">© 2025 EngeSEP</p>
+    </div>
 </aside>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const currentUrl = window.location.pathname;
+        const links = document.querySelectorAll('#sidebar nav a');
+
+        links.forEach(link => {
+            const href = link.getAttribute('href');
+
+            // Check if active
+            // Exact match or prefix match (excluding root mismatch context)
+            if (href === currentUrl || (href !== '/' && currentUrl.startsWith(href))) {
+                link.classList.add('sidebar-item-active');
+                link.classList.remove('sidebar-item', 'text-text-muted', 'hover:text-text-primary');
+            } else {
+                // Ensure inactive state (if not already set correctly by base html, but script ensures consistency)
+                link.classList.remove('sidebar-item-active');
+                link.classList.add('sidebar-item', 'text-text-muted', 'hover:text-text-primary');
+            }
+        });
+    });
+</script>

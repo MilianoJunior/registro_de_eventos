@@ -1,0 +1,134 @@
+<!-- Custom Alert Component -->
+<div id="custom-alert-overlay"
+    class="fixed inset-0 z-[9999] hidden flex items-center justify-center bg-black/50 backdrop-blur-sm transition-opacity duration-300 opacity-0"
+    aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div id="custom-alert-panel"
+        class="relative transform overflow-hidden rounded-lg bg-[var(--color-surface)] text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg scale-95 opacity-0 duration-300 border border-slate-200 dark:border-slate-700">
+        <div class="px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
+            <div class="sm:flex sm:items-start">
+                <div id="custom-alert-icon-bg"
+                    class="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-blue-100 sm:mx-0 sm:h-10 sm:w-10">
+                    <span id="custom-alert-icon" class="material-symbols-outlined text-blue-600">info</span>
+                </div>
+                <div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left w-full">
+                    <h3 class="text-base font-semibold leading-6 text-[var(--color-text)]" id="custom-alert-title">
+                        Título</h3>
+                    <div class="mt-2">
+                        <p class="text-sm text-[var(--color-text-muted)]" id="custom-alert-message">Mensagem de aviso.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="bg-[var(--color-bg)] px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6 gap-2">
+            <button type="button" id="custom-alert-confirm-btn"
+                class="inline-flex w-full justify-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 sm:ml-3 sm:w-auto transition-colors">OK</button>
+            <button type="button" id="custom-alert-cancel-btn"
+                class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto transition-colors hidden">Cancelar</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    window.customAlert = function (title, message, type = 'info', onConfirm = null, onCancel = null) {
+        const overlay = document.getElementById('custom-alert-overlay');
+        const panel = document.getElementById('custom-alert-panel');
+        const titleEl = document.getElementById('custom-alert-title');
+        const msgEl = document.getElementById('custom-alert-message');
+        const iconBg = document.getElementById('custom-alert-icon-bg');
+        const icon = document.getElementById('custom-alert-icon');
+        const confirmBtn = document.getElementById('custom-alert-confirm-btn');
+        const cancelBtn = document.getElementById('custom-alert-cancel-btn');
+
+        // Set Content
+        titleEl.textContent = title;
+        msgEl.innerHTML = message; // Allow HTML in message
+
+        // Set Style based on type
+        // Types: 'success', 'error', 'warning', 'info'
+        iconBg.className = "mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full sm:mx-0 sm:h-10 sm:w-10 transition-colors";
+
+        switch (type) {
+            case 'success':
+                iconBg.classList.add('bg-green-100');
+                icon.className = 'material-symbols-outlined text-green-600';
+                icon.textContent = 'check_circle';
+                confirmBtn.className = "inline-flex w-full justify-center rounded-md bg-green-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-green-500 sm:ml-3 sm:w-auto transition-colors";
+                confirmBtn.textContent = 'OK';
+                break;
+            case 'error':
+                iconBg.classList.add('bg-red-100');
+                icon.className = 'material-symbols-outlined text-red-600';
+                icon.textContent = 'error';
+                confirmBtn.className = "inline-flex w-full justify-center rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500 sm:ml-3 sm:w-auto transition-colors";
+                confirmBtn.textContent = 'Entendi';
+                break;
+            case 'warning':
+                iconBg.classList.add('bg-yellow-100');
+                icon.className = 'material-symbols-outlined text-yellow-600';
+                icon.textContent = 'warning';
+                confirmBtn.className = "inline-flex w-full justify-center rounded-md bg-yellow-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-yellow-500 sm:ml-3 sm:w-auto transition-colors";
+                confirmBtn.textContent = 'OK';
+                break;
+            case 'confirm':
+                iconBg.classList.add('bg-blue-100');
+                icon.className = 'material-symbols-outlined text-blue-600';
+                icon.textContent = 'help';
+                confirmBtn.className = "inline-flex w-full justify-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 sm:ml-3 sm:w-auto transition-colors";
+                confirmBtn.textContent = 'Confirmar';
+                break;
+            default: // info
+                iconBg.classList.add('bg-blue-100');
+                icon.className = 'material-symbols-outlined text-blue-600';
+                icon.textContent = 'info';
+                confirmBtn.className = "inline-flex w-full justify-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 sm:ml-3 sm:w-auto transition-colors";
+                confirmBtn.textContent = 'OK';
+        }
+
+        // Handle buttons
+        if (type === 'confirm') {
+            cancelBtn.classList.remove('hidden');
+        } else {
+            cancelBtn.classList.add('hidden');
+        }
+
+        // Event Listeners (Clean up old ones)
+        const newConfirmBtn = confirmBtn.cloneNode(true);
+        confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+
+        const newCancelBtn = cancelBtn.cloneNode(true);
+        cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
+
+        newConfirmBtn.addEventListener('click', () => {
+            closeAlert();
+            if (onConfirm) onConfirm();
+        });
+
+        newCancelBtn.addEventListener('click', () => {
+            closeAlert();
+            if (onCancel) onCancel();
+        });
+
+        // Show Modal
+        overlay.classList.remove('hidden');
+        // Trigger reflow/anim
+        setTimeout(() => {
+            overlay.classList.remove('opacity-0');
+            panel.classList.remove('scale-95', 'opacity-0');
+            panel.classList.add('scale-100', 'opacity-100');
+        }, 10);
+    };
+
+    function closeAlert() {
+        const overlay = document.getElementById('custom-alert-overlay');
+        const panel = document.getElementById('custom-alert-panel');
+
+        overlay.classList.add('opacity-0');
+        panel.classList.remove('scale-100', 'opacity-100');
+        panel.classList.add('scale-95', 'opacity-0');
+
+        setTimeout(() => {
+            overlay.classList.add('hidden');
+        }, 300);
+    }
+</script>

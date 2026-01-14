@@ -113,7 +113,7 @@ class OcorrenciasController:
                 "playbook": str(data.get("playbook", "")),
                 "template_texto": str(data.get("template_texto", "")),
                 "descricao": str(data["descricao"]),
-                "status": "aberta",
+                "status": "aberta" if requer_acao else "cancelada",
                 "severidade": str(data.get("severidade", "média")),
                 "origem": "humano",
                 "metadata": json.dumps(metadata, ensure_ascii=False),
@@ -146,6 +146,8 @@ class OcorrenciasController:
             existente = self.ocorrencias_read.one({"id": int(ocorrencia_id)})
             if not existente:
                 return jsonify({"success": False, "error": "Ocorrência não encontrada"}), 404
+            if not existente.get("requer_acao"):
+                return jsonify({"success": False, "error": "Ocorrência não requer ação"}), 400
 
             # 2. Tenta atualizar
             rows = self.ocorrencias_edit.update_by_id(

@@ -1,11 +1,18 @@
-{% macro card(title, value, unit='', text_color_class='', value_id='', extra_classes='', attributes='') %}
-<div class="bg-surface p-4 rounded-lg border border-slate-200 dark:border-slate-800 {{ extra_classes }}" {{
-    attributes|safe }}>
-    <p class="text-xs text-text-muted uppercase tracking-wide mb-1">{{ title }}</p>
-    <p class="text-2xl font-medium text-text-primary {{ text_color_class }}">
-        <span {% if value_id %}id="{{ value_id }}" {% endif %}>{{ value }}</span>
-        {% if unit %}<span class="text-sm">{{ unit }}</span>{% endif %}
-    </p>
+{% macro card(title, value, unit='', description='', text_color_class='', value_id='', extra_classes='', attributes='')
+%}
+<div style="background-color: var(--color-surface); padding: 1rem; border-radius: 0.5rem; border: 1px solid rgba(148, 163, 184, 0.2); box-shadow: 0 4px 6px -1px rgba(var(--color-surface), 0.3), 0 2px 4px -2px rgba(var(--color-surface), 0.2);"
+    class="bg-[var(--color-surface)] p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm {{ extra_classes }}"
+    {{ attributes|safe }}>
+    <p class="text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wide mb-1">{{ title }}</p>
+    <div class="flex items-baseline gap-1">
+        <p class="text-2xl font-bold text-[var(--color-text)] {{ text_color_class }}">
+            <span {% if value_id %}id="{{ value_id }}" {% endif %}>{{ value }}</span>
+        </p>
+        {% if unit %}<span class="text-xs font-medium text-[var(--color-text-muted)]">{{ unit }}</span>{% endif %}
+    </div>
+    {% if description %}
+    <p class="text-xs text-[var(--color-text-muted)] mt-1 truncate">{{ description }}</p>
+    {% endif %}
     {% if caller %}
     {{ caller() }}
     {% endif %}

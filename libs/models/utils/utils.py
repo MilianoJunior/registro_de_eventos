@@ -258,3 +258,62 @@ def normalizar_slug(texto: str) -> str:
     n = unicodedata.normalize("NFKD", texto)
     s = "".join(c for c in n if not unicodedata.combining(c))
     return re.sub(r"[^a-z0-9]", "", s.lower())
+
+from datetime import datetime, timedelta
+
+def format_date_br(val):
+    """Converte valor de data para o formato DD/MM/YYYY."""
+    if not val:
+        return "-"
+    
+    # Se for objeto datetime ou date
+    if hasattr(val, 'strftime'):
+        return val.strftime('%d/%m/%Y')
+    
+    # Se for string
+    if isinstance(val, str):
+        try:
+            # Tenta converter de YYYY-MM-DD (com ou sem hora)
+            clean_date = val.split(' ')[0]
+            dt = datetime.strptime(clean_date, '%Y-%m-%d')
+            return dt.strftime('%d/%m/%Y')
+        except:
+            return val
+            
+    return str(val)
+
+def format_time_hm(val):
+    """Converte timedelta ou string de tempo para HH:MM."""
+    if not val:
+        return ""
+    
+    if isinstance(val, timedelta):
+        total_seconds = int(val.total_seconds())
+        # Tratar casos negativos se necessário, mas para RAT costuma ser positivo
+        hours = total_seconds // 3600
+        minutes = (total_seconds % 3600) // 60
+        return f"{hours:02d}:{minutes:02d}"
+    
+    # Se for string (ex: "10:30:00"), tenta simplificar para HH:MM
+    if isinstance(val, str) and ':' in val:
+        parts = val.split(':')
+        if len(parts) >= 2:
+            return f"{parts[0].zfill(2)}:{parts[1].zfill(2)}"
+            
+    return str(val)
+
+def format_float_hours(val, precision=2):
+    """Formata valor numérico de horas para string com casas decimais."""
+    try:
+        return f"{float(val):.{precision}f}"
+    except (ValueError, TypeError):
+        return "0.00"
+
+def format_duration_str(hours_float):
+    """Converte horas decimais (ex: 1.5) em string legível (ex: 1h 30m)."""
+    try:
+        h = int(hours_float)
+        m = int((hours_float - h) * 60)
+        return f"{h}h {m}m"
+    except (ValueError, TypeError):
+        return "0h 0m"

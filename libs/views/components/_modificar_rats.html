@@ -1,0 +1,791 @@
+{% if rat %}
+<div class="max-w-5xl mx-auto pb-20">
+    <!-- <header class="mb-8">
+        <div class="flex items-center justify-between">
+            <h1 class="text-3xl font-bold rat-text-primary tracking-tight">Editar RAT</h1>
+            <div class="flex items-center gap-3">
+                <a href="/rat/pdf/{{ rat.id }}?mode=preview" target="_blank"
+                    class="px-3 py-1.5 bg-slate-700/50 hover:bg-slate-700 text-slate-300 hover:text-white rounded-lg text-xs font-bold transition-colors flex items-center gap-1">
+                    <span class="material-symbols-outlined text-[16px]">visibility</span> Prev
+                </a>
+                <a href="/rat/pdf/{{ rat.id }}?mode=download"
+                    class="px-3 py-1.5 bg-slate-700/50 hover:bg-slate-700 text-slate-300 hover:text-white rounded-lg text-xs font-bold transition-colors flex items-center gap-1">
+                    <span class="material-symbols-outlined text-[16px]">download</span> PDF
+                </a>
+                <span class="px-3 py-1 bg-primary/20 text-primary rounded-lg text-sm font-bold">
+                    {{ rat.protocolo }}
+                </span>
+            </div>
+        </div>
+        <p class="rat-text-muted mt-2">Atualize as informações técnicas do relatório.</p>
+    </header> -->
+
+    <div class="p-6 space-y-6">
+        <!-- Info Básica (Read Only) -->
+        <section class="rounded-xl rat-bg-surface border border-slate-200 dark:border-slate-800 p-6 shadow-sm">
+            <h3 class="rat-text-primary text-lg font-bold mb-4 flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary">info</span>
+                Informações do Chamado
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div>
+                    <label class="block text-xs font-medium rat-text-muted mb-1">Cliente</label>
+                    <div class="rat-input p-2 font-medium">
+                        {{ rat.obra_nome }}
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium rat-text-muted mb-1">Solicitante</label>
+                    <div class="rat-input p-2">
+                        {{ rat.solicitante or '-' }}
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium rat-text-muted mb-1">Tipo de
+                        Atividade</label>
+                    <div class="rat-input p-2">
+                        {{ rat.tipo_atividade or '-' }}
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <form id="form-editar-rat" class="space-y-6">
+            <input type="hidden" id="rat-id" value="{{ rat.id }}">
+            <input type="hidden" id="rat-relato-cliente" value="{{ rat.relato_cliente }}">
+
+            <!-- Horas de Serviço -->
+            <section
+                class="rounded-xl rat-bg-surface border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
+                <div
+                    class="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
+                    <div class="flex items-center gap-2">
+                        <span class="material-symbols-outlined text-primary">schedule</span>
+                        <h3 class="rat-text-primary text-lg font-bold">Horas de Serviço</h3>
+                    </div>
+                    <button type="button" id="btn-adicionar-hora"
+                        class="text-xs font-bold text-primary hover:text-white bg-primary/10 hover:bg-primary/20 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1">
+                        <span class="material-symbols-outlined text-sm">add</span> Adicionar
+                    </button>
+                </div>
+                <div class="rat-bg-surface overflow-x-auto">
+                    <table class="rat-bg-surface w-full text-left border-collapse">
+                        <thead class="rat-bg-surface">
+                            <tr class="dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800">
+                                <th class="p-4 text-xs font-medium rat-text-muted uppercase tracking-wider">
+                                    Data
+                                </th>
+                                <th class="p-4 text-xs font-medium rat-text-muted uppercase tracking-wider">
+                                    Início
+                                </th>
+                                <th class="p-4 text-xs font-medium rat-text-muted uppercase tracking-wider">
+                                    Fim
+                                </th>
+                                <th class="p-4 text-xs font-medium rat-text-muted uppercase tracking-wider">
+                                    Executante
+                                </th>
+                                <th class="p-4 text-xs font-medium text-text-secondary uppercase tracking-wider w-10">
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbody-horas" class="divide-y divide-slate-200 dark:divide-slate-800">
+                            {% for svc in servicos %}
+                            <tr class="group hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-colors">
+                                <td class="p-3"><input type="date" class="rat-input text-sm w-full h-9 px-3"
+                                        value="{{ svc.data_servico }}" />
+                                </td>
+                                <td class="p-3"><input type="time" class="rat-input text-sm w-full h-9 px-3"
+                                        value="{{ svc.hora_inicio }}" onchange="calcularTotalHoras()" />
+                                </td>
+                                <td class="p-3"><input type="time" class="rat-input text-sm w-full h-9 px-3"
+                                        value="{{ svc.hora_fim }}" onchange="calcularTotalHoras()" />
+                                </td>
+                                <td class="p-3">
+                                    <select class="rat-input rat-select text-sm w-full h-9 px-3">
+                                        <option value="" disabled selected>Selecione...</option>
+                                        {% for user in usuarios %}
+                                        <option value="{{ user.id }}" {% if user.id==svc.executante_id %}selected{%
+                                            endif %}>
+                                            {{ user.nome }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </td>
+                                <td class="p-3 text-center">
+                                    <button type="button" class="rat-text-muted hover:text-red-500 transition-colors"
+                                        onclick="removerLinha(this)">
+                                        <span class="material-symbols-outlined text-lg">delete</span>
+                                    </button>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <!-- Empty Row Template if no services -->
+                            <tr class="group hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-colors">
+                                <td class="p-3"><input type="date" class="rat-input text-sm w-full h-9 px-3" />
+                                </td>
+                                <td class="p-3"><input type="time" class="rat-input text-sm w-full h-9 px-3"
+                                        onchange="calcularTotalHoras()" /></td>
+                                <td class="p-3"><input type="time" class="rat-input text-sm w-full h-9 px-3"
+                                        onchange="calcularTotalHoras()" /></td>
+                                <td class="p-3">
+                                    <select class="rat-input rat-select text-sm w-full h-9 px-3">
+                                        <option value="" disabled selected>Selecione...</option>
+                                        {% for user in usuarios %}
+                                        <option value="{{ user.id }}">{{ user.nome }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </td>
+                                <td class="p-3 text-center">
+                                    <button type="button" class="rat-text-muted hover:text-red-500 transition-colors"
+                                        onclick="removerLinha(this)">
+                                        <span class="material-symbols-outlined text-lg">delete</span>
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                        <tfoot>
+                            <tr class="dark:bg-slate-800/50 border-t border-slate-200 dark:border-slate-800">
+                                <td colspan="2" class="p-4 text-left">
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-sm font-medium rat-text-muted">Deslocamento:</span>
+                                        <input id="input-deslocamento" type="text"
+                                            class="rat-input text-sm h-9 px-3 w-48" placeholder="Ex: 150km ou Remoto"
+                                            value="{{ rat.deslocamento or '' }}">
+                                    </div>
+                                </td>
+                                <td class="p-4 text-right text-sm font-bold rat-text-primary">Total de Horas:</td>
+                                <td class="p-4 text-left text-sm font-bold text-primary" id="total-horas-display">0.00
+                                </td>
+                                <td></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Materiais Utilizados -->
+            <section
+                class="rounded-xl rat-bg-surface border border-slate-200 dark:border-slate-800 overflow-visible shadow-sm">
+                <div
+                    class="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
+                    <div class="flex items-center gap-2">
+                        <span class="material-symbols-outlined text-primary">inventory_2</span>
+                        <h3 class="rat-text-primary text-lg font-bold">Materiais Utilizados</h3>
+                    </div>
+                    <button type="button" id="btn-adicionar-material"
+                        class="text-xs font-bold text-primary hover:text-white bg-primary/10 hover:bg-primary/20 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1">
+                        <span class="material-symbols-outlined text-sm">add</span> Adicionar Material
+                    </button>
+                </div>
+                <div class="overflow-visible">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800">
+                                <th class="p-4 text-xs font-medium text-text-secondary uppercase tracking-wider w-24">
+                                    Cód.</th>
+                                <th class="p-4 text-xs font-medium text-text-secondary uppercase tracking-wider">
+                                    Descrição</th>
+                                <th class="p-4 text-xs font-medium text-text-secondary uppercase tracking-wider">
+                                    Fabricante</th>
+                                <th class="p-4 text-xs font-medium text-text-secondary uppercase tracking-wider w-20">
+                                    Qtd</th>
+                                <th class="p-4 text-xs font-medium text-text-secondary uppercase tracking-wider w-24">
+                                    Unidade</th>
+                                <th class="p-4 text-xs font-medium text-text-secondary uppercase tracking-wider w-10">
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbody-materiais" class="divide-y divide-slate-200 dark:divide-slate-800">
+                            {% for mat in materiais %}
+                            <tr class="group hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-colors relative">
+                                <td class="p-3"><input class="rat-input text-sm w-full h-9 px-3 input-codigo"
+                                        placeholder="SKU" type="text" value="{{ mat.codigo_engesep or '' }}" readonly />
+                                </td>
+                                <td class="p-3 relative">
+                                    <input class="rat-input text-sm w-full h-9 px-3 input-descricao"
+                                        placeholder="Buscar produto..." type="text" autocomplete="off"
+                                        oninput="buscarProduto(this)" value="{{ mat.descricao or '' }}" />
+                                    <div
+                                        class="absolute top-11 left-0 right-0 rat-bg-surface border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl z-50 hidden results-container max-h-60 overflow-y-auto">
+                                    </div>
+                                </td>
+                                <td class="p-3"><input class="rat-input text-sm w-full h-9 px-3 input-fabricante"
+                                        placeholder="Marca" type="text" value="{{ mat.fabricante or '' }}" readonly />
+                                </td>
+                                <td class="p-3"><input class="rat-input text-sm w-full h-9 px-3 text-center input-qtd"
+                                        type="number" value="{{ mat.quantidade or 1 }}" step="0.01" /></td>
+                                <td class="p-3">
+                                    <input class="rat-input text-sm w-full h-9 px-2 input-unidade" type="text"
+                                        value="{{ mat.unidade or 'UN' }}" readonly />
+                                </td>
+                                <td class="p-3 text-center">
+                                    <button type="button" class="rat-text-muted hover:text-red-500 transition-colors"
+                                        onclick="removerLinhaMaterial(this)">
+                                        <span class="material-symbols-outlined text-lg">delete</span>
+                                    </button>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr class="group hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-colors relative">
+                                <td class="p-3"><input class="rat-input text-sm w-full h-9 px-3 input-codigo"
+                                        placeholder="SKU" type="text" readonly /></td>
+                                <td class="p-3 relative">
+                                    <input class="rat-input text-sm w-full h-9 px-3 input-descricao"
+                                        placeholder="Buscar produto..." type="text" autocomplete="off"
+                                        oninput="buscarProduto(this)" />
+                                    <div
+                                        class="absolute top-11 left-0 right-0 rat-bg-surface border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl z-50 hidden results-container max-h-60 overflow-y-auto">
+                                    </div>
+                                </td>
+                                <td class="p-3"><input class="rat-input text-sm w-full h-9 px-3 input-fabricante"
+                                        placeholder="Marca" type="text" readonly /></td>
+                                <td class="p-3"><input class="rat-input text-sm w-full h-9 px-3 text-center input-qtd"
+                                        type="number" value="1" step="0.01" /></td>
+                                <td class="p-3">
+                                    <input class="rat-input text-sm w-full h-9 px-2 input-unidade" type="text"
+                                        readonly />
+                                </td>
+                                <td class="p-3 text-center">
+                                    <button type="button" class="rat-text-muted hover:text-red-500 transition-colors"
+                                        onclick="removerLinhaMaterial(this)">
+                                        <span class="material-symbols-outlined text-lg">delete</span>
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Relatório Técnico -->
+            <section
+                class="rounded-xl rat-bg-surface border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
+                <div
+                    class="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
+                    <div class="flex items-center gap-2">
+                        <span class="material-symbols-outlined text-primary">article</span>
+                        <h3 class="rat-text-primary text-lg font-bold">Relatório Técnico</h3>
+                    </div>
+                    <button type="button" onclick="gerarRelatorioIA()" id="btn-ia-gerar"
+                        class="text-xs font-bold text-white bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 px-3 py-1.5 rounded-lg transition-all shadow-md flex items-center gap-1 group">
+                        <span class="material-symbols-outlined text-sm group-hover:animate-pulse">auto_awesome</span>
+                        Preencher com IA
+                    </button>
+                </div>
+                <div class="p-6 grid grid-cols-1 gap-6">
+                    <label class="flex flex-col gap-2">
+                        <span class="text-sm font-medium rat-text-muted">Descrição das Atividades
+                            Realizadas</span>
+                        <textarea id="txt-descricao"
+                            class="w-full rat-input rounded-xl p-4 resize-none placeholder-slate-400"
+                            placeholder="Detalhamento técnico..."
+                            rows="6">{{ rat.descricao_atividades or '' }}</textarea>
+                    </label>
+                    <label class="flex flex-col gap-2">
+                        <span class="text-sm font-medium rat-text-muted">Conclusão e Pendências</span>
+                        <textarea id="txt-conclusao"
+                            class="w-full rat-input rounded-xl p-4 resize-none placeholder-slate-400"
+                            rows="4">{{ rat.conclusao or '' }}</textarea>
+                    </label>
+                </div>
+            </section>
+
+            <!-- Fotos e Assinaturas -->
+            <!-- Nota: Assinaturas não serão editáveis aqui por simplicidade e integridade, salvo se necessário -->
+            <section
+                class="rounded-xl rat-bg-surface border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
+                <div
+                    class="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
+                    <div class="flex items-center gap-2">
+                        <span class="material-symbols-outlined text-primary">photo_camera</span>
+                        <h3 class="rat-text-primary text-lg font-bold">Fotos & Assinaturas</h3>
+                    </div>
+                </div>
+                <div class="p-6">
+                    <!-- Upload Area -->
+                    <div id="dropzone"
+                        class="border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-xl rat-bg-main p-8 text-center hover:border-primary transition-colors cursor-pointer group mb-6 relative">
+                        <input type="file" multiple accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer"
+                            id="file-input" onchange="handleFileSelect(event)">
+                        <div class="pointer-events-none">
+                            <span
+                                class="material-symbols-outlined text-4xl rat-text-muted group-hover:text-primary transition-colors mb-2">cloud_upload</span>
+                            <p class="text-sm rat-text-muted group-hover:rat-text-primary transition-colors">
+                                Arraste fotos aqui ou <span class="text-primary font-bold">clique para selecionar</span>
+                            </p>
+                            <p class="text-xs rat-text-muted mt-1">PNG, JPG até 5MB</p>
+                        </div>
+                    </div>
+
+                    <!-- Gallery Grid -->
+                    <div id="gallery" class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        {% for foto in fotos %}
+                        <div
+                            class="relative group aspect-square rat-bg-main rounded-lg overflow-hidden border border-slate-200 dark:border-slate-800">
+                            <img src="{{ foto.caminho_arquivo }}" class="w-full h-full object-cover">
+                            <div class="absolute inset-x-0 bottom-0 bg-black/60 p-2 backdrop-blur-sm">
+                                <input type="text" value="{{ foto.legenda or '' }}"
+                                    class="w-full bg-transparent border-none text-xs text-white p-0 placeholder:text-gray-400 focus:ring-0 existing-caption"
+                                    placeholder="Legenda...">
+                            </div>
+                            <button type="button" onclick="marcarComoDeletada(this, {{ foto.id }})"
+                                class="absolute top-2 right-2 p-1 bg-red-500/80 text-white rounded opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600">
+                                <span class="material-symbols-outlined text-sm">delete</span>
+                            </button>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <!-- Hidden input to store deleted photo IDs -->
+                    <input type="hidden" id="deleted-photos" value="">
+                </div>
+            </section>
+
+            <!-- Actions -->
+            <div class="flex items-center justify-end gap-4">
+                <a href="/"
+                    class="px-6 py-3 rounded-xl border border-slate-300 dark:border-slate-700 rat-text-muted font-medium hover:rat-text-primary hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                    Cancelar
+                </a>
+                <button type="button" onclick="salvarAlteracoes()"
+                    class="px-8 py-3 rounded-xl bg-primary hover:bg-blue-600 text-white font-bold shadow-lg shadow-primary/20 transition-all transform hover:scale-105">
+                    Salvar Alterações
+                </button>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+<script>
+    // Inicializar total de horas
+    document.addEventListener('DOMContentLoaded', () => {
+        calcularTotalHoras();
+    });
+
+    // -------- Gerenciamento de Horas --------
+    document.getElementById('btn-adicionar-hora').addEventListener('click', function () {
+        const tbody = document.getElementById('tbody-horas');
+        const novaLinha = tbody.rows[0].cloneNode(true);
+        // Limpar inputs e selects
+        novaLinha.querySelectorAll('input').forEach(input => input.value = '');
+        novaLinha.querySelectorAll('select').forEach(select => select.selectedIndex = 0);
+        tbody.appendChild(novaLinha);
+    });
+
+    function removerLinha(btn) {
+        const row = btn.closest('tr');
+        const tbody = document.getElementById('tbody-horas');
+        if (tbody.rows.length > 1) {
+            row.remove();
+        } else {
+            row.querySelectorAll('input').forEach(input => input.value = '');
+        }
+        calcularTotalHoras();
+    }
+
+    function calcularTotalHoras() {
+        let totalMinutos = 0;
+        document.querySelectorAll('#tbody-horas tr').forEach(row => {
+            const hInicio = row.cells[1].querySelector('input').value;
+            const hFim = row.cells[2].querySelector('input').value; // Correção índice (Date is 0, Start 1, End 2)
+
+            if (hInicio && hFim) {
+                const [h1, m1] = hInicio.split(':').map(Number);
+                const [h2, m2] = hFim.split(':').map(Number);
+
+                let minInicio = h1 * 60 + m1;
+                let minFim = h2 * 60 + m2;
+
+                let diff = minFim - minInicio;
+                if (diff < 0) diff += 24 * 60; // Passou da meia noite
+
+                totalMinutos += diff;
+            }
+        });
+        const horas = Math.floor(totalMinutos / 60);
+        const minutos = totalMinutos % 60;
+        document.getElementById('total-horas-display').textContent =
+            `${horas.toString().padStart(2, '0')}:${minutos.toString().padStart(2, '0')}h`;
+    }
+
+    // -------- Gerenciamento de Materiais --------
+    // (Mesma lógica do _criarrat.html + Autocomplete)
+
+    document.getElementById('btn-adicionar-material').addEventListener('click', function () {
+        const tbody = document.getElementById('tbody-materiais');
+        const novaLinha = tbody.rows[0].cloneNode(true);
+
+        // Limpar values
+        novaLinha.querySelectorAll('input').forEach(i => {
+            if (i.type === 'number') i.value = 1;
+            else i.value = '';
+        });
+
+        // Reset results container
+        const resultsContainer = novaLinha.querySelector('.results-container');
+        if (resultsContainer) {
+            resultsContainer.innerHTML = '';
+            resultsContainer.classList.add('hidden');
+        }
+
+        tbody.appendChild(novaLinha);
+    });
+
+    function removerLinhaMaterial(btn) {
+        const row = btn.closest('tr');
+        const tbody = document.getElementById('tbody-materiais');
+        if (tbody.rows.length > 1) row.remove();
+        else {
+            row.querySelectorAll('input').forEach(i => {
+                if (i.type === 'number') i.value = 1;
+                else i.value = '';
+            });
+        }
+    }
+
+    // Logica Autocomplete (Duplicated from _criarrat.html for simple autonomy)
+    let searchTimeout = null;
+
+    async function buscarProduto(input) {
+        const tr = input.closest('tr');
+        const resultsDiv = tr.querySelector('.results-container');
+        const query = input.value;
+
+        if (query.length < 2) {
+            resultsDiv.classList.add('hidden');
+            return;
+        }
+
+        if (searchTimeout) clearTimeout(searchTimeout);
+
+        searchTimeout = setTimeout(async () => {
+            try {
+                const response = await fetch(`/produtos/buscar?q=${encodeURIComponent(query)}`);
+                const data = await response.json();
+
+                resultsDiv.innerHTML = '';
+                if (data.results && data.results.length > 0) {
+                    data.results.forEach(prod => {
+                        const div = document.createElement('div');
+                        div.className = "px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer text-sm rat-text-primary";
+                        div.innerHTML = `
+                            <div class="font-bold rat-text-primary">${prod.codigo_produto}</div>
+                            <div class="text-xs rat-text-muted">${prod.descricao}</div>
+                        `;
+                        div.onclick = () => selecionarProduto(tr, prod);
+                        resultsDiv.appendChild(div);
+                    });
+                    resultsDiv.classList.remove('hidden');
+                } else {
+                    resultsDiv.innerHTML = '<div class="px-3 py-2 text-xs text-gray-500">Nenhum produto encontrado.</div>';
+                    resultsDiv.classList.remove('hidden');
+                }
+            } catch (error) {
+                console.error('Erro:', error);
+            }
+        }, 300);
+    }
+
+    function selecionarProduto(tr, produto) {
+        tr.querySelector('.input-codigo').value = produto.codigo_produto || '';
+        tr.querySelector('.input-descricao').value = produto.descricao || '';
+        tr.querySelector('.input-fabricante').value = produto.marca || '';
+        tr.querySelector('.input-unidade').value = produto.unidade || 'UN';
+        tr.querySelector('.results-container').classList.add('hidden');
+    }
+
+    document.addEventListener('click', function (e) {
+        if (!e.target.closest('.results-container') && !e.target.closest('.input-descricao')) {
+            document.querySelectorAll('.results-container').forEach(el => el.classList.add('hidden'));
+        }
+    });
+
+    // -------- Gerenciamento de Fotos (Upload + Delete) --------
+    const uploadedFiles = []; // Guarda novos arquivos
+    const deletedPhotoIds = []; // Guarda IDs de fotos existentes removidas
+
+    function handleFileSelect(evt) {
+        const files = Array.from(evt.target.files);
+        if (!files.length) return;
+
+        const gallery = document.getElementById('gallery');
+
+        files.forEach(file => {
+            uploadedFiles.push(file); // Store file object
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const div = document.createElement('div');
+                div.className = "relative group aspect-square rat-bg-main rounded-lg overflow-hidden border border-slate-200 dark:border-slate-800";
+                div.innerHTML = `
+                    <img src="${e.target.result}" class="w-full h-full object-cover">
+                    <div class="absolute inset-x-0 bottom-0 bg-black/60 p-2 backdrop-blur-sm">
+                        <input type="text" class="w-full bg-transparent border-none text-xs text-white p-0 placeholder:text-gray-400 focus:ring-0 new-caption"
+                            placeholder="Legenda...">
+                    </div>
+                    <button type="button" onclick="removerNovaFoto(this, '${file.name}')" 
+                        class="absolute top-2 right-2 p-1 bg-red-500/80 text-white rounded opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600">
+                        <span class="material-symbols-outlined text-sm">delete</span>
+                    </button>
+                `;
+                gallery.appendChild(div);
+            }
+            reader.readAsDataURL(file);
+        });
+    }
+
+    function removerNovaFoto(btn, fileName) {
+        const idx = uploadedFiles.findIndex(f => f.name === fileName);
+        if (idx > -1) uploadedFiles.splice(idx, 1);
+        btn.closest('div').remove();
+    }
+
+    function marcarComoDeletada(btn, id) {
+        deletedPhotoIds.push(id);
+        btn.closest('div').classList.add('opacity-50', 'pointer-events-none');
+        btn.closest('div').style.border = '2px solid red';
+    }
+
+    // -------- Salvar Alterações --------
+    async function salvarAlteracoes() {
+        const ratId = document.getElementById('rat-id').value;
+        const descricao = document.getElementById('txt-descricao').value;
+        const conclusao = document.getElementById('txt-conclusao').value;
+
+        // Coleta de Horas
+        const horas = [];
+        document.querySelectorAll('#tbody-horas tr').forEach(row => {
+            const data = row.cells[0].querySelector('input').value;
+            const inicio = row.cells[1].querySelector('input').value;
+            const fim = row.cells[2].querySelector('input').value;
+            const executanteSelect = row.cells[3].querySelector('select');
+            const executante = executanteSelect ? executanteSelect.value : '';
+
+            if (data && inicio && fim) {
+                horas.push({ data, inicio, fim, executante });
+            }
+        });
+
+        // Coleta de Materiais
+        const materiais = [];
+        document.querySelectorAll('#tbody-materiais tr').forEach(row => {
+            const codigo = row.querySelector('.input-codigo').value;
+            const desc = row.querySelector('.input-descricao').value;
+            const fab = row.querySelector('.input-fabricante').value;
+            const qtd = row.querySelector('.input-qtd').value;
+            const un = row.querySelector('.input-unidade').value;
+
+            if (desc) {
+                materiais.push({ codigo, descricao: desc, fabricante: fab, quantidade: qtd, unidade: un });
+            }
+        });
+
+        // Coleta legendas das fotos existentes que NÃO foram deletadas
+        const existingPhotosData = [];
+        document.querySelectorAll('#gallery .relative').forEach(div => {
+            // Se não for novo (sem img src data uri) e não deletado
+            const img = div.querySelector('img');
+            const captionInput = div.querySelector('.existing-caption');
+            const deleteBtn = div.querySelector('button[onclick^="marcarComoDeletada"]');
+
+            if (captionInput && deleteBtn) { // É uma foto existente
+                // Extrair ID do onclick="marcarComoDeletada(this, 123)"
+                const idMatch = deleteBtn.getAttribute('onclick').match(/(\d+)\)/);
+                if (idMatch) {
+                    const id = parseInt(idMatch[1]);
+                    if (!deletedPhotoIds.includes(id)) {
+                        existingPhotosData.push({ id: id, legenda: captionInput.value });
+                    }
+                }
+            }
+        });
+
+        // Coleta legendas novas (ordem sincrônica com uploadedFiles)
+        const newCaptions = [];
+        document.querySelectorAll('#gallery .relative').forEach(div => {
+            const cap = div.querySelector('.new-caption');
+            if (cap) newCaptions.push(cap.value);
+        });
+
+        // Criação do Payload
+        // Como temos arquivos, vamos usar FormData se fosse multipart, mas aqui o backend espera JSON e os arquivos separados? 
+        // Não, salvar RAT original era JSON com base64? 
+        // Vamos ver ControllerRat.py original: salvarrat usa request.json e base64 para assinaturas, mas upload_foto era separado?
+        // Mas aqui queremos salvar tudo de uma vez.
+        // Opção: Enviar JSON com os dados e depois fazer upload das fotos novas, ou enviar tudo JSON com base64 das fotos.
+
+        // Vamos usar abordagem mista: enviar dados JSON primeiro, depois uploads se necessário, ou enviar JSON com base64.
+        // Dado que fotos podem ser grandes, base64 aumenta 33%. Melhor FormData se possível, ou JSON.
+        // Vamos usar Base64 para as novas fotos para simplificar compatibilidade com o que já foi feito (assinaturas).
+
+        const newPhotosBase64 = await Promise.all(uploadedFiles.map(file => {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = error => reject(error);
+            });
+        }));
+
+        const novasFotosPayload = newPhotosBase64.map((b64, idx) => ({
+            conteudo: b64,
+            legenda: newCaptions[idx] || ''
+        }));
+
+        const payload = {
+            rat_id: ratId,
+            descricao_atividades: descricao,
+            conclusao: conclusao,
+            deslocamento: document.getElementById('input-deslocamento').value,
+            servicos: horas,
+            materiais: materiais,
+            fotos_existentes: existingPhotosData, // Para atualizar legendas
+            ids_fotos_removidas: deletedPhotoIds,
+            novas_fotos: novasFotosPayload
+        };
+
+        try {
+            const response = await fetch('/rat/atualizar', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (response.ok) {
+                customAlert('Sucesso', 'RAT atualizado com sucesso!', 'success', () => {
+                    window.location.href = '/rats';
+                });
+            } else {
+                const err = await response.json();
+                customAlert('Erro', 'Erro ao atualizar: ' + (err.message || 'Erro desconhecido'), 'error');
+            }
+        } catch (error) {
+            console.error(error);
+            customAlert('Erro', 'Erro de conexão ao salvar.', 'error');
+        }
+    }
+
+    // -------- Integração IA Socket.IO --------
+
+    // Variável para guardar referência ao socket
+    let socketQA = null;
+
+    document.addEventListener("DOMContentLoaded", () => {
+        // Aguarda um pequeno delay para garantir que o script do base.html (rodapé) rodou
+        // Ou verifica diretamente se window.socket já existe.
+        const initSocket = () => {
+            if (window.socket) {
+                socketQA = window.socket;
+                console.log("✅ Socket IA vinculado com sucesso (Edit mode).");
+
+                // Configura listeners
+                socketQA.on('relatorio_gerado_sucesso', (data) => {
+                    const btn = document.getElementById('btn-ia-gerar');
+                    if (btn) {
+                        btn.disabled = false;
+                        btn.innerHTML = '<span class="material-symbols-outlined text-sm group-hover:animate-pulse">auto_awesome</span> Preencher com IA';
+                    }
+
+                    const txtDesc = document.getElementById('txt-descricao');
+                    const txtConclusao = document.getElementById('txt-conclusao');
+
+                    if (txtDesc && data.descricao) txtDesc.value = data.descricao;
+                    if (txtConclusao && data.conclusao) txtConclusao.value = data.conclusao;
+                });
+
+                socketQA.on('erro_ia', (data) => {
+                    const btn = document.getElementById('btn-ia-gerar');
+                    if (btn) {
+                        btn.disabled = false;
+                        btn.innerHTML = '<span class="material-symbols-outlined text-sm">error</span> Erro';
+                    }
+                    customAlert('Erro IA', data.message, 'error');
+                });
+
+            } else {
+                console.warn("Socket.IO ainda não disponível. Retentando em 500ms...");
+                setTimeout(initSocket, 500);
+            }
+        };
+
+        // Inicia verificação
+        initSocket();
+    });
+
+    function gerarRelatorioIA() {
+        if (!socketQA) {
+            customAlert('Erro', "Conexão Socket.IO não inicializada. Tente recarregar a página.", 'error');
+            return;
+        }
+
+        const btn = document.getElementById('btn-ia-gerar');
+        const originalText = '<span class="material-symbols-outlined text-sm group-hover:animate-pulse">auto_awesome</span> Preencher com IA';
+
+        const relatoInput = document.getElementById('rat-relato-cliente');
+        const relato = relatoInput ? relatoInput.value : '';
+        const deslocamento = document.getElementById('input-deslocamento') ? document.getElementById('input-deslocamento').value : '';
+
+        // Coleta de Horas
+        const horas = [];
+        document.querySelectorAll('#tbody-horas tr').forEach(row => {
+            const data = row.querySelector('input[type="date"]')?.value;
+            const inpsTime = row.querySelectorAll('input[type="time"]');
+
+            if (data && inpsTime.length >= 2) {
+                // Try to get executante
+                const execSelect = row.cells[3].querySelector('select');
+                // Se não for select, talvez seja texto? Em modificar é select.
+                const executante = execSelect ? execSelect.options[execSelect.selectedIndex].text : '';
+
+                horas.push({
+                    data: data,
+                    inicio: inpsTime[0].value,
+                    fim: inpsTime[1].value,
+                    executante: executante,
+                    observacao: ''
+                });
+            }
+        });
+
+        // Coleta de Materiais
+        const materiais = [];
+        document.querySelectorAll('#tbody-materiais tr').forEach(row => {
+            const desc = row.querySelector('.input-descricao').value;
+            const qtd = row.querySelector('.input-qtd').value;
+            const un = row.querySelector('.input-unidade').value;
+
+            if (desc) {
+                materiais.push({
+                    descricao: desc,
+                    quantidade: qtd,
+                    unidade: un
+                });
+            }
+        });
+
+        btn.disabled = true;
+        btn.innerHTML = '<span class="material-symbols-outlined text-sm animate-spin">refresh</span> Gerando...';
+
+        socketQA.emit('gerar_relatorio_ia', {
+            relato_cliente: relato,
+            tipo_atividade: 'Manutenção',
+            deslocamento: deslocamento,
+            servicos: horas,
+            materiais: materiais
+        });
+
+        setTimeout(() => {
+            if (btn.disabled) {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            }
+        }, 20000);
+    }
+</script>
+{% else %}
+<div class="flex items-center justify-center p-20 text-[var(--color-text-muted)]">
+    <p>Selecione um RAT para editar ou retorne à página inicial.</p>
+</div>
+{% endif %}

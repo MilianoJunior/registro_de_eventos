@@ -1,29 +1,33 @@
 <!DOCTYPE html>
 <html class="dark" lang="pt-BR">
+
 <head>
-  <meta charset="utf-8"/>
-  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-  <title>Dashboard de Ocorrências</title>
-  <!-- Tailwind compilado offline -->
-   <!-- <link rel="stylesheet" href="https://cdn.tailwindcss.com?plugins=forms,typography,container-queries"> -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/tailwind.min.css') }}">
-  <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='imgs/engegom.ico') }}">
-  <script defer="" src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Dashboard de Ocorrências</title>
+    <!-- Tailwind compilado offline -->
+    <!-- <link rel="stylesheet" href="https://cdn.tailwindcss.com?plugins=forms,typography,container-queries"> -->
+    <!-- <link rel="stylesheet" href="https://unpkg.com/tailwindcss@^2.2.19/dist/tailwind.min.css"> -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/tailwind.min.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <!-- <link rel="stylesheet" href="{{ url_for('static', filename='css/tailwind.min.css') }}"> -->
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='imgs/engegom.ico') }}">
+    <!-- <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script> -->
+    <script defer="" src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
+
 <body class="font-sans">
     <div class="flex h-screen bg-background">
         {% include 'components/_sidebar.html' %}
-        <button
-          id="sidebar-toggle-open"
-          type="button"
-          class="hidden fixed top-4 left-4 z-50 p-2 rounded-lg bg-surface border border-slate-200 dark:border-slate-800 text-text-primary hover:bg-background-alt transition"
-          aria-label="Abrir menu lateral"
-          title="Abrir menu"
-        >
-          <span class="material-icons text-base">menu</span>
+        <button id="sidebar-toggle-open" type="button"
+            class="hidden fixed top-4 left-4 z-50 p-2 rounded-lg bg-surface border border-slate-200 dark:border-slate-800 text-text-primary hover:bg-background-alt transition"
+            aria-label="Abrir menu lateral" title="Abrir menu">
+            <span class="material-icons text-base">menu</span>
         </button>
         <div id="app-main" class="flex-1 overflow-y-auto transition-all duration-200">
             {% block content %}
@@ -44,15 +48,15 @@
             console.log('   Status: ✅ Pronto para testar leituras');
             console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
         });
-        
+
         socket.on('disconnect', () => {
             console.warn('⚠️ Socket.IO desconectado');
         });
-        
+
         socket.on('connect_error', (error) => {
             console.error('❌ Erro ao conectar Socket.IO:', error);
         });
-        
+
         socket.on('file_changed', (data) => {
             console.log('Arquivo modificado:', data.path);
             location.reload();
@@ -70,7 +74,7 @@
                 }
             });
         }
-        
+
         if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
             document.documentElement.classList.add('dark')
         } else {
@@ -78,7 +82,7 @@
         }
 
         // Sidebar (toggle minimalista)
-        (function() {
+        (function () {
             const STORAGE_KEY = 'sidebar_collapsed';
             const sidebar = document.getElementById('sidebar');
             const btnClose = document.getElementById('sidebar-toggle-close');
@@ -91,11 +95,11 @@
                 sidebar.classList.toggle('hidden', isCollapsed);
                 if (btnOpen) btnOpen.classList.toggle('hidden', !isCollapsed);
                 if (main) main.classList.toggle('pl-14', isCollapsed);
-                try { localStorage.setItem(STORAGE_KEY, isCollapsed ? '1' : '0'); } catch {}
+                try { localStorage.setItem(STORAGE_KEY, isCollapsed ? '1' : '0'); } catch { }
             }
 
             let collapsed = false;
-            try { collapsed = localStorage.getItem(STORAGE_KEY) === '1'; } catch {}
+            try { collapsed = localStorage.getItem(STORAGE_KEY) === '1'; } catch { }
             setCollapsed(collapsed);
 
             if (btnClose) btnClose.addEventListener('click', () => setCollapsed(true));
@@ -103,4 +107,5 @@
         })();
     </script>
 </body>
+
 </html>

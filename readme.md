@@ -104,6 +104,10 @@ Para cada `op_usina` e cada Unidade Geradora (UG):
 
 **Descrição:** Página para registro e gerenciamento de ocorrências operacionais, permitindo criar novos eventos, visualizar histórico, adicionar anexos e acompanhar o status das ocorrências.
 
+### 🧾 Página - RAT
+
+**Descrição:** Página para criação, edição e geração de PDF do Relatório de Assistência Técnica (RAT), incluindo serviços executados, materiais aplicados, fotos e assinaturas. O RAT é criado após a equipe ir a campo e concluir a ação.
+
 ### 📊 Página - Análise e Relatórios (desativada por enquanto)
 
 **Descrição:** Página para visualização de análises, métricas e relatórios consolidados das usinas e ocorrências.
@@ -164,6 +168,13 @@ O sistema segue uma arquitetura MVC (Model-View-Controller) organizada da seguin
 
 O sistema utiliza a tabela `op_ocorrencia` para registrar eventos operacionais:
 
+### ✅ Lógica de Operação (Ocorrência → Ação → RAT)
+
+1. **Registro de ocorrência**: operador cria a ocorrência na tela de registro.
+2. **Requer ação urgente**: quando marcado, a ocorrência entra na lista de ações pendentes e exibe botão **Resolver**.
+3. **Resolução operacional**: equipe/operador registra a resolução na aba “Resolver Ocorrência”.
+4. **RAT somente após campo**: o RAT é criado apenas depois da equipe de manutenção ir a campo e concluir a ação.
+
 ```sql
 -- Tabela principal de ocorrências
 op_ocorrencia {
@@ -222,3 +233,4 @@ Para mais detalhes sobre a arquitetura e componentes do sistema:
 - **[🔄 FLOWCHART.md](./FLOWCHART.md)** - Fluxogramas detalhados do projeto
 
 - **[🎨 DESIGN_SYSTEM.md](./DESIGN_SYSTEM.md)** - Sistema de design e componentes UI
+

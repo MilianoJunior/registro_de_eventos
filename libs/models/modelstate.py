@@ -79,6 +79,7 @@ TTL_OCORRENCIAS_SEG = 6 * 60 * 60
 TTL_OCORRENCIAS_REQUER_ACAO_SEG = 30
 REFRESH_OCORRENCIAS_SEG = 60
 MAX_OCORRENCIAS_POR_USINA = 30
+TTL_TEMPERATURAS_SEG = 60
 
 # ============================================================================
 # GERENCIADOR DE DADOS (Data Layer + Cache Global)
@@ -348,6 +349,19 @@ class DadosContexto:
         CacheStore.set('ocorrencias_requer_acao', data, ttl_seconds=TTL_OCORRENCIAS_REQUER_ACAO_SEG)
         return data
 
+    @desempenho
+    def get_temperaturas(self) -> List[Dict]:
+        if self.developer_mode:
+            return []
+        
+        cached = CacheStore.get('temperaturas')
+        if cached is not None:
+            return cached
+        
+        data = self._op_parada.get_temperaturas()
+        CacheStore.set('temperaturas', data, ttl_seconds=TTL_TEMPERATURAS_SEG)
+        return data
+
 # ============================================================================
 # MODELOS DE APRESENTAÇÃO (ViewModels)
 # ============================================================================
@@ -383,6 +397,7 @@ class HomePageViewModel:
     ocorrencias_recentes: List[Dict]
     stats_por_status: Dict[str, int]
     potencia_total_mw: Any = "__"
+    temperaturas: List[Dict] = field(default_factory=list)
 
     @classmethod
     @desempenho
@@ -391,6 +406,7 @@ class HomePageViewModel:
         raw_ocorrencias = ctx.get_ocorrencias_recentes(limit=15)
         kpis_mttr = ctx.get_kpis_mttr()
         real_stats = ctx.get_stats_status()
+        temperaturas = ctx.get_temperaturas()
 
         usinas_objs = []
         for u in raw_usinas:
@@ -402,7 +418,8 @@ class HomePageViewModel:
             usinas=usinas_objs,
             ocorrencias_recentes=raw_ocorrencias,
             stats_por_status=real_stats,
-            potencia_total_mw="__"
+            potencia_total_mw="__",
+            temperaturas=temperaturas
         )
 
 @dataclass
