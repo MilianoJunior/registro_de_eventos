@@ -118,7 +118,7 @@ class OpUsina(BaseReader):
 
 class OpUsuario(BaseReader):
     tabela = "op_usuario"
-    colunas_padrao = ["id", "nome", "email", "perfil", "ativo"]
+    colunas_padrao = ["id", "nome", "email", "perfil","cargo", "assinatura", "ativo"]
     order_padrao = "nome"
 
 class OpOcorrencia(BaseReader):

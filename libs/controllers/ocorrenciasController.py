@@ -49,6 +49,8 @@ class OcorrenciasController:
         """Renderiza a página de ocorrências usando ViewModel"""
         ctx = DadosContexto()
         vm = OcorrenciasPageViewModel.carregar(ctx)
+
+        print(vm.usuarios)
         return render_template(
             "ocorrencias.html",
             usinas=vm.usinas,

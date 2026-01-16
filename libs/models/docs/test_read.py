@@ -8,13 +8,19 @@ import time
 load_dotenv()
 
 # --- CONFIGURAÇÃO ---
+# MYSQLHOST=127.0.0.1
+# MYSQLPORT=3306
+# MYSQLUSER=junior
+# MYSQLPASSWORD=Jun654123@
+# MYSQLDATABASE=cog
+
 config = {
     'online': {
-        'user': os.getenv('MYSQLUSER'),
-        'password': os.getenv('MYSQLPASSWORD'),
-        'host': os.getenv('MYSQLHOST'),
-        'database': os.getenv('MYSQLDATABASE'),
-        'port': int(os.getenv('MYSQLPORT', 3306)),
+        'user': 'junior',
+        'password': 'Jun654123@',
+        'host': '100.72.202.107',
+        'database': 'cog',
+        'port': 3306,
         'raise_on_warnings': False
     },
     'offline': {
