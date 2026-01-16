@@ -25,6 +25,38 @@ CONFIG_BANCO = {
     }
 }
 
+def conectar_banco(cfg, nome):
+    try:
+        return mysql.connector.connect(**cfg)
+    except Error as err:
+        print(f"[ERRO] conectar_banco {nome}: {err}")
+        return None
+
+import re
+
+def build_sigla(nome: str) -> str:
+    """
+    Tenta extrair uma sigla curta (3-6 chars) do nome da usina.
+    Exemplos:
+      'CGH-APARECIDA'      -> 'APAR'
+      'PCH-PEDRAS'         -> 'PED'
+      'CGH PICADAS ALTAS'  -> 'PICALT'
+      'CGH HOPPEN'         -> 'HOP'
+    """
+    n = (nome or "").upper()
+    # pega a parte depois de 'CGH'/'PCH' ou o último token
+    partes = re.split(r'[-\s]+', n)
+    # remove prefixos comuns
+    partes = [p for p in partes if p not in ('CGH', 'PCH', 'PCG', 'CGH,')]
+    base = ''.join(partes) if len(partes) > 1 else (partes[-1] if partes else n)
+    # monta uma sigla curta
+    if len(partes) >= 2:
+        # junta 3 primeiras do primeiro e 3 do segundo (ex.: PIC + ALT)
+        s = partes[0][:3] + (partes[1][:3] if len(partes) > 1 else '')
+    else:
+        s = base[:4]
+    return re.sub(r'[^A-Z0-9]', '', s) or 'USI'
+
 inserir_dados = {
     "op_usuario": [
         {
@@ -33,6 +65,14 @@ inserir_dados = {
         "perfil":"operador",
         "cargo":"Técnico em Eletrônica",
         "assinatura":"assets/assinaturas/eduardo.png",
+        "ativo":1
+    },
+    ],
+    "op_usina": [
+        {
+        "nome":"PCH PIRA",
+        "sigla":build_sigla("PCH PIRA"),
+        "timezone":"America/Sao_Paulo",
         "ativo":1
     },
     ],

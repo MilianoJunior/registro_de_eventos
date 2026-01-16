@@ -118,8 +118,7 @@
                         </div>
                         <div class="dashboard-split-content custom-scrollbar">
                             <div class="temp-grid-container">
-                                {% for temperatura in ['test', 'test2', 'test3',
-                                'test4','test5','test6','test7','test8','test9','test10'] %}
+                                {% for temperatura in vm.temperaturas %}
                                 {% include "components/_temperaturas.html" %}
                                 {% endfor %}
                             </div>

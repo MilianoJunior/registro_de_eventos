@@ -32,116 +32,87 @@ config = {
         'raise_on_warnings': False
     }
 }
+config = config['online']
 
-def conectar(cfg, nome):
-    print(f"Conectando ao banco de dados {nome}...")
+def formatar_valor(valor):
+    """Função auxiliar para tratar valores None ou objetos de data na impressão"""
+    if valor is None:
+        return "NULL"
+    return str(valor)
+
+def consultar_banco():
+    conexao = None
+    cursor = None
+    
     try:
-        conn = mysql.connector.connect(**cfg)
-        return conn
+        print("Conectando ao banco de dados...")
+        conexao = mysql.connector.connect(**config)
+        cursor = conexao.cursor()
+
+        # 1. Descobrir quais tabelas existem no banco
+        cursor.execute("SHOW TABLES")
+        tabelas = cursor.fetchall()
+
+        if not tabelas:
+            print("Nenhuma tabela encontrada no banco de dados.")
+            return
+
+        print(f"Foram encontradas {len(tabelas)} tabelas.\n")
+
+        # 2. Percorrer cada tabela e mostrar os dados
+        for tabela in tabelas:
+            nome_tabela = tabela[0]
+            
+            print("=" * 60)
+            print(f" TABELA: {nome_tabela.upper()}")
+            print("=" * 60)
+
+            try:
+                # Seleciona tudo da tabela atual
+                cursor.execute(f"SELECT * FROM {nome_tabela} ORDER BY id DESC LIMIT 10")
+
+                
+                # Pega os nomes das colunas
+                colunas = [desc[0] for desc in cursor.description]
+                registros = cursor.fetchall()
+
+                # Imprime Cabeçalho das Colunas
+                header = " | ".join(colunas)
+                print(f"COLUNAS: {header}")
+                print("-" * 60)
+                cont = 0
+
+                # Imprime Linhas
+                if not registros:
+                    print(" (Tabela vazia)")
+                else:
+                    for row in registros:
+                        cont += 1
+                        print(f"{cont}")
+                        # Converte cada item para string para evitar erro de print
+                        linha_formatada = " | ".join([formatar_valor(item) for item in row])
+                        print(f" {linha_formatada}")
+                        print("-" * 60)
+                print(f"Total de registros: {cont}")
+                print("-" * 60)
+                print("\n") # Pula linha entre tabelas
+
+            except mysql.connector.Error as err:
+                print(f"Erro ao ler tabela {nome_tabela}: {err}")
+
     except mysql.connector.Error as err:
-        print(f"Erro ao conectar no banco {nome}: {err}")
-        return None
-
-def criar_tabelas(conn_online, conn_offline, tabelas):
-    cursor_online = conn_online.cursor()
-    cursor_offline = conn_offline.cursor()
-    
-    print("\n--- Verificando/Criando Tabelas ---")
-    
-    for nome_tabela in tabelas:
-        try:
-            print(f"Obtendo schema para: {nome_tabela}")
-            cursor_online.execute(f"SHOW CREATE TABLE {nome_tabela}")
-            result = cursor_online.fetchone()
-            
-            if result:
-                create_statement = result[1]
-                # Adiciona IF NOT EXISTS para evitar erro se já existir
-                create_statement = create_statement.replace("CREATE TABLE", "CREATE TABLE IF NOT EXISTS")
-                
-                print(f"Criando tabela {nome_tabela} no offline...")
-                cursor_offline.execute(create_statement)
-                conn_offline.commit()
-            else:
-                print(f"Não foi possível obter o schema de {nome_tabela}")
-                
-        except mysql.connector.Error as err:
-            print(f"Erro ao criar/verificar tabela {nome_tabela}: {err}")
-            
-    cursor_online.close()
-    cursor_offline.close()
-
-def copiar_dados():
-    conn_online = conectar(config['online'], 'ONLINE')
-    conn_offline = conectar(config['offline'], 'OFFLINE')
-
-    if not conn_online or not conn_offline:
-        print("Não foi possível estabelecer conexão com ambos os bancos.")
-        return
-
-    # 1. Primeiro garante que as tabelas existem
-    # Ordem importante para respeitar chaves estrangeiras
-    tabelas_projeto = [
-        'op_usina',
-        'op_usuario',
-        'op_ocorrencia',
-        'op_paradas',
-        # 'clientes', # Removido pois deu erro na origem
-    ]
-    
-    criar_tabelas(conn_online, conn_offline, tabelas_projeto)
-
-    cursor_online = conn_online.cursor()
-    cursor_offline = conn_offline.cursor()
-
-    inicio = time.time()
-    print(f"\n--- Iniciando cópia de dados ---")
-
-    for nome_tabela in tabelas_projeto:
-        print("=" * 60)
-        print(f" TABELA: {nome_tabela.upper()}")
-        print("=" * 60)
-
-        try:
-            # Ler do online
-            cursor_online.execute(f"SELECT * FROM {nome_tabela}")
-            colunas = [desc[0] for desc in cursor_online.description]
-            registros = cursor_online.fetchall()
-
-            if not registros:
-                print(f" (Tabela {nome_tabela} vazia no online)")
-            else:
-                print(f" Lendo {len(registros)} registros do online...")
-                
-                # Preparar insert no offline
-                cols_str = ", ".join(colunas)
-                placeholders = ", ".join(["%s"] * len(colunas))
-                # Usando INSERT IGNORE para não duplicar se já existir (pela PK)
-                sql_insert = f"INSERT IGNORE INTO {nome_tabela} ({cols_str}) VALUES ({placeholders})"
-                
-                # Executa em lotes para evitar problemas de memória com tabelas grandes
-                batch_size = 1000
-                for i in range(0, len(registros), batch_size):
-                    batch = registros[i:i + batch_size]
-                    cursor_offline.executemany(sql_insert, batch)
-                    conn_offline.commit()
-                    print(f"  Processados {min(i + batch_size, len(registros))} de {len(registros)} registros...")
-                
-                print(f" Cópia concluída para {nome_tabela}.")
-
-        except mysql.connector.Error as err:
-            print(f"Erro ao processar dados da tabela {nome_tabela}: {err}")
-    
-    fim = time.time()
-    print("\n" + "=" * 60)
-    print(f"Tempo total de execução: {fim - inicio:.2f} segundos")
-    
-    # Fechar conexões
-    if cursor_online: cursor_online.close()
-    if conn_online: conn_online.close()
-    if cursor_offline: cursor_offline.close()
-    if conn_offline: conn_offline.close()
-    print("Conexões encerradas.")
+        if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
+            print("Erro: Usuário ou senha inválidos.")
+        elif err.errno == errorcode.ER_BAD_DB_ERROR:
+            print("Erro: Banco de dados não existe.")
+        else:
+            print(f"Erro de conexão: {err}")
+    finally:
+        if cursor:
+            cursor.close()
+        if conexao and conexao.is_connected():
+            conexao.close()
+            print("Conexão encerrada.")
 
 if __name__ == "__main__":
-    copiar_dados()
+    consultar_banco()

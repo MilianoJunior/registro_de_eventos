@@ -310,6 +310,13 @@ class OpParadas(BaseReader):
         self._cache_dados_brutos[periodo] = data
         return data
 
+    def _get_ultimos_dados_brutos(self, limit: int = 10) -> List[Dict[str, Any]]:
+        """Busca os últimos N snapshots de paradas para montar histórico."""
+        sql = "SELECT timestamp, dados FROM op_paradas ORDER BY id DESC LIMIT %s"
+        data = self._run(sql, (limit,))
+        # Retorna ordenado por tempo crescente para facilitar montagem do histórico
+        return sorted(data, key=lambda x: x['timestamp'])
+
     @desempenho
     def get_indicadores_manutencao(self, periodo: str = 'diario') -> Dict[str, Any]:
         """Calcula MTTR (Tempo médio para reparo) por usina, a partir de snapshots em `op_paradas`."""
@@ -358,191 +365,109 @@ class OpParadas(BaseReader):
             raise Exception(f"Erro em get_indicadores_manutencao: {e}")
 
     def get_temperaturas(self) -> List[Dict[str, Any]]:
-        '''
-            temperaturas.append({
-                'nome'      : nome_ponto,
-                'historico' : dict(hist),                # converte defaultdict→dict p/ evitar referências externas
-                'atual'     : medidas.get('value'),
-                'alarme'    : medidas.get('alarmes'),
-                'trip'      : medidas.get('trip'),
-            })
-        '''
-        if len(self._cache_dados_brutos) == 0:
-            self._get_dados_brutos_periodo('diario')
+        """
+        Retorna lista de sensores de temperatura com histórico recente e risco calculado.
+        Formato:
+        {
+            'nome': 'Usina - Dispositivo - Sensor',
+            'historico': {'HH:MM': valor, ...},
+            'atual': valor_atual,
+            'alarme': valor_alarme,
+            'trip': valor_trip,
+            'risco': 0.0 a 1.0+ (atual/trip)
+        }
+        """
+        try:
+            snapshots = self._get_ultimos_dados_brutos(10)
+        except Exception:
+            snapshots = []
 
-        temperaturas = []
-        lista_snapshots = self._cache_dados_brutos.get('diario', [])
-        import random
-        
-        for d in lista_snapshots:
-            print('snapshot', d)
-            print(' ')
-            dados = self._parse_dados_paradas(d.get("dados"))
-            lista_usinas = dados.get("usinas") or []
+        # Dicionário para agregar dados por sensor
+        # Chave: "Usina|Dispositivo|Sensor"
+        sensores_data = {}
+
+        for snap in snapshots:
+            ts = snap.get("timestamp")
+            if isinstance(ts, str):
+                try:
+                    ts = datetime.fromisoformat(ts)
+                except:
+                    pass
+            
+            hora_formatada = ts.strftime("%H:%M") if hasattr(ts, 'strftime') else str(ts)
+            
+            dados_payload = self._parse_dados_paradas(snap.get("dados"))
+            if not dados_payload:
+                continue
+            
+            # Se o payload for uma string, tenta parsear novamente (caso venha json.dumps(json.dumps(...)))
+            if isinstance(dados_payload, str):
+                 dados_payload = self._parse_dados_paradas(dados_payload)
+
+            lista_usinas = dados_payload.get("usinas") or []
             for usina in lista_usinas:
-                nome = usina.get("nome", "Desconhecida")
-                slug = usina.get("slug", "Desconhecido")
-                print('usina', nome)
-                print(usina)
+                nome_usina = usina.get("nome", "Desconhecida")
                 dispositivos = usina.get("dispositivos") or {}
-                for nome_disp, info in dispositivos.items():
-                    nome_disp = info.get("nome", "Desconhecido")
-                    temperaturas = info.get("temperaturas") or {"Enrolamento Fase A": random.randint(0, 100), "Enrolamento Fase B": random.randint(0, 100), "Enrolamento Fase C": random.randint(0, 100)}
-                    historico = {}
-                    # for nome_sensor, medidas in temperaturas.items():
-                    #     historico[nome_sensor] = medidas.get('historico')
-
-                    
-                    # print('    dispositivo', nome_disp)
-                    # print('  ',info)
-                    # print('¨¨¨¨¨')
                 
-            print('----------------')
-            # for usina in lista_usinas:
-            #     nome_usina = usina.get("nome", "Desconhecida")
-            #     dispositivos = usina.get("dispositivos") or {}
-            #     for nome_disp, info in dispositivos.items():
-            #         sensores_temperaturas = dados[usina][nome_disp]['temperaturas']
-            #         historico = {}
-            #         for nome_sensor, medidas in sensores_temperaturas.items():
-            #             historico[nome_sensor] = medidas.get('historico')
-            #         temperaturas.append({
-            #             'nome'      : f"{nome_usina} - {nome_disp}",
-            #             'atual'     : temp_atual,
-            #             'alarme'    : alarme,
-            #             'trip'      : info.get('trip_temp'),
-            #             'risco'     : 0
-            #         })
-        print('--')
-        print('temperaturas')
-        for i, t in enumerate(temperaturas):
-            print(f'{i}: {t}')
-        print('--')
-        return temperaturas
-'''
-{
-  "usinas": [
-    {
-      "nome": "CGH APARECIDA",
-      "slug": "cghaparecida",
-      "dispositivos": {
-        "UG-01": {
-          "erro": null,
-          "nome": "UG-01",
-          "descricao": "US (sincronizado)",
-          "tempo_leitura": 0.3763909339904785,
-          "potencia_ativa_mw": 334
-        }
-      }
-    },
-    {
-      "nome": "CGH FAE",
-      "slug": "cghfae",
-      "dispositivos": {
-        "UG-01": {
-          "erro": null,
-          "nome": "UG-01",
-          "descricao": "US (sincronizado)",
-          "tempo_leitura": 0.34920620918273926,
-          "potencia_ativa_mw": 529
-        },
-        "UG-02": {
-          "erro": null,
-          "nome": "UG-02",
-          "descricao": "UP (parada)",
-          "tempo_leitura": 0.3497161865234375,
-          "potencia_ativa_mw": 0
-        }
-      }
-    },
-    {
-      "nome": "CGH HOPPEN",
-      "slug": "cghhoppen",
-      "dispositivos": {
-        "UG-01": {
-          "erro": null,
-          "nome": "UG-01",
-          "descricao": "UP (parada)",
-          "tempo_leitura": 0.29269862174987793,
-          "potencia_ativa_mw": 0
-        },
-        "UG-02": {
-          "erro": null,
-          "nome": "UG-02",
-          "descricao": "UP (parada)",
-          "tempo_leitura": 0.2916984558105469,
-          "potencia_ativa_mw": 0
-        }
-      }
-    },
-    {
-      "nome": "CGH PICADAS ALTAS",
-      "slug": "cghpicadasaltas",
-      "dispositivos": {
-        "UG-01": {
-          "erro": null,
-          "nome": "UG-01",
-          "descricao": "UP (parada)",
-          "tempo_leitura": 0.42274904251098633,
-          "potencia_ativa_mw": 0
-        },
-        "UG-02": {
-          "erro": null,
-          "nome": "UG-02",
-          "descricao": "UP (parada)",
-          "tempo_leitura": 0.42274904251098633,
-          "potencia_ativa_mw": 0
-        }
-      }
-    },
-    {
-      "nome": "PCH PEDRAS",
-      "slug": "pchpedras",
-      "dispositivos": {
-        "UG-01": {
-          "erro": null,
-          "nome": "UG-01",
-          "descricao": "US (sincronizado)",
-          "tempo_leitura": 0.3802525997161865,
-          "potencia_ativa_mw": 2597,
-          "temperaturas": {
-            "Enrolamento Fase A": 25,
-            "Enrolamento Fase B": 26,
-            "Enrolamento Fase C": 27,
-            "Manc. Casq. Rad. Guia": 28,
-            "Mancal Comb. Casq": 29,
-            }
-          
-        },
-        "UG-02": {
-          "erro": null,
-          "nome": "UG-02",
-          "descricao": "UP (parada)",
-          "tempo_leitura": 0.3614847660064697,
-          "potencia_ativa_mw": 0
-        }
-      }
-    }
-  ],
-  "success": true,
-  "timestamp": 1763403234.8251688
-}
-temperaturas = [
-    {
-        "nome": "CGH APARECIDA UG-01 - Enrolamento Fase A",
-        "historico": { "13:01": 25, "13:02": 26, "13:03": 27 },
-        "atual": None,
-        "alarme": None,
-        "trip": None,
-        "risco": None
-    },
-    {
-        "nome": "CGH APARECIDA UG-01 - Enrolamento Fase B",
-        "historico": { "13:01": 25, "13:02": 26, "13:03": 27 },
-        "atual": None,
-        "alarme": None,
-        "trip": None,
-        "risco": None
-    },
-]
-'''
+                for nome_disp, info in dispositivos.items():
+                    # O campo 'temperaturas' vem flat: "Sensor value", "Sensor trip", etc.
+                    # Precisamos agrupar.
+                    temps_flat = info.get("temperaturas") or {}
+                    
+                    # Agrupar por nome do sensor
+                    grouped = {}
+                    for k, v in temps_flat.items():
+                        if k.endswith(" value"):
+                            sensor_nome = k[:-6] # remove " value"
+                            grouped.setdefault(sensor_nome, {})["value"] = v
+                        elif k.endswith(" trip"):
+                            sensor_nome = k[:-5] # remove " trip"
+                            grouped.setdefault(sensor_nome, {})["trip"] = v
+                        elif k.endswith(" alarmes"):
+                            sensor_nome = k[:-8] # remove " alarmes"
+                            grouped.setdefault(sensor_nome, {})["alarme"] = v
+
+                    # Processar dados agrupados
+                    for sensor_nome, valores in grouped.items():
+                        chave_unica = f"{nome_usina} {nome_disp} - {sensor_nome}"
+                        
+                        if chave_unica not in sensores_data:
+                            sensores_data[chave_unica] = {
+                                "nome": chave_unica,
+                                "historico": {},
+                                "atual": 0.0,
+                                "alarme": 0.0,
+                                "trip": 0.0,
+                                "risco": 0.0
+                            }
+                        
+                        val_atual = valores.get("value")
+                        if val_atual is not None:
+                            sensores_data[chave_unica]["historico"][hora_formatada] = val_atual
+                            sensores_data[chave_unica]["atual"] = val_atual
+                        
+                        # Atualiza configs (assumindo que podem mudar ou pegando a mais recente)
+                        if "trip" in valores:
+                            sensores_data[chave_unica]["trip"] = valores["trip"]
+                        if "alarme" in valores:
+                            sensores_data[chave_unica]["alarme"] = valores["alarme"]
+
+        # Calcular risco e formatar saída
+        resultado = []
+        for chave, dados in sensores_data.items():
+            trip = dados["trip"] or 0.0
+            atual = dados["atual"] or 0.0
+            
+            # Calcular risco
+            if trip > 0:
+                # O usuário pediu "valor atual / TRIP"
+                dados["risco"] = round(atual / trip, 4)
+            else:
+                dados["risco"] = 0.0
+            
+            resultado.append(dados)
+
+        # Ordenar por risco decrescente
+        resultado.sort(key=lambda x: x["risco"], reverse=True)
+        
+        return resultado

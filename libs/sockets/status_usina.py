@@ -168,16 +168,3 @@ __all__ = [
     "_1_register_status_usina_handler",
 ]
 
-'''
-
-Esses handlers existem para viabilizar a Opção B: room por usina + payload mínimo + sem broadcast global.
-
-Tive que traduzir sua frase para o português brasileiro, mas acredito que o significado é o mesmo.
-
-Esses marcadores ou manipuladores existem para viabilizar a Opção B: execução individual por usina + carregamento mínimo de dados + sem comunicação global.
-
-Qual é o argumento de entrada da função _3_handle_entrar_usina_room?
-Qual é o processamento da função _3_handle_entrar_usina_room?
-Qual é a resposta da função _3_handle_entrar_usina_room?
-
-'''

@@ -43,6 +43,8 @@ STATUS_LABEL_ORDER = [
 
 POTENCIA_LABELS = ["Potência Ativa"]
 
+TEMPERATURA_LABELS = ["Temperatura"]
+
 # -------------------------------------------------------------------
 # CACHE GLOBAL (compartilhado entre thread e socket)
 # -------------------------------------------------------------------
@@ -238,6 +240,7 @@ async def _coletar_async(configuracoes: Dict[str, Any], intervencoes_externas: D
             "descricao": resultado["descricao"],
             "tempo_leitura": resultado["tempo_leitura"],
             "erro": resultado["erro"],
+            "temperaturas": resultado.get("temperaturas"),  # Adiciona temperaturas ao consolidado
         }
     
     return sorted(consolidados.values(), key=lambda item: item["nome"])
@@ -255,7 +258,13 @@ async def _ler_dispositivo(
     
     registradores_status = _extrair_registradores_status(dados_dispositivo)
     registradores_potencia = _extrair_registradores_potencia(dados_dispositivo)
-    registradores_leitura = {**registradores_status, **registradores_potencia}
+    registradores_temperatura = _extrair_registradores_temperatura(dados_dispositivo)
+
+    registradores_leitura = {
+        **registradores_status, 
+        **registradores_potencia, 
+        **registradores_temperatura
+    }
     
     if not registradores_status:
         print(f"[WARN][coletor_core] Sem registradores STATUS: {nome_usina}/{nome_dispositivo}")
@@ -314,10 +323,19 @@ async def _ler_dispositivo(
             descricao_final = "Restrição da concessionária (parada)"
 
     potencia_ativa_mw = _extrair_potencia_ativa(resultado)
+
+    # Extrai valores de temperatura
+    valores_temperatura = {}
+    if registradores_temperatura:
+        for key in registradores_temperatura.keys():
+            val = resultado.get(key)
+            if val is not None:
+                valores_temperatura[key] = val
     
     return _dict_response(
         nome_usina, slug_usina, nome_dispositivo,
-        potencia_ativa_mw or 0.0, descricao_final, tempo, erro
+        potencia_ativa_mw or 0.0, descricao_final, tempo, erro,
+        temperaturas=valores_temperatura
     )
 
 # -------------------------------------------------------------------
@@ -344,6 +362,17 @@ def _extrair_registradores_potencia(dados_dispositivo: Dict[str, Any]) -> Dict[s
         config = leituras.get(label)
         if isinstance(config, list) and len(config) >= 2:
             registradores[label] = config
+    return registradores
+
+def _extrair_registradores_temperatura(dados_dispositivo: Dict[str, Any]) -> Dict[str, Any]:
+    """Filtra apenas registradores de temperatura."""
+    temperaturas = (dados_dispositivo or {}).get("temperaturas") or {}
+    registradores: Dict[str, Any] = {}
+    
+    for nome_ponto, config in temperaturas.items():
+        if isinstance(config, list) and len(config) >= 2:
+            registradores[nome_ponto] = config
+            
     return registradores
 
 def _extrair_potencia_ativa(valores: Optional[Dict[str, Any]]) -> Optional[float]:
@@ -383,6 +412,7 @@ def _dict_response(
     descricao: str,
     tempo_leitura: float,
     erro: Optional[Any],
+    temperaturas: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     """Monta dict de resposta padronizado."""
     erro_normalizado = str(erro) if erro is not None else None
@@ -395,5 +425,6 @@ def _dict_response(
         "descricao": descricao,
         "tempo_leitura": tempo_leitura,
         "erro": erro_normalizado,
+        "temperaturas": temperaturas,
     }
 
