@@ -81,9 +81,12 @@ def coletor_background_thread():
             continue
 
         try:
-            OpParadasCreate().insert({"dados": json.dumps(payload)})
-        except Exception:
-            pass
+            insert_id = OpParadasCreate().insert({"dados": json.dumps(payload)})
+            if os.getenv("TEMP_DEBUG") == "1":
+                print(f"[TEMP_DEBUG] op_paradas insert_id={insert_id}")
+        except Exception as e:
+            if os.getenv("TEMP_DEBUG") == "1":
+                print(f"[TEMP_DEBUG] op_paradas insert_error={e}")
 
         try:
             socketio.emit("status_usinas_dados", payload, broadcast=True)
