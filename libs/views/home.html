@@ -117,7 +117,7 @@
                             <h2 class="text-base font-medium text-text-primary">Temperaturas</h2>
                         </div>
                         <div class="dashboard-split-content custom-scrollbar">
-                            <div class="temp-grid-container">
+                            <div class="temp-grid-container" data-temperaturas='{{ vm.temperaturas | tojson | safe }}'>
                                 {% for temperatura in vm.temperaturas %}
                                 {% include "components/_temperaturas.html" %}
                                 {% endfor %}
@@ -241,6 +241,7 @@
                 } else {
                     this.tryConnectSocket();
                 }
+                this._carregarTemperaturasIniciais();
             },
 
             tryConnectSocket(retries = 0) {
@@ -324,7 +325,48 @@
                 container.innerHTML = sensores.map((s) => this._renderTemperaturaCard(s)).join('');
             },
 
+            _carregarTemperaturasIniciais() {
+                const container = document.querySelector('.temp-grid-container');
+                if (!container) return;
+                const raw = container.getAttribute('data-temperaturas');
+                if (!raw) return;
+                let lista = [];
+                try {
+                    lista = JSON.parse(raw) || [];
+                } catch {
+                    return;
+                }
+                lista.forEach((item) => {
+                    const nome = item?.nome;
+                    if (!nome) return;
+                    const historico = this._normalizarHistorico(item.historico || {});
+                    this.state.temperaturasPorChave.set(nome, {
+                        nome,
+                        historico,
+                        atual: Number(item.atual ?? 0),
+                        alarme: Number(item.alarme ?? 0),
+                        trip: Number(item.trip ?? 0),
+                        risco: Number(item.risco ?? 0),
+                    });
+                });
+                const sensores = Array.from(this.state.temperaturasPorChave.values());
+                if (sensores.length === 0) return;
+                sensores.sort((a, b) => (b.risco || 0) - (a.risco || 0));
+                container.innerHTML = sensores.map((s) => this._renderTemperaturaCard(s)).join('');
+            },
+
+            _normalizarHistorico(historicoDict) {
+                const lista = Object.entries(historicoDict || {}).map(([hora, val]) => ({
+                    hora,
+                    val: Number(val ?? 0),
+                }));
+                return lista.slice(-10);
+            },
+
             _extrairTemperaturas(payload) {
+                if (!payload || !payload.usinas) {
+                    return Array.from(this.state.temperaturasPorChave.values());
+                }
                 const agora = new Date((payload.timestamp || Date.now() / 1000) * 1000);
                 const hora = agora.toTimeString().slice(0, 5);
                 const lista = [];
@@ -356,24 +398,29 @@
                             const alarme = Number(vals.alarme ?? 0);
                             const risco = trip > 0 ? atual / trip : 0;
 
-                            const cache = this.state.temperaturasPorChave.get(chave) || { historico: [] };
-                            const historico = (cache.historico || []).filter((h) => h.hora !== hora);
-                            historico.push({ hora, val: atual });
-                            const historicoFinal = historico.slice(-6);
-                            this.state.temperaturasPorChave.set(chave, { historico: historicoFinal });
-
-                            lista.push({
+                            const cache = this.state.temperaturasPorChave.get(chave) || { nome: chave, historico: [] };
+                            const historico = Array.isArray(cache.historico) ? cache.historico : [];
+                            const ultimo = historico[historico.length - 1];
+                            if (ultimo && ultimo.hora === hora) {
+                                ultimo.val = atual;
+                            } else {
+                                historico.push({ hora, val: atual });
+                            }
+                            while (historico.length > 10) historico.shift();
+                            this.state.temperaturasPorChave.set(chave, {
                                 nome: chave,
+                                historico,
                                 atual,
                                 alarme,
                                 trip,
                                 risco,
-                                historico: historicoFinal,
                             });
+
+                            lista.push(this.state.temperaturasPorChave.get(chave));
                         });
                     });
                 });
-                return lista;
+                return lista.filter(Boolean);
             },
 
             _renderTemperaturaCard(sensor) {
