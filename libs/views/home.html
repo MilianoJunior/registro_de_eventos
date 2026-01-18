@@ -231,6 +231,7 @@
                 lastRequestTime: 0,
                 autoRequestIntervalId: null,
                 potenciaPorUsina: {},
+                temperaturasPorChave: new Map(),
             },
 
             // --- Métodos Principais ---
@@ -291,6 +292,7 @@
                     const dispositivosDict = usina.dispositivos || {};
                     this.updateDOMForUsina(usina.slug, dispositivosDict);
                 });
+                this._atualizarTemperaturas(payload);
             },
 
             updateDOMForUsina(slug, dispositivosDict) {
@@ -310,6 +312,122 @@
 
                 this.state.potenciaPorUsina[slug] = this._somarPotenciaDispositivos(dispositivosDict);
                 this._atualizarCardPotenciaTotal();
+            },
+
+            // --- Temperaturas (UI dinâmica via Socket) ---
+            _atualizarTemperaturas(payload) {
+                const container = document.querySelector('.temp-grid-container');
+                if (!container) return;
+                const sensores = this._extrairTemperaturas(payload);
+                if (sensores.length === 0) return;
+                sensores.sort((a, b) => (b.risco || 0) - (a.risco || 0));
+                container.innerHTML = sensores.map((s) => this._renderTemperaturaCard(s)).join('');
+            },
+
+            _extrairTemperaturas(payload) {
+                const agora = new Date((payload.timestamp || Date.now() / 1000) * 1000);
+                const hora = agora.toTimeString().slice(0, 5);
+                const lista = [];
+                (payload.usinas || []).forEach((usina) => {
+                    const dispositivos = usina.dispositivos || {};
+                    Object.values(dispositivos).forEach((disp) => {
+                        const temps = (disp || {}).temperaturas || {};
+                        const agrupado = {};
+                        Object.entries(temps).forEach(([k, v]) => {
+                            if (k.endsWith(' value')) {
+                                const nome = k.slice(0, -6);
+                                agrupado[nome] = agrupado[nome] || {};
+                                agrupado[nome].value = v;
+                            } else if (k.endsWith(' trip')) {
+                                const nome = k.slice(0, -5);
+                                agrupado[nome] = agrupado[nome] || {};
+                                agrupado[nome].trip = v;
+                            } else if (k.endsWith(' alarmes')) {
+                                const nome = k.slice(0, -8);
+                                agrupado[nome] = agrupado[nome] || {};
+                                agrupado[nome].alarme = v;
+                            }
+                        });
+
+                        Object.entries(agrupado).forEach(([sensor, vals]) => {
+                            const chave = `${usina.nome} ${disp.nome} - ${sensor}`;
+                            const atual = Number(vals.value ?? 0);
+                            const trip = Number(vals.trip ?? 0);
+                            const alarme = Number(vals.alarme ?? 0);
+                            const risco = trip > 0 ? atual / trip : 0;
+
+                            const cache = this.state.temperaturasPorChave.get(chave) || { historico: [] };
+                            const historico = (cache.historico || []).filter((h) => h.hora !== hora);
+                            historico.push({ hora, val: atual });
+                            const historicoFinal = historico.slice(-6);
+                            this.state.temperaturasPorChave.set(chave, { historico: historicoFinal });
+
+                            lista.push({
+                                nome: chave,
+                                atual,
+                                alarme,
+                                trip,
+                                risco,
+                                historico: historicoFinal,
+                            });
+                        });
+                    });
+                });
+                return lista;
+            },
+
+            _renderTemperaturaCard(sensor) {
+                const trip = sensor.trip || 100;
+                const historico = sensor.historico || [];
+                const rows = historico.map((item) => {
+                    const pct = trip > 0 ? (item.val / trip) * 100 : 0;
+                    const pctClamped = pct > 100 ? 100 : pct;
+                    const isCrit = pct > 80;
+                    return `
+                        <div class="temp-bar-group">
+                            <div class="temp-bar-tooltip">${item.val.toFixed(2)}°C às ${item.hora}</div>
+                            <div class="temp-bar ${isCrit ? 'critical' : 'normal'}" style="height: ${pctClamped}%;"></div>
+                            <span class="temp-bar-label">${item.hora}</span>
+                        </div>
+                    `;
+                }).join('');
+
+                const riscoPct = (sensor.risco || 0) * 100;
+                const riscoAlto = riscoPct > 80;
+
+                return `
+                    <div class="temp-card-new">
+                        <div class="temp-header-new">
+                            <h3 class="temp-title-new" title="${sensor.nome}">${sensor.nome}</h3>
+                        </div>
+                        <div class="temp-body-new">
+                            <div class="temp-chart-area">
+                                <div class="temp-chart-bars">
+                                    ${rows || '<div style="position:absolute;width:100%;text-align:center;color:var(--color-text-muted);font-size:0.7rem;">Sem dados</div>'}
+                                </div>
+                                <div class="temp-chart-spacer"></div>
+                            </div>
+                            <div class="temp-stats-area">
+                                <div class="temp-stat-row-new">
+                                    <span class="temp-stat-label-new">atual:</span>
+                                    <span class="temp-stat-value-new text-blue">${sensor.atual.toFixed(2)} °C</span>
+                                </div>
+                                <div class="temp-stat-row-new">
+                                    <span class="temp-stat-label-new">alarme:</span>
+                                    <span class="temp-stat-value-new text-yellow">${sensor.alarme.toFixed(2)} °C</span>
+                                </div>
+                                <div class="temp-stat-row-new">
+                                    <span class="temp-stat-label-new">trip:</span>
+                                    <span class="temp-stat-value-new text-red">${sensor.trip.toFixed(2)} °C</span>
+                                </div>
+                                <div class="temp-stat-row-new" style="margin-top:auto;padding-top:0.5rem;border-top:1px solid rgba(148,163,184,0.1);">
+                                    <span class="temp-stat-label-new ${riscoAlto ? 'text-red' : 'text-green'}">risco:</span>
+                                    <span class="temp-stat-value-new ${riscoAlto ? 'text-red' : 'text-green'}">${riscoPct.toFixed(2)} %</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
             },
 
             requestStatusUpdate(type = 'manual') {
