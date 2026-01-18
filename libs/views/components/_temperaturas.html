@@ -1,4 +1,5 @@
 <div class="temp-card-new">
+    <!-- TEMP_DEBUG: nome={{ temperatura.nome }}, atual={{ temperatura.atual }}, alarme={{ temperatura.alarme }}, trip={{ temperatura.trip }}, risco={{ temperatura.risco }}, historico={{ temperatura.historico|length }} -->
     <!-- Header -->
     <div class="temp-header-new">
         <h3 class="temp-title-new" title="{{ temperatura.nome }}">
@@ -19,7 +20,7 @@
                 <div class="temp-bar-group">
                     <!-- Tooltip -->
                     <div class="temp-bar-tooltip">
-                        {{ val }}°C às {{ hora }}
+                        {{ "%.2f"|format(val or 0) }}°C às {{ hora }}
                     </div>
 
                     <!-- Bar -->
@@ -49,19 +50,19 @@
             <!-- Atual -->
             <div class="temp-stat-row-new">
                 <span class="temp-stat-label-new">atual:</span>
-                <span class="temp-stat-value-new text-blue">{{ "%.0f"|format(temperatura.atual or 0) }} °C</span>
+                <span class="temp-stat-value-new text-blue">{{ "%.2f"|format(temperatura.atual or 0) }} °C</span>
             </div>
 
             <!-- Alarme -->
             <div class="temp-stat-row-new">
                 <span class="temp-stat-label-new">alarme:</span>
-                <span class="temp-stat-value-new text-yellow">{{ "%.0f"|format(temperatura.alarme or 0) }} °C</span>
+                <span class="temp-stat-value-new text-yellow">{{ "%.2f"|format(temperatura.alarme or 0) }} °C</span>
             </div>
 
             <!-- Trip -->
             <div class="temp-stat-row-new">
                 <span class="temp-stat-label-new">trip:</span>
-                <span class="temp-stat-value-new text-red">{{ "%.0f"|format(temperatura.trip or 0) }} °C</span>
+                <span class="temp-stat-value-new text-red">{{ "%.2f"|format(temperatura.trip or 0) }} °C</span>
             </div>
 
             <!-- Risco -->
@@ -71,7 +72,7 @@
                 style="margin-top: auto; padding-top: 0.5rem; border-top: 1px solid rgba(148, 163, 184, 0.1);">
                 <span class="temp-stat-label-new {{ 'text-red' if is_risco_alto else 'text-green' }}">risco:</span>
                 <span class="temp-stat-value-new {{ 'text-red' if is_risco_alto else 'text-green' }}">{{
-                    "%.0f"|format(risco_pct) }} %</span>
+                    "%.2f"|format(risco_pct) }} %</span>
             </div>
         </div>
     </div>

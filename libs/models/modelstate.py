@@ -407,6 +407,8 @@ class HomePageViewModel:
         kpis_mttr = ctx.get_kpis_mttr()
         real_stats = ctx.get_stats_status()
         temperaturas = ctx.get_temperaturas()
+        if os.getenv("TEMP_DEBUG") == "1":
+            print("[TEMP_DEBUG] vm.temperaturas:", len(temperaturas or []))
 
         usinas_objs = []
         for u in raw_usinas:

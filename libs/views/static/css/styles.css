@@ -179,7 +179,7 @@ h6 {
     }
 }
 
-/* Componente: Card de Temperatura
+/* Componente: Card de Temperatura */
 .temp-card {
     background-color: var(--color-surface);
     border: 1px solid rgba(148, 163, 184, 0.2);
@@ -300,7 +300,7 @@ h6 {
     margin-bottom: 0;
     height: 100%;
     /* Garante que os cards na mesma linha tenham mesma altura */
-} */
+} 
 
 
 /* layout cards rats */
@@ -602,6 +602,8 @@ h6 {
     /* ring-primary replacement */
 }
 
+
+
 /* Componente: Temperaturas (Novo Design Customizado) */
 .temp-card-new {
     background-color: var(--color-surface);
@@ -633,7 +635,6 @@ h6 {
     margin: 0.5rem;
     padding: 0.5rem;
     border-radius: 0.5rem;
-    /* background: rgba(203, 207, 205, 0.15); */
     border-left: 4px solid rgba(42, 43, 42, 0.6);
 }
 
@@ -657,7 +658,6 @@ h6 {
     align-items: stretch;
 }
 
-/* Área do Gráfico */
 .temp-chart-area {
     flex: 1;
     display: flex;
@@ -673,10 +673,9 @@ h6 {
     align-items: flex-end;
     justify-content: space-between;
     height: 100px;
-    /* Altura fixa para o gráfico */
     width: 100%;
     border-bottom: 1px solid rgba(148, 163, 184, 0.2);
-    /* Única linha horizontal: o eixo X */
+
     padding-bottom: 2px;
 }
 
@@ -706,7 +705,6 @@ h6 {
     background-color: var(--color-danger);
 }
 
-/* Tooltip */
 .temp-bar-tooltip {
     position: absolute;
     bottom: 100%;
@@ -745,7 +743,7 @@ h6 {
 
 /* Área dos Dados (Direita) */
 .temp-stats-area {
-    width: 130px;
+    width: 140px;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -813,4 +811,4 @@ h6 {
 
 .dark .temp-stat-value-new {
     background: rgba(148, 163, 184, 0.2);
-}
+} 

@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import json
 from datetime import datetime, timedelta
+import os
 from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
 
 from libs.controllers.decorador import desempenho
@@ -443,6 +444,7 @@ class OpParadas(BaseReader):
                         
                         val_atual = valores.get("value")
                         if val_atual is not None:
+                            val_atual = round(val_atual, 2)
                             sensores_data[chave_unica]["historico"][hora_formatada] = val_atual
                             sensores_data[chave_unica]["atual"] = val_atual
                         
@@ -469,5 +471,18 @@ class OpParadas(BaseReader):
 
         # Ordenar por risco decrescente
         resultado.sort(key=lambda x: x["risco"], reverse=True)
-        
+
+        print("TEMP_DEBUG: ", os.getenv("TEMP_DEBUG"))
+        if os.getenv("TEMP_DEBUG") == "1":
+            print("[TEMP_DEBUG] sensores_total:", len(resultado))
+            for item in resultado[:5]:
+                print(
+                    "[TEMP_DEBUG]",
+                    item.get("nome"),
+                    "atual=", item.get("atual"),
+                    "alarme=", item.get("alarme"),
+                    "trip=", item.get("trip"),
+                    "risco=", item.get("risco"),
+                    "historico=", len(item.get("historico") or {}),
+                )
         return resultado
