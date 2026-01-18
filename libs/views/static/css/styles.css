@@ -1,6 +1,6 @@
 :root {
     --color-bg: #f8fafc;
-    --color-bg-alt: #ffffff;
+    --color-bg-alt: #f6f7f4;
     --color-surface: #ffffff;
     --color-text: #0f172a;
     --color-text-muted: #64748b;
@@ -16,7 +16,7 @@
 
 .dark {
     --color-bg: #0f172a;
-    --color-bg-alt: #1e293b;
+    --color-bg-alt: #484949;
     --color-surface: #1e293b;
     --color-text: #e2e8f0;
     --color-text-muted: #94a3b8;
@@ -152,8 +152,10 @@ h6 {
     flex-direction: column;
     gap: 1.5rem;
     /* ~24px (gap-6) */
-    height: 850px;
-    /* Altura fixa para garantir o scroll interno e divisão correta */
+    height: clamp(850px, 80vh, 100vh);
+    min-height: 850px;
+    max-height: 100vh;
+    /* Altura dinâmica: mínimo atual, máximo tela */
     width: 100%;
 }
 
@@ -175,11 +177,11 @@ h6 {
 /* Ajuste responsivo para telas menores se necessário */
 @media (max-height: 900px) {
     .dashboard-split-container {
-        height: 600px;
+        height: clamp(600px, 75vh, 100vh);
     }
 }
 
-/* Componente: Card de Temperatura */
+/* Componente: Card de Temperatura
 .temp-card {
     background-color: var(--color-surface);
     border: 1px solid rgba(148, 163, 184, 0.2);
@@ -209,7 +211,7 @@ h6 {
     border-top-left-radius: 0.4rem;
     border-top-right-radius: 0.4rem;
     margin-bottom: 0.5rem;
-}
+} */
 
 .dark .temp-card-header {
     background-color: rgba(255, 255, 255, 0.03);
@@ -285,14 +287,8 @@ h6 {
 /* Grid de Temperaturas (2 colunas em telas largas, 1 em menores) */
 .temp-grid-container {
     display: grid;
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 0.75rem;
-}
-
-@media (min-width: 1600px) {
-    .temp-grid-container {
-        grid-template-columns: repeat(2, 1fr);
-    }
 }
 
 /* Remove margem inferior dos cards quando dentro do grid, pois o gap já resolve */
@@ -605,88 +601,97 @@ h6 {
 
 
 /* Componente: Temperaturas (Novo Design Customizado) */
+/* 1. Layout principal do card */
 .temp-card-new {
-    background-color: var(--color-surface);
+    display: flex;           /* flex container */
+    flex-direction: column;  /* direção dos itens coluna */
+    align-self: center;     /* estende o card para o tamanho do container */
+
+    height: 180px;
+    min-height: 180px;
+    max-height: 240px;
     border: 1px solid rgba(148, 163, 184, 0.18);
     border-radius: 0.75rem;
-    padding: 0.75rem;
-    display: flex;
-    flex-direction: column;
-    height: 100%;
     position: relative;
     overflow: hidden;
     transition: all 0.2s ease;
     box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+    background-color: var(--color-surface);
 }
 
-.dark .temp-card-new {
-    border-color: var(--color-text-muted);
-}
 
-.temp-card-new:hover {
-    border-color: var(--color-accent);
-    box-shadow: 0 4px 10px rgba(15, 23, 42, 0.12);
-}
-
+/* 2. layout do Header do card */
 .temp-header-new {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
+    /* display: flex;
+    align-items: center; */
+    /* gap: 0.75rem; */
     margin: 0.5rem;
     padding: 0.5rem;
     border-radius: 0.5rem;
-    border-left: 4px solid rgba(42, 43, 42, 0.6);
+    border-left: 4px solid rgba(18, 92, 204, 0.6);
+    background-color: var(--color-bg-alt);
 }
 
-
-.temp-title-new {
-    font-size: 0.7rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: var(--color-text);
-    line-height: 1.2;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
+/* 3. layout do Corpo do card */
 .temp-body-new {
     display: flex;
-    flex: 1;
-    gap: 0.75rem;
+    flex-direction: row;
     align-items: stretch;
+    height: 100%;
+    margin: 0 0.5rem 0.75rem 0;
+    padding: 0 0.5rem 0.75rem 0;
+    /* background-color: #204d94; */
 }
 
+/* 4. layout do Chart do card */
 .temp-chart-area {
     flex: 1;
     display: flex;
     flex-direction: column;
-    justify-content: flex-end;
+    justify-content: center;
     position: relative;
-    border-radius: 0.5rem;
+    /* border-radius: 0.5rem; */
     padding: 0.5rem 0.5rem 0;
+    /* background-color: #4f7fcc; */
+}
+
+/* 5. layout do Stats do card */
+.temp-stats-area {
+    /* width: clamp(120px, 20vw, 180px); */
+    /* width: 20%; */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.5rem;
+    /* padding-left: 0.5rem; */
+    /* background-color: #c0cec3; */
 }
 
 .temp-chart-bars {
     display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
-    height: 100px;
+    flex-direction: row;
+    align-items: stretch;
+    justify-content: stretch;
+    /* height: clamp(80px, 18vh, 140px); */
+    height: 100%;
     width: 100%;
-    border-bottom: 1px solid rgba(148, 163, 184, 0.2);
-
-    padding-bottom: 2px;
+    /* border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+    padding-bottom: 2px; */
+    /* background-color: #2ac551; */
 }
 
 .temp-bar-group {
     display: flex;
     flex-direction: column;
+    justify-content: center;
+    align-content: center;
     align-items: center;
     position: relative;
-    flex: 1;
+    /* flex: 1; */
     height: 100%;
-    justify-content: flex-end;
+    width: 100%;
+    
+    /* background-color: #758378; */
 }
 
 .temp-bar {
@@ -697,14 +702,6 @@ h6 {
     min-height: 2px;
 }
 
-.temp-bar.normal {
-    background-color: var(--color-accent);
-}
-
-.temp-bar.critical {
-    background-color: var(--color-danger);
-}
-
 .temp-bar-tooltip {
     position: absolute;
     bottom: 100%;
@@ -713,8 +710,8 @@ h6 {
     color: var(--color-bg);
     padding: 2px 6px;
     border-radius: 4px;
-    font-size: 0.65rem;
-    font-weight: 700;
+    font-size: 0.55rem;
+    font-weight: 500;
     white-space: nowrap;
     opacity: 0;
     pointer-events: none;
@@ -723,17 +720,48 @@ h6 {
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
-.temp-bar-group:hover .temp-bar-tooltip {
-    opacity: 1;
-}
-
 .temp-bar-label {
-    margin-top: 8px;
-    font-size: 0.6rem;
+    /* margin-top: 8px; */
+    font-size: 0.55rem;
     color: var(--color-text-muted);
     font-family: monospace;
     white-space: nowrap;
 }
+
+.temp-title-new {
+    font-size: 0.7rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-text);
+    line-height: 1.2;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.dark .temp-card-new {
+    border-color: var(--color-text-muted);
+}
+
+.temp-card-new:hover {
+    border-color: var(--color-accent);
+    box-shadow: 0 4px 10px rgba(31, 47, 85, 0.12);
+}
+
+.temp-bar.normal {
+    background-color: var(--color-accent);
+}
+
+.temp-bar.critical {
+    background-color: var(--color-danger);
+}
+
+
+.temp-bar-group:hover .temp-bar-tooltip {
+    opacity: 1;
+}
+
 
 /* Espaçador para os labels rotacionados */
 .temp-chart-spacer {
@@ -741,15 +769,7 @@ h6 {
     width: 100%;
 }
 
-/* Área dos Dados (Direita) */
-.temp-stats-area {
-    width: 140px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    gap: 0.5rem;
-    padding-left: 0.5rem;
-}
+
 
 .temp-stat-row-new {
     display: flex;
@@ -760,23 +780,23 @@ h6 {
 
 .temp-stat-label-new {
     font-size: 0.65rem;
-    font-weight: 700;
-    text-transform: uppercase;
+    font-weight: 500;
+    /* text-transform: uppercase; */
     color: var(--color-text-muted);
-    letter-spacing: 0.05em;
-    min-width: 48px;
+    /* letter-spacing: 0.05em; */
+    /* min-width: 48px; */
 }
 
 .temp-stat-value-new {
     font-size: 0.85rem;
-    font-weight: 700;
+    font-weight: 500;
     font-family: monospace;
-    padding: 0.15rem 0.4rem;
+    /* padding: 0.15rem 0.4rem;
     border-radius: 0.35rem;
-    background: rgba(148, 163, 184, 0.12);
+    background: rgba(148, 163, 184, 0.12); */
 }
 
-.text-blue {
+/* .text-blue {
     color: var(--color-accent);
     background: rgba(59, 130, 246, 0.2);
 }
@@ -789,26 +809,26 @@ h6 {
 .text-red {
     color: var(--color-danger);
     background: rgba(239, 68, 68, 0.2);
-}
+} */
 
-.text-green {
+/* .text-green {
     color: var(--color-success);
     background: rgba(34, 197, 94, 0.2);
 }
 
-.dark .temp-header-new {
-    background: rgba(34, 197, 94, 0.2);
-    border-left-color: rgba(34, 197, 94, 0.7);
+.dark {
+    background: rgba(60, 61, 60, 0.2);
+    border-left-color: rgba(50, 82, 63, 0.7);
 }
 
-.dark .temp-icon-wrapper {
+.dark {
     color: #4ade80;
 }
 
-.dark .temp-chart-area {
+.dark{
     background: transparent;
 }
 
 .dark .temp-stat-value-new {
     background: rgba(148, 163, 184, 0.2);
-} 
+}  */

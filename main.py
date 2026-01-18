@@ -98,6 +98,7 @@ def coletor_background_thread():
 # ---------------------------------------------------------------------------------
 # watcher para recarregar arquivos estáticos em desenvolvimento
 # ---------------------------------------------------------------------------------
+DEV_RELOAD = True
 if DEV_RELOAD:
     print('DEV_RELOAD is enabled')
     from watchdog.observers import Observer

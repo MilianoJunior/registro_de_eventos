@@ -2,7 +2,7 @@
     <!-- TEMP_DEBUG: nome={{ temperatura.nome }}, atual={{ temperatura.atual }}, alarme={{ temperatura.alarme }}, trip={{ temperatura.trip }}, risco={{ temperatura.risco }}, historico={{ temperatura.historico|length }} -->
     <!-- Header -->
     <div class="temp-header-new">
-        <h3 class="temp-title-new" title="{{ temperatura.nome }}">
+        <h3 class="text-sm font-medium text-text-primary" title="{{ temperatura.nome }}">
             {{ temperatura.nome }}
         </h3>
     </div>
@@ -34,12 +34,6 @@
                 </div>
                 {% endfor %}
 
-                {% if not temperatura.historico %}
-                <div
-                    style="position: absolute; width: 100%; text-align: center; color: var(--color-text-muted); font-size: 0.7rem;">
-                    Sem dados
-                </div>
-                {% endif %}
             </div>
             <!-- Spacer for rotated labels -->
             <div class="temp-chart-spacer"></div>
@@ -50,19 +44,19 @@
             <!-- Atual -->
             <div class="temp-stat-row-new">
                 <span class="temp-stat-label-new">atual:</span>
-                <span class="temp-stat-value-new text-blue">{{ "%.2f"|format(temperatura.atual or 0) }} °C</span>
+                <span class="temp-stat-value-new">{{ "%.2f"|format(temperatura.atual or 0) }} °C</span>
             </div>
 
             <!-- Alarme -->
             <div class="temp-stat-row-new">
                 <span class="temp-stat-label-new">alarme:</span>
-                <span class="temp-stat-value-new text-yellow">{{ "%.2f"|format(temperatura.alarme or 0) }} °C</span>
+                <span class="temp-stat-value-new">{{ "%.2f"|format(temperatura.alarme or 0) }} °C</span>
             </div>
 
             <!-- Trip -->
             <div class="temp-stat-row-new">
                 <span class="temp-stat-label-new">trip:</span>
-                <span class="temp-stat-value-new text-red">{{ "%.2f"|format(temperatura.trip or 0) }} °C</span>
+                <span class="temp-stat-value-new">{{ "%.2f"|format(temperatura.trip or 0) }} °C</span>
             </div>
 
             <!-- Risco -->
