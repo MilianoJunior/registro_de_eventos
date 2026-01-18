@@ -1,6 +1,7 @@
 # libs/models/create.py
 from __future__ import annotations
 from typing import Optional, Dict, Any
+import os
 from libs.models.database import Database
 
 class Create:
@@ -42,12 +43,16 @@ class Create:
             cursor = self.db.execute_query(sql, tuple(values))
             
             if cursor:
-                # Retorna o ID do último registro inserido
-                return cursor.lastrowid
+                last_id = cursor.lastrowid
+                if os.getenv("TEMP_DEBUG") == "1":
+                    print(f"[TEMP_DEBUG] insert tabela={self.tabela} last_id={last_id}")
+                return last_id
             
             return None
             
         except Exception as e:
+            if os.getenv("TEMP_DEBUG") == "1":
+                print(f"[TEMP_DEBUG] insert_error tabela={self.tabela} erro={e}")
             self._error('Create', 'insert', e)
             return None
 
