@@ -143,7 +143,8 @@ if __name__ == '__main__':
         coletor_thread.start()
         
         print(f'[MAIN] Iniciando servidor em {host}:{port} (DEV_RELOAD={DEV_RELOAD})')
-        socketio.run(app, host=host, port=port, debug=DEV_RELOAD)
+        # socketio.run(app, host=host, port=port, debug=DEV_RELOAD)
+        socketio.run(app, host=host, port=port, debug=DEV_RELOAD, allow_unsafe_werkzeug=True)
     finally:
         if observer:
             observer.stop()
