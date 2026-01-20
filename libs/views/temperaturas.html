@@ -1,0 +1,206 @@
+{% extends "base.html" %}
+{% set active_page = "home" %}
+{% block title %}Temperaturas — EngeSEP O&M{% endblock %}
+
+{% block content %}
+<div class="p-6 space-y-4">
+    <div class="flex items-center justify-between">
+        <h1 class="text-lg font-medium text-text-primary">Temperaturas</h1>
+        <a href="{{ url_for('index') }}"
+            class="text-xs font-medium px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-text-primary hover:bg-background-alt transition">
+            Voltar
+        </a>
+    </div>
+
+    <div class="temp-grid-container" data-temperaturas='{{ temperaturas | tojson | safe }}'>
+        {% for temperatura in temperaturas %}
+        {% include "components/_temperaturas.html" %}
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+    (function () {
+        if (window.__temperaturasPageInitialized) return;
+        window.__temperaturasPageInitialized = true;
+
+        const TemperaturasModule = {
+            state: {
+                temperaturasPorChave: new Map(),
+                socket: null,
+                intervalId: null,
+            },
+
+            init() {
+                this._carregarTemperaturasIniciais();
+                this._configurarSocket();
+            },
+
+            _configurarSocket() {
+                if (!window.socket) return;
+                this.state.socket = window.socket;
+                if (this.state.socket.off) this.state.socket.off('status_usinas_dados');
+                this.state.socket.on('status_usinas_dados', (payload) => this._atualizarTemperaturas(payload));
+                this.state.socket.emit('solicitar_status_usinas');
+                this.state.intervalId = setInterval(() => this.state.socket.emit('solicitar_status_usinas'), 30000);
+                window.addEventListener('beforeunload', () => {
+                    if (this.state.intervalId) clearInterval(this.state.intervalId);
+                });
+            },
+
+            _carregarTemperaturasIniciais() {
+                const container = document.querySelector('.temp-grid-container');
+                if (!container) return;
+                const raw = container.getAttribute('data-temperaturas');
+                if (!raw) return;
+                let lista = [];
+                try { lista = JSON.parse(raw) || []; } catch { return; }
+                lista.forEach((item) => {
+                    const nome = item?.nome;
+                    if (!nome) return;
+                    const historico = this._normalizarHistorico(item.historico || {});
+                    this.state.temperaturasPorChave.set(nome, {
+                        nome,
+                        historico,
+                        atual: Number(item.atual ?? 0),
+                        alarme: Number(item.alarme ?? 0),
+                        trip: Number(item.trip ?? 0),
+                        risco: Number(item.risco ?? 0),
+                    });
+                });
+                this._renderizar();
+            },
+
+            _normalizarHistorico(historicoDict) {
+                const lista = Object.entries(historicoDict || {}).map(([hora, val]) => ({
+                    hora,
+                    val: Number(val ?? 0),
+                }));
+                return lista.slice(-10);
+            },
+
+            _atualizarTemperaturas(payload) {
+                if (!payload || !payload.usinas) return;
+                const agora = new Date((payload.timestamp || Date.now() / 1000) * 1000);
+                const hora = agora.toTimeString().slice(0, 5);
+
+                (payload.usinas || []).forEach((usina) => {
+                    const dispositivos = usina.dispositivos || {};
+                    Object.values(dispositivos).forEach((disp) => {
+                        const temps = (disp || {}).temperaturas || {};
+                        const agrupado = {};
+                        Object.entries(temps).forEach(([k, v]) => {
+                            if (k.endsWith(' value')) {
+                                const nome = k.slice(0, -6);
+                                agrupado[nome] = agrupado[nome] || {};
+                                agrupado[nome].value = v;
+                            } else if (k.endsWith(' trip')) {
+                                const nome = k.slice(0, -5);
+                                agrupado[nome] = agrupado[nome] || {};
+                                agrupado[nome].trip = v;
+                            } else if (k.endsWith(' alarmes')) {
+                                const nome = k.slice(0, -8);
+                                agrupado[nome] = agrupado[nome] || {};
+                                agrupado[nome].alarme = v;
+                            }
+                        });
+
+                        Object.entries(agrupado).forEach(([sensor, vals]) => {
+                            const chave = `${usina.nome} ${disp.nome} - ${sensor}`;
+                            const atual = Number(vals.value ?? 0);
+                            const trip = Number(vals.trip ?? 0);
+                            const alarme = Number(vals.alarme ?? 0);
+                            const risco = trip > 0 ? atual / trip : 0;
+
+                            const cache = this.state.temperaturasPorChave.get(chave) || { nome: chave, historico: [] };
+                            const historico = Array.isArray(cache.historico) ? cache.historico : [];
+                            const ultimo = historico[historico.length - 1];
+                            if (ultimo && ultimo.hora === hora) {
+                                ultimo.val = atual;
+                            } else {
+                                historico.push({ hora, val: atual });
+                            }
+                            while (historico.length > 10) historico.shift();
+                            this.state.temperaturasPorChave.set(chave, {
+                                nome: chave,
+                                historico,
+                                atual,
+                                alarme,
+                                trip,
+                                risco,
+                            });
+                        });
+                    });
+                });
+
+                this._renderizar();
+            },
+
+            _renderizar() {
+                const container = document.querySelector('.temp-grid-container');
+                if (!container) return;
+                const sensores = Array.from(this.state.temperaturasPorChave.values());
+                if (sensores.length === 0) return;
+                sensores.sort((a, b) => (b.risco || 0) - (a.risco || 0));
+                container.innerHTML = sensores.map((s) => this._renderTemperaturaCard(s)).join('');
+            },
+
+            _renderTemperaturaCard(sensor) {
+                const trip = sensor.trip || 100;
+                const historico = sensor.historico || [];
+                const rows = historico.map((item) => {
+                    const pct = trip > 0 ? (item.val / trip) * 100 : 0;
+                    const pctClamped = pct > 100 ? 100 : pct;
+                    const isCrit = pct > 80;
+                    return `
+                        <div class="temp-bar-group">
+                            <div class="temp-bar-tooltip">${item.val.toFixed(2)}°C às ${item.hora}</div>
+                            <div class="temp-bar ${isCrit ? 'critical' : 'normal'}" style="height: ${pctClamped}%;"></div>
+                            <span class="temp-bar-label">${item.hora}</span>
+                        </div>
+                    `;
+                }).join('');
+
+                const riscoPct = (sensor.risco || 0) * 100;
+                const riscoAlto = riscoPct > 80;
+
+                return `
+                    <div class="temp-card-new">
+                        <div class="temp-header-new">
+                            <h3 class="temp-title-new" title="${sensor.nome}">${sensor.nome}</h3>
+                        </div>
+                        <div class="temp-body-new">
+                            <div class="temp-chart-area">
+                                <div class="temp-chart-bars">
+                                    ${rows || '<div style="position:absolute;width:100%;text-align:center;color:var(--color-text-muted);font-size:0.7rem;">Sem dados</div>'}
+                                </div>
+                                <div class="temp-chart-spacer"></div>
+                            </div>
+                            <div class="temp-stats-area">
+                                <div class="temp-stat-row-new">
+                                    <span class="temp-stat-label-new">atual:</span>
+                                    <span class="temp-stat-value-new text-blue">${sensor.atual.toFixed(2)} °C</span>
+                                </div>
+                                <div class="temp-stat-row-new">
+                                    <span class="temp-stat-label-new">alarme:</span>
+                                    <span class="temp-stat-value-new text-yellow">${sensor.alarme.toFixed(2)} °C</span>
+                                </div>
+                                <div class="temp-stat-row-new">
+                                    <span class="temp-stat-label-new">trip:</span>
+                                    <span class="temp-stat-value-new text-red">${sensor.trip.toFixed(2)} °C</span>
+                                </div>
+                                <div class="temp-stat-row-new" style="margin-top:auto;padding-top:0.5rem;border-top:1px solid rgba(148,163,184,0.1);">
+                                    <span class="temp-stat-label-new ${riscoAlto ? 'text-red' : 'text-green'}">risco:</span>
+                                    <span class="temp-stat-value-new ${riscoAlto ? 'text-red' : 'text-green'}">${riscoPct.toFixed(2)} %</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            },
+        };
+
+        TemperaturasModule.init();
+    })();
+</script>
+{% endblock %}

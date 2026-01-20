@@ -115,6 +115,10 @@
                     <div class="dashboard-split-item">
                         <div class="flex justify-between items-center mb-3">
                             <h2 class="text-base font-medium text-text-primary">Temperaturas</h2>
+                            <a href="{{ url_for('temperaturas_page') }}" target="_blank" rel="noopener"
+                                class="text-xs font-medium px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-text-primary hover:bg-background-alt transition">
+                                Ver tela cheia
+                            </a>
                         </div>
                         <div class="dashboard-split-content custom-scrollbar">
                             <div class="temp-grid-container" data-temperaturas='{{ vm.temperaturas | tojson | safe }}'>

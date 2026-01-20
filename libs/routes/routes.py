@@ -9,6 +9,7 @@
 # 7. configuracoes → renderiza página HTML de configurações
 # 8. salvar_configuracao → persiste configurações (POST)
 # 9. carregar_configuracao → carrega configurações (GET)
+# 10. temperaturas_page → renderiza página HTML de temperaturas
 # -------------------------------------------------------------------
 
 from flask import render_template, jsonify, Response, request, send_from_directory
@@ -21,6 +22,7 @@ from libs.controllers.ocorrenciasController import OcorrenciasController
 # from libs.controllers.analiseController import AnaliseController
 from libs.controllers.configController import ConfigController
 from libs.controllers.ratsController import RatsController
+from libs.models.modelstate import DadosContexto
 from libs.controllers.decorador import desempenho
 
 from flask import render_template
@@ -146,6 +148,13 @@ def salvar_configuracao():
 def carregar_configuracao():
     print('9- carregar_configuracao')
     return configController.carregar_configuracao()
+
+@app.route("/temperaturas")
+def temperaturas_page():
+    ctx = DadosContexto()
+    temperaturas = ctx.get_temperaturas()
+    usinas = ctx.get_usinas()
+    return render_template("temperaturas.html", temperaturas=temperaturas, usinas=usinas)
 
 # @app.route("/analise-relatorios")
 # def analise_relatorios():
