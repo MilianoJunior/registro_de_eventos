@@ -1,0 +1,97 @@
+<div class="new-temp-card" data-role="sensor-card" data-sensor-key="{{ temperatura.nome }}">
+    <!-- Header -->
+    <div class="new-temp-header">
+        <h3 class="new-temp-title" title="{{ temperatura.nome }}" data-slot="title">
+            {{ temperatura.nome }}
+        </h3>
+
+        {# Determine status color based on risk or priority #}
+        {% set risco_pct = (temperatura.risco or 0) * 100 %}
+        {% set is_risco_alto = risco_pct > 80 %}
+        {% set is_risco_medio = risco_pct > 50 and risco_pct <= 80 %} {% set status_class='bg-success' %} {% if
+            is_risco_alto %} {% set status_class='bg-danger' %} {% elif is_risco_medio %} {% set
+            status_class='bg-warning' %} {% endif %} <span class="new-temp-status-dot {{ status_class }}"
+            data-slot="status-dot"></span>
+    </div>
+
+    <!-- Body -->
+    <div class="new-temp-body">
+        <!-- Chart (Left) -->
+        <div class="new-temp-col-wrapper">
+            <div class="new-temp-chart-container" data-slot="chart-container">
+                {% for hora, val in temperatura.historico.items() %}
+                {# Escala fixa de 0 a 120 graus #}
+                {% set pct = (val / 120 * 100) %}
+                {% set pct_clamped = 100 if pct > 100 else pct %}
+
+                {# Bar Color logic #}
+                {% set bar_color_class = status_class %}
+
+                <div class="new-temp-bar-wrapper" title="{{ '%.2f'|format(val or 0) }}°C às {{ hora }}">
+                    {# Background Bar (faded) #}
+                    <!-- <div class="new-temp-bar new-temp-bar-bg {{ bar_color_class }}" style="height: {{ pct_clamped }}%; position: absolute; bottom: 0; z-index: 0;"></div> -->
+
+                    {# Main Bar #}
+                    <div class="new-temp-bar new-temp-bar-bg-layer {{ bar_color_class }}"
+                        style="height: {{ pct_clamped }}%;"></div>
+                    <div class="new-temp-bar new-temp-bar-main-layer {{ bar_color_class }}"
+                        style="height: {{ pct_clamped }}%;"></div>
+                </div>
+                {% endfor %}
+            </div>
+            <div class="flex justify-between text-[10px] text-text-muted mt-1 px-1 font-medium">
+                <span data-slot="start-time">
+                    {% if temperatura.historico %}
+                    {{ (temperatura.historico.keys()|list)[0][0:5] }}
+                    {% else %}--:--{% endif %}
+                </span>
+                <span data-slot="end-time">
+                    {% if temperatura.historico %}
+                    {{ (temperatura.historico.keys()|list)[-1][0:5] }}
+                    {% else %}--:--{% endif %}
+                </span>
+            </div>
+        </div>
+
+        <!-- Stats (Right) -->
+        <div class="new-temp-stats-container">
+            <!-- Main Value (Current) -->
+            <div>
+                <p class="new-temp-stat-main-label">Atual</p>
+                <div class="new-temp-stat-main-value-group">
+                    {% set status_text_class = status_class|replace('bg-', 'text-') %}
+                    <span class="new-temp-stat-main-value {{ status_text_class }}" data-slot="val-atual"
+                        data-raw-val="{{ temperatura.atual }}">
+                        {{ "%.2f"|format(temperatura.atual or 0) }}
+                    </span>
+                    <span class="new-temp-stat-unit">°C</span>
+                </div>
+            </div>
+
+            <!-- List Types -->
+            <div class="new-temp-stats-list">
+                <!-- Alarme -->
+                <div class="new-temp-stat-row">
+                    <span class="new-temp-stat-label">Alarme:</span>
+                    <span class="new-temp-stat-value" data-slot="val-alarme">{{ "%.2f"|format(temperatura.alarme or 0)
+                        }} °C</span>
+                </div>
+
+                <!-- Trip -->
+                <div class="new-temp-stat-row">
+                    <span class="new-temp-stat-label">Trip:</span>
+                    <span class="new-temp-stat-value" data-slot="val-trip">{{ "%.2f"|format(temperatura.trip or 0) }}
+                        °C</span>
+                </div>
+
+                <!-- Risco -->
+                <div class="new-temp-stat-row new-temp-divider">
+                    <span class="new-temp-risk-label">Risco:</span>
+                    <span class="new-temp-stat-value {{ status_text_class }} font-bold" data-slot="val-risco">
+                        {{ "%.2f"|format(risco_pct) }} %
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

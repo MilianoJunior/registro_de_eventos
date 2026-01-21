@@ -380,13 +380,17 @@ class OpParadas(BaseReader):
         """
         try:
             snapshots = self._get_ultimos_dados_brutos(10)
+            
         except Exception:
-            snapshots = []
+            raise Exception(f"Erro em get_temperaturas: {e}")
 
         # Dicionário para agregar dados por sensor
         # Chave: "Usina|Dispositivo|Sensor"
         sensores_data = {}
 
+        historicos = {}
+
+        cont = 0
         for snap in snapshots:
             ts = snap.get("timestamp")
             if isinstance(ts, str):
@@ -394,8 +398,64 @@ class OpParadas(BaseReader):
                     ts = datetime.fromisoformat(ts)
                 except:
                     pass
+
+            # dados_payload = self._parse_dados_paradas(snap.get("dados"))
+            # cont += 1
+            # print("########################################################")
+            # for usina in dados_payload.get("usinas") or []:
+                
+            #     nome_usina = usina.get("nome", "Desconhecida")
+            #     dispositivos = usina.get("dispositivos", {})
+            #     hora_formatada = ts.strftime("%H:%M:%S") if hasattr(ts, 'strftime') else str(ts)
+            #     print("TEMP_DEBUG - HORA FORMATADA: ", hora_formatada, "cont: ", cont)
+            #     print("TEMP_DEBUG - USINA: ", nome_usina)
+            #     # print("TEMP_DEBUG - DISPOSITIVOS: ", dispositivos.keys())
+            #     label_total = ""
+            #     for dispositivo_name, leituras in dispositivos.items():
+            #         label = nome_usina + " - " + dispositivo_name
+            #         print("TEMP_DEBUG - DISPOSITIVO: ", dispositivo_name)
+            #         # print("TEMP_DEBUG - LEITURAS: ", leituras.keys())
+            #         temperatura = leituras.get("temperaturas", 0)
+            #         if not isinstance(temperatura, dict):
+            #             print("TEMP_DEBUG - TEMPERATURA: ", temperatura, "não é um dict")
+            #             continue
+            #         # print("TEMP_DEBUG - TEMPERATURA: ", temperatura)
+            #         for sensor_name, valor in temperatura.items():
+            #             label_total = label + " - " + sensor_name
+                        
+            #             if 'value' in sensor_name:
+                            
+                            
+            #                 label_total = label_total.replace(" value", "")
+                            
+            #                 if historicos.get(label_total, False) is False:
+            #                     print("1: label_total: ", label_total, "valor: ", round(valor, 2))
+            #                     historicos[label_total]={"historico": {}, "atual": 0.0, "alarme": 0.0, "trip": 0.0, "risco": 0.0}
+            #                     historicos[label_total]['historico'][hora_formatada] = round(valor, 2)
+            #                 else:
+            #                     print("2: label_total: ", label_total, "valor: ", round(valor, 2))
+            #                 historicos[label_total]['historico'][hora_formatada] = round(valor, 2)
+            #                 historicos[label_total]['atual'] = round(valor, 2)
+            #             if 'trip' in sensor_name:
+            #                 label_total = label_total.replace(" trip", "")
+            #                 if historicos.get(label_total, False) is False:
+            #                     print("1: label_total: ", label_total, "valor: ", round(valor, 2))
+            #                     historicos[label_total]={"historico": {}, "atual": 0.0, "alarme": 0.0, "trip": 0.0, "risco": 0.0}
+            #                 historicos[label_total]['trip'] = round(valor, 2)
+            #             if 'alarme' in sensor_name:
+            #                 label_total = label_total.replace(" alarmes", "")
+            #                 if historicos.get(label_total, False) is False:
+            #                     print("1: label_total: ", label_total, "valor: ", round(valor, 2))
+            #                     historicos[label_total]={"historico": {}, "atual": 0.0, "alarme": 0.0, "trip": 0.0, "risco": 0.0}
+            #                 historicos[label_total]['alarme'] = round(valor, 2)
+                        
+
+            #             # print("-" * 10)
+            #         print("-" * 10)
+
+            #     print("-" * 100)
             
-            hora_formatada = ts.strftime("%H:%M") if hasattr(ts, 'strftime') else str(ts)
+            hora_formatada = ts.strftime("%H:%M:%S") if hasattr(ts, 'strftime') else str(ts)
             
             dados_payload = self._parse_dados_paradas(snap.get("dados"))
             if not dados_payload:
@@ -445,7 +505,10 @@ class OpParadas(BaseReader):
                         val_atual = valores.get("value")
                         if val_atual is not None:
                             val_atual = round(val_atual, 2)
-                            sensores_data[chave_unica]["historico"][hora_formatada] = val_atual
+                            historico = sensores_data[chave_unica]["historico"]
+                            historico[hora_formatada] = val_atual
+                            while len(historico) > 10:
+                                historico.pop(next(iter(historico)))
                             sensores_data[chave_unica]["atual"] = val_atual
                         
                         # Atualiza configs (assumindo que podem mudar ou pegando a mais recente)
@@ -472,9 +535,19 @@ class OpParadas(BaseReader):
         # Ordenar por risco decrescente
         resultado.sort(key=lambda x: x["risco"], reverse=True)
 
-        print("TEMP_DEBUG: ", os.getenv("TEMP_DEBUG"))
+        # print(historicos)
+        # print('--------------------------------')
+        # print(resultado)
+        # historicos_list = []
+        # for label, data in historicos.items():
+        #     trip = data['trip'] if data['trip'] != 0 else 1
+        #     risco = round(data['atual'] / trip, 2) * 100
+        #     historicos_list.append({'nome': label, 'historico': data['historico'], 'atual': data['atual'], 'alarme': data['alarme'], 'trip': data['trip'], 'risco': risco})
+        # historicos_list.sort(key=lambda x: x['risco'], reverse=True)
         if os.getenv("TEMP_DEBUG") == "1":
-            print("[TEMP_DEBUG] sensores_total:", len(resultado))
+            
+            print("[TEMP_DEBUG] sensores_total:", len(resultado), type(resultado))
+            # print("[TEMP_DEBUG] historicos:", len(historicos_list), type(historicos_list))
             for item in resultado[:5]:
                 print(
                     "[TEMP_DEBUG]",
@@ -485,4 +558,15 @@ class OpParadas(BaseReader):
                     "risco=", item.get("risco"),
                     "historico=", len(item.get("historico") or {}),
                 )
+            # print("-" * 10)
+            # for item in historicos_list[:5]:
+            #     print(
+            #         "[TEMP_DEBUG]",
+            #         item.get("nome"),
+            #         "atual=", item.get("atual"),
+            #         "alarme=", item.get("alarme"),
+            #         "trip=", item.get("trip"),
+            #         "risco=", item.get("risco"),
+            #         "historico=", len(item.get("historico") or {}),
+            #     )
         return resultado

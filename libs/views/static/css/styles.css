@@ -287,7 +287,7 @@ h6 {
 /* Grid de Temperaturas (2 colunas em telas largas, 1 em menores) */
 .temp-grid-container {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: 0.75rem;
 }
 
@@ -610,6 +610,9 @@ h6 {
     height: 180px;
     min-height: 180px;
     max-height: 240px;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
     border: 1px solid rgba(148, 163, 184, 0.18);
     border-radius: 0.75rem;
     position: relative;
@@ -640,16 +643,18 @@ h6 {
     height: 100%;
     margin: 0 0.5rem 0.75rem 0;
     padding: 0 0.5rem 0.75rem 0;
+    gap: 0.5rem;
     /* background-color: #204d94; */
 }
 
 /* 4. layout do Chart do card */
 .temp-chart-area {
-    flex: 1;
+    flex: 1 1 0;
     display: flex;
     flex-direction: column;
     justify-content: center;
     position: relative;
+    min-width: 0;
     /* border-radius: 0.5rem; */
     padding: 0.5rem 0.5rem 0;
     /* background-color: #4f7fcc; */
@@ -657,8 +662,7 @@ h6 {
 
 /* 5. layout do Stats do card */
 .temp-stats-area {
-    /* width: clamp(120px, 20vw, 180px); */
-    /* width: 20%; */
+    flex: 0 0 clamp(110px, 20vw, 160px);
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -668,10 +672,11 @@ h6 {
 }
 
 .temp-chart-bars {
-    display: flex;
-    flex-direction: row;
-    align-items: stretch;
-    justify-content: stretch;
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 1fr;
+    align-items: end;
+    gap: 0.2rem;
     /* height: clamp(80px, 18vh, 140px); */
     height: 100%;
     width: 100%;
@@ -687,9 +692,9 @@ h6 {
     align-content: center;
     align-items: center;
     position: relative;
-    /* flex: 1; */
-    height: 100%;
     width: 100%;
+    min-width: 0;
+    height: 100%;
     
     /* background-color: #758378; */
 }
@@ -700,6 +705,7 @@ h6 {
     border-top-right-radius: 2px;
     transition: height 0.3s ease, background-color 0.3s ease;
     min-height: 2px;
+    margin: 0 auto;
 }
 
 .temp-bar-tooltip {

@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Temperature Card Variant 1 - Industrial Dashboard</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap"
+        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#3b82f6", // Vibrant Blue for primary actions
+                        "background-light": "#f8fafc",
+                        "background-dark": "#0f172a", // Deep slate for dashboard background
+                        surface: {
+                            light: "#ffffff",
+                            dark: "#1e293b", // Slate 800 for cards
+                        },
+                        danger: "#ef4444",
+                        warning: "#f59e0b",
+                        success: "#10b981",
+                        info: "#3b82f6"
+                    },
+                    fontFamily: {
+                        sans: ["Inter", "sans-serif"],
+                        display: ["Inter", "sans-serif"],
+                        mono: ["JetBrains Mono", "monospace"],
+                    },
+                    borderRadius: {
+                        DEFAULT: "0.5rem",
+                        'lg': "0.75rem",
+                        'xl': "1rem",
+                    },
+                },
+            },
+        };
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #475569;
+            border-radius: 10px;
+        }
+
+        .bar-transition {
+            transition: height 0.3s ease-out;
+        }
+    </style>
+</head>
+
+<body
+    class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen p-8 transition-colors duration-300">
+    <div class="max-w-7xl mx-auto">
+        <header class="mb-8 flex justify-between items-center">
+            <div>
+                <h1 class="text-2xl font-bold tracking-tight">Temperaturas</h1>
+                <p class="text-slate-500 dark:text-slate-400 text-sm">Monitoramento em tempo real dos sensores de
+                    geração.</p>
+            </div>
+            <div class="flex gap-4">
+                <button
+                    class="p-2 rounded-lg bg-surface-light dark:bg-surface-dark border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                    onclick="document.documentElement.classList.toggle('dark')">
+                    <span class="material-icons text-xl block dark:hidden">dark_mode</span>
+                    <span class="material-icons text-xl hidden dark:block">light_mode</span>
+                </button>
+                <button
+                    class="px-4 py-2 bg-primary text-white rounded-lg font-medium hover:opacity-90 transition-opacity flex items-center gap-2">
+                    <span class="material-icons text-sm">fullscreen</span>
+                    Ver tela cheia
+                </button>
+            </div>
+        </header>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div
+                class="bg-surface-light dark:bg-surface-dark border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                <div
+                    class="px-4 py-3 bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center">
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 truncate">
+                        PCH PEDRAS UG-01 - G MANCAL L.N.A. GUIA</h3>
+                    <span class="flex h-2 w-2 rounded-full bg-danger"></span>
+                </div>
+                <div class="p-5 flex gap-6">
+                    <div class="flex items-end gap-1 h-32 w-1/2">
+                        <div class="w-full bg-danger/20 rounded-t-sm bar-transition" style="height: 75%"></div>
+                        <div class="w-full bg-danger/20 rounded-t-sm bar-transition" style="height: 82%"></div>
+                        <div class="w-full bg-danger/20 rounded-t-sm bar-transition" style="height: 80%"></div>
+                        <div class="w-full bg-danger/20 rounded-t-sm bar-transition" style="height: 85%"></div>
+                        <div class="w-full bg-danger/20 rounded-t-sm bar-transition" style="height: 88%"></div>
+                        <div class="w-full bg-danger/20 rounded-t-sm bar-transition" style="height: 92%"></div>
+                        <div class="w-full bg-danger/20 rounded-t-sm bar-transition" style="height: 95%"></div>
+                        <div class="w-full bg-danger/20 rounded-t-sm bar-transition" style="height: 98%"></div>
+                        <div class="w-full bg-danger rounded-t-sm bar-transition" style="height: 100%"></div>
+                    </div>
+                    <div class="w-1/2 flex flex-col justify-between">
+                        <div>
+                            <p class="text-[10px] uppercase font-bold text-slate-400 mb-0.5">Atual</p>
+                            <div class="flex items-baseline gap-1">
+                                <span class="text-3xl font-mono font-bold text-danger">84.20</span>
+                                <span class="text-sm font-medium text-slate-400">°C</span>
+                            </div>
+                        </div>
+                        <div class="space-y-1.5 mt-4">
+                            <div class="flex justify-between items-center text-xs">
+                                <span class="text-slate-400">Alarme:</span>
+                                <span class="font-mono font-medium">81.00 °C</span>
+                            </div>
+                            <div class="flex justify-between items-center text-xs">
+                                <span class="text-slate-400">Trip:</span>
+                                <span class="font-mono font-medium">86.00 °C</span>
+                            </div>
+                            <div
+                                class="pt-2 border-t border-slate-100 dark:border-slate-700/50 flex justify-between items-center">
+                                <span class="text-[10px] font-bold text-slate-400 uppercase">Risco:</span>
+                                <span class="text-sm font-mono font-bold text-danger">97.91 %</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div
+                class="bg-surface-light dark:bg-surface-dark border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                <div
+                    class="px-4 py-3 bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center">
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 truncate">
+                        PCH PEDRAS UG-01 - T BUCHA RADIAL 01</h3>
+                    <span class="flex h-2 w-2 rounded-full bg-warning"></span>
+                </div>
+                <div class="p-5 flex gap-6">
+                    <div class="flex items-end gap-1 h-32 w-1/2">
+                        <div class="w-full bg-warning/20 rounded-t-sm bar-transition" style="height: 60%"></div>
+                        <div class="w-full bg-warning/20 rounded-t-sm bar-transition" style="height: 65%"></div>
+                        <div class="w-full bg-warning/20 rounded-t-sm bar-transition" style="height: 62%"></div>
+                        <div class="w-full bg-warning/20 rounded-t-sm bar-transition" style="height: 70%"></div>
+                        <div class="w-full bg-warning/20 rounded-t-sm bar-transition" style="height: 75%"></div>
+                        <div class="w-full bg-warning/20 rounded-t-sm bar-transition" style="height: 72%"></div>
+                        <div class="w-full bg-warning/20 rounded-t-sm bar-transition" style="height: 80%"></div>
+                        <div class="w-full bg-warning/20 rounded-t-sm bar-transition" style="height: 85%"></div>
+                        <div class="w-full bg-warning rounded-t-sm bar-transition" style="height: 88%"></div>
+                    </div>
+                    <div class="w-1/2 flex flex-col justify-between">
+                        <div>
+                            <p class="text-[10px] uppercase font-bold text-slate-400 mb-0.5">Atual</p>
+                            <div class="flex items-baseline gap-1">
+                                <span class="text-3xl font-mono font-bold text-warning">69.80</span>
+                                <span class="text-sm font-medium text-slate-400">°C</span>
+                            </div>
+                        </div>
+                        <div class="space-y-1.5 mt-4">
+                            <div class="flex justify-between items-center text-xs">
+                                <span class="text-slate-400">Alarme:</span>
+                                <span class="font-mono font-medium">68.00 °C</span>
+                            </div>
+                            <div class="flex justify-between items-center text-xs">
+                                <span class="text-slate-400">Trip:</span>
+                                <span class="font-mono font-medium">73.00 °C</span>
+                            </div>
+                            <div
+                                class="pt-2 border-t border-slate-100 dark:border-slate-700/50 flex justify-between items-center">
+                                <span class="text-[10px] font-bold text-slate-400 uppercase">Risco:</span>
+                                <span class="text-sm font-mono font-bold text-warning">95.62 %</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div
+                class="bg-surface-light dark:bg-surface-dark border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                <div
+                    class="px-4 py-3 bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center">
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 truncate">
+                        PCH PEDRAS UG-01 - T GAXETEIRO 01</h3>
+                    <span class="flex h-2 w-2 rounded-full bg-info"></span>
+                </div>
+                <div class="p-5 flex gap-6">
+                    <div class="flex items-end gap-1 h-32 w-1/2">
+                        <div class="w-full bg-info/20 rounded-t-sm bar-transition" style="height: 30%"></div>
+                        <div class="w-full bg-info/20 rounded-t-sm bar-transition" style="height: 32%"></div>
+                        <div class="w-full bg-info/20 rounded-t-sm bar-transition" style="height: 35%"></div>
+                        <div class="w-full bg-info/20 rounded-t-sm bar-transition" style="height: 34%"></div>
+                        <div class="w-full bg-info/20 rounded-t-sm bar-transition" style="height: 38%"></div>
+                        <div class="w-full bg-info/20 rounded-t-sm bar-transition" style="height: 40%"></div>
+                        <div class="w-full bg-info/20 rounded-t-sm bar-transition" style="height: 42%"></div>
+                        <div class="w-full bg-info/20 rounded-t-sm bar-transition" style="height: 44%"></div>
+                        <div class="w-full bg-info rounded-t-sm bar-transition" style="height: 46%"></div>
+                    </div>
+                    <div class="w-1/2 flex flex-col justify-between">
+                        <div>
+                            <p class="text-[10px] uppercase font-bold text-slate-400 mb-0.5">Atual</p>
+                            <div class="flex items-baseline gap-1">
+                                <span class="text-3xl font-mono font-bold text-info">44.60</span>
+                                <span class="text-sm font-medium text-slate-400">°C</span>
+                            </div>
+                        </div>
+                        <div class="space-y-1.5 mt-4">
+                            <div class="flex justify-between items-center text-xs">
+                                <span class="text-slate-400">Alarme:</span>
+                                <span class="font-mono font-medium">42.00 °C</span>
+                            </div>
+                            <div class="flex justify-between items-center text-xs">
+                                <span class="text-slate-400">Trip:</span>
+                                <span class="font-mono font-medium">47.00 °C</span>
+                            </div>
+                            <div
+                                class="pt-2 border-t border-slate-100 dark:border-slate-700/50 flex justify-between items-center">
+                                <span class="text-[10px] font-bold text-slate-400 uppercase">Risco:</span>
+                                <span class="text-sm font-mono font-bold text-info">94.68 %</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div
+                class="bg-surface-light dark:bg-surface-dark border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                <div
+                    class="px-4 py-3 bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center">
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 truncate">
+                        PCH PEDRAS UG-01 - T BUCHA RADIAL 02</h3>
+                    <span class="flex h-2 w-2 rounded-full bg-info"></span>
+                </div>
+                <div class="p-5 flex gap-6">
+                    <div class="flex items-end gap-1 h-32 w-1/2">
+                        <div class="w-full bg-info/20 rounded-t-sm bar-transition" style="height: 50%"></div>
+                        <div class="w-full bg-info/20 rounded-t-sm bar-transition" style="height: 55%"></div>
+                        <div class="w-full bg-info/20 rounded-t-sm bar-transition" style="height: 58%"></div>
+                        <div class="w-full bg-info/20 rounded-t-sm bar-transition" style="height: 60%"></div>
+                        <div class="w-full bg-info/20 rounded-t-sm bar-transition" style="height: 62%"></div>
+                        <div class="w-full bg-info/20 rounded-t-sm bar-transition" style="height: 65%"></div>
+                        <div class="w-full bg-info/20 rounded-t-sm bar-transition" style="height: 63%"></div>
+                        <div class="w-full bg-info/20 rounded-t-sm bar-transition" style="height: 66%"></div>
+                        <div class="w-full bg-info rounded-t-sm bar-transition" style="height: 68%"></div>
+                    </div>
+                    <div class="w-1/2 flex flex-col justify-between">
+                        <div>
+                            <p class="text-[10px] uppercase font-bold text-slate-400 mb-0.5">Atual</p>
+                            <div class="flex items-baseline gap-1">
+                                <span class="text-3xl font-mono font-bold text-info">66.00</span>
+                                <span class="text-sm font-medium text-slate-400">°C</span>
+                            </div>
+                        </div>
+                        <div class="space-y-1.5 mt-4">
+                            <div class="flex justify-between items-center text-xs">
+                                <span class="text-slate-400">Alarme:</span>
+                                <span class="font-mono font-medium">66.00 °C</span>
+                            </div>
+                            <div class="flex justify-between items-center text-xs">
+                                <span class="text-slate-400">Trip:</span>
+                                <span class="font-mono font-medium">71.00 °C</span>
+                            </div>
+                            <div
+                                class="pt-2 border-t border-slate-100 dark:border-slate-700/50 flex justify-between items-center">
+                                <span class="text-[10px] font-bold text-slate-400 uppercase">Risco:</span>
+                                <span class="text-sm font-mono font-bold text-info">92.96 %</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div
+                class="bg-surface-light dark:bg-surface-dark border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                <div
+                    class="px-4 py-3 bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center">
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 truncate">
+                        CGH HOPPEN UG-02 - VEDAÇÃO EIXO LA</h3>
+                    <span class="flex h-2 w-2 rounded-full bg-success"></span>
+                </div>
+                <div class="p-5 flex gap-6">
+                    <div class="flex items-end gap-1 h-32 w-1/2">
+                        <div class="w-full bg-success/20 rounded-t-sm bar-transition" style="height: 20%"></div>
+                        <div class="w-full bg-success/20 rounded-t-sm bar-transition" style="height: 22%"></div>
+                        <div class="w-full bg-success/20 rounded-t-sm bar-transition" style="height: 21%"></div>
+                        <div class="w-full bg-success/20 rounded-t-sm bar-transition" style="height: 24%"></div>
+                        <div class="w-full bg-success/20 rounded-t-sm bar-transition" style="height: 26%"></div>
+                        <div class="w-full bg-success/20 rounded-t-sm bar-transition" style="height: 25%"></div>
+                        <div class="w-full bg-success/20 rounded-t-sm bar-transition" style="height: 27%"></div>
+                        <div class="w-full bg-success/20 rounded-t-sm bar-transition" style="height: 29%"></div>
+                        <div class="w-full bg-success rounded-t-sm bar-transition" style="height: 31%"></div>
+                    </div>
+                    <div class="w-1/2 flex flex-col justify-between">
+                        <div>
+                            <p class="text-[10px] uppercase font-bold text-slate-400 mb-0.5">Atual</p>
+                            <div class="flex items-baseline gap-1">
+                                <span class="text-3xl font-mono font-bold text-success">32.90</span>
+                                <span class="text-sm font-medium text-slate-400">°C</span>
+                            </div>
+                        </div>
+                        <div class="space-y-1.5 mt-4">
+                            <div class="flex justify-between items-center text-xs">
+                                <span class="text-slate-400">Alarme:</span>
+                                <span class="font-mono font-medium">33.00 °C</span>
+                            </div>
+                            <div class="flex justify-between items-center text-xs">
+                                <span class="text-slate-400">Trip:</span>
+                                <span class="font-mono font-medium">37.00 °C</span>
+                            </div>
+                            <div
+                                class="pt-2 border-t border-slate-100 dark:border-slate-700/50 flex justify-between items-center">
+                                <span class="text-[10px] font-bold text-slate-400 uppercase">Risco:</span>
+                                <span class="text-sm font-mono font-bold text-success">88.92 %</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div
+                class="bg-surface-light dark:bg-surface-dark border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                <div
+                    class="px-4 py-3 bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center">
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 truncate">
+                        PCH PEDRAS UG-01 - ÓLEO U.H.L.M.</h3>
+                    <span class="flex h-2 w-2 rounded-full bg-info"></span>
+                </div>
+                <div class="p-5 flex gap-6">
+                    <div class="flex items-end gap-1 h-32 w-1/2">
+                        <div class="w-full bg-info/20 rounded-t-sm bar-transition" style="height: 45%"></div>
+                        <div class="w-full bg-info/20 rounded-t-sm bar-transition" style="height: 47%"></div>
+                        <div class="w-full bg-info/20 rounded-t-sm bar-transition" style="height: 46%"></div>
+                        <div class="w-full bg-info/20 rounded-t-sm bar-transition" style="height: 48%"></div>
+                        <div class="w-full bg-info/20 rounded-t-sm bar-transition" style="height: 50%"></div>
+                        <div class="w-full bg-info/20 rounded-t-sm bar-transition" style="height: 52%"></div>
+                        <div class="w-full bg-info/20 rounded-t-sm bar-transition" style="height: 51%"></div>
+                        <div class="w-full bg-info/20 rounded-t-sm bar-transition" style="height: 53%"></div>
+                        <div class="w-full bg-info rounded-t-sm bar-transition" style="height: 55%"></div>
+                    </div>
+                    <div class="w-1/2 flex flex-col justify-between">
+                        <div>
+                            <p class="text-[10px] uppercase font-bold text-slate-400 mb-0.5">Atual</p>
+                            <div class="flex items-baseline gap-1">
+                                <span class="text-3xl font-mono font-bold text-info">53.08</span>
+                                <span class="text-sm font-medium text-slate-400">°C</span>
+                            </div>
+                        </div>
+                        <div class="space-y-1.5 mt-4">
+                            <div class="flex justify-between items-center text-xs">
+                                <span class="text-slate-400">Alarme:</span>
+                                <span class="font-mono font-medium">55.00 °C</span>
+                            </div>
+                            <div class="flex justify-between items-center text-xs">
+                                <span class="text-slate-400">Trip:</span>
+                                <span class="font-mono font-medium">60.00 °C</span>
+                            </div>
+                            <div
+                                class="pt-2 border-t border-slate-100 dark:border-slate-700/50 flex justify-between items-center">
+                                <span class="text-[10px] font-bold text-slate-400 uppercase">Risco:</span>
+                                <span class="text-sm font-mono font-bold text-info">88.46 %</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <footer class="mt-12 grid grid-cols-2 md:grid-cols-4 gap-6">
+            <div
+                class="bg-surface-light dark:bg-surface-dark p-4 rounded-xl border border-slate-200 dark:border-slate-700">
+                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Total Sensores</p>
+                <p class="text-2xl font-bold">42</p>
+            </div>
+            <div
+                class="bg-surface-light dark:bg-surface-dark p-4 rounded-xl border border-slate-200 dark:border-slate-700">
+                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Críticos</p>
+                <p class="text-2xl font-bold text-danger">3</p>
+            </div>
+            <div
+                class="bg-surface-light dark:bg-surface-dark p-4 rounded-xl border border-slate-200 dark:border-slate-700">
+                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Alertas</p>
+                <p class="text-2xl font-bold text-warning">7</p>
+            </div>
+            <div
+                class="bg-surface-light dark:bg-surface-dark p-4 rounded-xl border border-slate-200 dark:border-slate-700">
+                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Operando Normal</p>
+                <p class="text-2xl font-bold text-success">32</p>
+            </div>
+        </footer>
+    </div>
+    <div
+        class="fixed bottom-6 right-6 flex items-center gap-2 bg-white dark:bg-slate-800 px-3 py-1.5 rounded-full border border-slate-200 dark:border-slate-700 shadow-lg text-[10px] font-bold uppercase tracking-wider">
+        <span class="relative flex h-2 w-2">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-2 w-2 bg-success"></span>
+        </span>
+        Transmissão ao vivo
+    </div>
+
+</body>
+
+</html>

@@ -173,6 +173,12 @@ lista = ['rats_crud.py','ratsController.py','rats.html']
 estrutura_pastas_arquivos(path, "", imprimir=True, lista_arquivos=lista)
 # print('-' * 50)
 # print('Métodos e funções dos arquivos Python:')
+
+'''
+Tenho o código abaixo que cria a imagem em anexo, mas preciso melhorar a visibilidade das temperaturas 
+
+'''
+
 '''
 Testes criar rateio
 
