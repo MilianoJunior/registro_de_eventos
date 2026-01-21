@@ -45,6 +45,9 @@ POTENCIA_LABELS = ["Potência Ativa"]
 
 TEMPERATURA_LABELS = ["Temperatura"]
 
+NIVEL_RESERVATORIO_LABELS = ["Nivel montante", "Nivel jusante UG-01", "Nivel jusante UG-02", "Nivel jusante UG-03", "Nivel jusante UG-04", "Nivel jusante UG-05", "Nivel jusante UG-06"]
+
+
 # -------------------------------------------------------------------
 # CACHE GLOBAL (compartilhado entre thread e socket)
 # -------------------------------------------------------------------
@@ -240,7 +243,8 @@ async def _coletar_async(configuracoes: Dict[str, Any], intervencoes_externas: D
             "descricao": resultado["descricao"],
             "tempo_leitura": resultado["tempo_leitura"],
             "erro": resultado["erro"],
-            "temperaturas": resultado.get("temperaturas"),  # Adiciona temperaturas ao consolidado
+            "temperaturas": resultado.get("temperaturas"),
+            "niveis": resultado.get("niveis"),
         }
     
     return sorted(consolidados.values(), key=lambda item: item["nome"])
@@ -256,21 +260,30 @@ async def _ler_dispositivo(
     slug_usina = _normalizar_slug(nome_usina)
     conexao = (dados_dispositivo or {}).get("conexao") or {}
     
-    registradores_status = _extrair_registradores_status(dados_dispositivo)
-    registradores_potencia = _extrair_registradores_potencia(dados_dispositivo)
-    registradores_temperatura = _extrair_registradores_temperatura(dados_dispositivo)
+    registradores_status = {}
+    registradores_potencia = {}
+    registradores_temperatura = {}
+    
+    # Se for PSA, não coleta status/potência/temperatura
+    if nome_dispositivo != "PSA":
+        registradores_status = _extrair_registradores_status(dados_dispositivo)
+        registradores_potencia = _extrair_registradores_potencia(dados_dispositivo)
+        registradores_temperatura = _extrair_registradores_temperatura(dados_dispositivo)
+
+    registradores_nivel = _extrair_registradores_nivel(dados_dispositivo)
 
     registradores_leitura = {
         **registradores_status, 
         **registradores_potencia, 
-        **registradores_temperatura
+        **registradores_temperatura,
+        **registradores_nivel
     }
     
-    if not registradores_status:
-        print(f"[WARN][coletor_core] Sem registradores STATUS: {nome_usina}/{nome_dispositivo}")
+    if not registradores_leitura:
+        print(f"[WARN][coletor_core] Sem registradores: {nome_usina}/{nome_dispositivo}")
         return _dict_response(
             nome_usina, slug_usina, nome_dispositivo, 0.0, "Sem conexão", 0.0,
-            "Nenhum registrador de STATUS configurado."
+            "Nenhum registrador configurado."
         )
     
     config_api = {
@@ -303,24 +316,30 @@ async def _ler_dispositivo(
             nome_usina, slug_usina, nome_dispositivo, 0.0, "Sem conexão", tempo, erro
         )
     
-    valores_status = {
-        chave: resultado.get(chave)
-        for chave in STATUS_LABEL_ORDER
-        if chave in resultado
-    }
+    status_real = "Indeterminado"
+    descricao_final = "Indeterminado"
     
-    status_real = _determinar_status(valores_status, nome_usina, nome_dispositivo)
-    descricao_final = status_real
+    if nome_dispositivo == "PSA":
+         status_real = "Online"
+         descricao_final = "Online"
+    else:
+        valores_status = {
+            chave: resultado.get(chave)
+            for chave in STATUS_LABEL_ORDER
+            if chave in resultado
+        }
+        status_real = _determinar_status(valores_status, nome_usina, nome_dispositivo)
+        descricao_final = status_real
 
-    # LÓGICA DE OVERRIDE DE INTERVENÇÃO MANUAL
-    if status_real == "UP (parada)":
-        intervencao_usina = intervencoes_externas.get(slug_usina, {})
-        motivo_override = intervencao_usina.get(nome_dispositivo)
-        
-        if motivo_override == "MANUTENCAO":
-            descricao_final = "Manutenção (parada)"
-        elif motivo_override == "RESTRICAO":
-            descricao_final = "Restrição da concessionária (parada)"
+        # LÓGICA DE OVERRIDE DE INTERVENÇÃO MANUAL
+        if status_real == "UP (parada)":
+            intervencao_usina = intervencoes_externas.get(slug_usina, {})
+            motivo_override = intervencao_usina.get(nome_dispositivo)
+            
+            if motivo_override == "MANUTENCAO":
+                descricao_final = "Manutenção (parada)"
+            elif motivo_override == "RESTRICAO":
+                descricao_final = "Restrição da concessionária (parada)"
 
     potencia_ativa_mw = _extrair_potencia_ativa(resultado)
 
@@ -331,11 +350,20 @@ async def _ler_dispositivo(
             val = resultado.get(key)
             if val is not None:
                 valores_temperatura[key] = val
+
+    # Extrai valores de nível
+    valores_nivel = {}
+    if registradores_nivel:
+        for key in registradores_nivel.keys():
+            val = resultado.get(key)
+            if val is not None:
+                valores_nivel[key] = val
     
     return _dict_response(
         nome_usina, slug_usina, nome_dispositivo,
         potencia_ativa_mw or 0.0, descricao_final, tempo, erro,
-        temperaturas=valores_temperatura
+        temperaturas=valores_temperatura,
+        niveis=valores_nivel
     )
 
 # -------------------------------------------------------------------
@@ -373,6 +401,17 @@ def _extrair_registradores_temperatura(dados_dispositivo: Dict[str, Any]) -> Dic
         if isinstance(config, list) and len(config) >= 2:
             registradores[nome_ponto] = config
             
+    return registradores
+
+def _extrair_registradores_nivel(dados_dispositivo: Dict[str, Any]) -> Dict[str, Any]:
+    """Filtra apenas registradores de nível (presentes na config 'leituras')."""
+    leituras = (dados_dispositivo or {}).get("leituras") or {}
+    registradores: Dict[str, Any] = {}
+    
+    for label in NIVEL_RESERVATORIO_LABELS:
+        config = leituras.get(label)
+        if isinstance(config, list) and len(config) >= 2:
+            registradores[label] = config
     return registradores
 
 def _extrair_potencia_ativa(valores: Optional[Dict[str, Any]]) -> Optional[float]:
@@ -413,6 +452,7 @@ def _dict_response(
     tempo_leitura: float,
     erro: Optional[Any],
     temperaturas: Optional[Dict[str, Any]] = None,
+    niveis: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     """Monta dict de resposta padronizado."""
     erro_normalizado = str(erro) if erro is not None else None
@@ -426,5 +466,6 @@ def _dict_response(
         "tempo_leitura": tempo_leitura,
         "erro": erro_normalizado,
         "temperaturas": temperaturas,
+        "niveis": niveis,
     }
 

@@ -109,17 +109,20 @@
                 ? Object.values(dispositivosDict)
                 : [];
 
+            // Filter out PSA devices for status and power badges
+            const ugsArr = dispositivosArr.filter(d => d.nome !== 'PSA');
+
             const statusTarget = document.querySelector(`[data-role="status-operacional"][data-usina-key="${slug}"]`);
             if (statusTarget) {
                 statusTarget.innerHTML = '';
-                const badges = this._renderStatusBadges(dispositivosArr, slug);
+                const badges = this._renderStatusBadges(ugsArr, slug);
                 badges.forEach(badge => statusTarget.appendChild(badge));
             }
 
             const potenciaTarget = document.querySelector(`[data-role="potencia-operacional"][data-usina-key="${slug}"]`);
             if (potenciaTarget) {
                 potenciaTarget.innerHTML = '';
-                const badges = this._renderPotenciaBadges(dispositivosArr);
+                const badges = this._renderPotenciaBadges(ugsArr);
                 badges.forEach(badge => potenciaTarget.appendChild(badge));
             }
 
@@ -131,22 +134,32 @@
         _atualizarTemperaturas(payload) {
             const container = document.querySelector('.temp-grid-container');
             if (!container) return;
-            const sensores = this._extrairTemperaturas(payload);
+
+            // 1. Atualizar cache com dados do payload
+            // A função _extrairTemperaturas atualiza o Map this.state.temperaturasPorChave
+            this._extrairTemperaturas(payload);
+
+            // 2. Pegar TODOS os sensores do cache para garantir ordenação global
+            // Isso previne problemas se o payload for parcial ou se quisermos reordenar tudo
+            const sensores = Array.from(this.state.temperaturasPorChave.values());
             if (sensores.length === 0) return;
 
+            // 3. Ordenar por Risco (Decrescente)
             sensores.sort((a, b) => (b.risco || 0) - (a.risco || 0));
 
+            // 4. Renderizar e Reordenar DOM
             sensores.forEach(s => {
-                // Tenta encontrar card existente pelo ID
-                // O seletor precisa escapar caracteres especiais se houver
-                // Mas como usamos slugify ou nome direto, vamos tentar pelo atributo
                 let card = container.querySelector(`[data-sensor-key="${CSS.escape(s.nome)}"]`);
 
                 if (card) {
+                    // Se o card já existe, atualizamos os dados
                     this._updateCard(card, s);
+                    // E o movemos para a posição correta (append joga para o final da lista sequencialmente)
+                    container.appendChild(card);
                 } else {
-                    const newCard = this._createCard(s);
-                    if (newCard) container.appendChild(newCard);
+                    // Se não existe, criamos e adicionamos
+                    const newCardFragment = this._createCard(s);
+                    if (newCardFragment) container.appendChild(newCardFragment);
                 }
             });
         },
@@ -484,6 +497,7 @@
         _somarPotenciaDispositivos(dispositivosDict) {
             if (!dispositivosDict) return 0;
             return Object.values(dispositivosDict).reduce((total, disp) => {
+                if (disp.nome === 'PSA') return total; // Ignorar PSA
                 const potencia = typeof disp?.potencia_ativa_mw === 'number' ? disp.potencia_ativa_mw : 0;
                 return total + potencia;
             }, 0);

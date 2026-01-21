@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block content %}
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="{{ url_for('static', filename='css/monitoramento.css') }}">
+
+<div class="h-full w-full p-4 overflow-hidden">
+    <div class="monitoramento-grid">
+        <!-- 6 Cards Estáticos -->
+        {% for usina in usinas %}
+        {% include "components/_card_monitoramento.html" %}
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

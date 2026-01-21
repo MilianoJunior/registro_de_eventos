@@ -1,0 +1,143 @@
+/* CSS for Monitoramento Page to fix missing Tailwind classes */
+
+:root {
+    /* Define colors derived from styles.css variables if needed, or hardcode the specific theme colors */
+    --color-surface-dark: #1e293b;
+    --color-surface-light: #ffffff;
+    --color-green-500: #22c55e;
+    --color-slate-800: #1e293b;
+    --color-slate-900: #0f172a;
+}
+
+.scada-number {
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.chart-glow {
+    filter: drop-shadow(0 0 8px rgba(34, 197, 94, 0.4));
+}
+
+.chart-glow-cyan {
+    filter: drop-shadow(0 0 8px rgba(6, 182, 212, 0.4));
+}
+
+.glass-panel {
+    backdrop-filter: blur(8px);
+    background: rgba(30, 41, 59, 0.7);
+}
+
+/* Fix for Grid Layout where Tailwind JIT classes are missing */
+.monitoramento-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    /* gap-6 equivalent */
+    height: 100%;
+}
+
+@media (min-width: 768px) {
+    .monitoramento-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (min-width: 1280px) {
+    .monitoramento-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+/* Fix for Missing Utility Classes in offline build */
+
+/* Backgrounds */
+.bg-surface {
+    background-color: var(--color-surface, #ffffff);
+}
+
+.dark .bg-surface {
+    background-color: var(--color-surface, #1e293b);
+}
+
+.bg-background {
+    background-color: var(--color-bg, #f8fafc);
+}
+
+.dark .bg-background {
+    background-color: var(--color-bg, #0f172a);
+}
+
+/* Header & Footer Backgrounds logic */
+/* Default Light Mode */
+.bg-slate-50\/50 {
+    background-color: rgba(248, 250, 252, 0.5);
+}
+
+.bg-slate-100\/50 {
+    background-color: rgba(241, 245, 249, 0.5);
+}
+
+/* Dark Mode Overrides */
+/* Note: We use the full selector that Tailwind would generate or a fallback if the class exists in HTML */
+.dark .dark\:bg-slate-900\/20 {
+    background-color: rgba(15, 23, 42, 0.2) !important;
+}
+
+.dark .dark\:bg-slate-950\/30 {
+    background-color: rgba(2, 6, 23, 0.3) !important;
+}
+
+/* Chart Area Background */
+.bg-slate-50\/30 {
+    background-color: rgba(248, 250, 252, 0.3);
+}
+
+.dark .dark\:bg-slate-900\/10 {
+    background-color: rgba(15, 23, 42, 0.1) !important;
+}
+
+
+/* Text Colors */
+.text-green-500 {
+    color: #22c55e !important;
+}
+
+.text-slate-400 {
+    color: #94a3b8;
+}
+
+.dark .dark\:text-slate-400 {
+    color: #94a3b8 !important;
+}
+
+.text-slate-500 {
+    color: #64748b;
+}
+
+.text-slate-900 {
+    color: #0f172a;
+}
+
+.dark .dark\:text-white {
+    color: #ffffff !important;
+}
+
+.dark .dark\:text-slate-200 {
+    color: #e2e8f0 !important;
+}
+
+/* Border Colors */
+.border-slate-200 {
+    border-color: #e2e8f0;
+}
+
+.border-slate-800 {
+    border-color: #1e293b;
+}
+
+.dark .dark\:border-slate-800 {
+    border-color: #1e293b !important;
+}
+
+.dark .dark\:border-slate-700 {
+    border-color: #334155 !important;
+}

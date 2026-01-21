@@ -44,5 +44,15 @@ class HomeController:
             # por_unidade=vm.stats_por_unidade,
             # mttr_diario=[] # Depreciado
         )
+        
+    def monitoramento(self):
+        """Renderiza a página de monitoramento full screen"""
+        # 1. Cria Contexto (busca dados + cache)
+        ctx = DadosContexto()
+        
+        # 2. Carrega ViewModel
+        vm = HomePageViewModel.carregar(ctx)
+        
+        return render_template("monitoramento.html", usinas=vm.usinas)
 # O código antigo e placeholders foram removidos pois agora
 # a lógica está encapsulada em HomePageViewModel e DadosContexto.

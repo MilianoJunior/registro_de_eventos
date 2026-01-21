@@ -37,7 +37,13 @@
 
                 <!-- Seção: Status das Usinas -->
                 <section>
-                    <h2 class="text-base font-medium mb-3 text-text-primary">Status das Usinas</h2>
+                    <div class="flex justify-between items-center mb-3">
+                        <h2 class="text-base font-medium text-text-primary">Status das Usinas</h2>
+                        <a href="{{ url_for('monitoramento') }}" target="_blank" rel="noopener"
+                            class="text-xs font-medium px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-text-primary hover:bg-background-alt transition">
+                            Monitoramento Full
+                        </a>
+                    </div>
                     <div class="space-y-3">
                         {% for usina in vm.usinas %}
                         <a href="{{ url_for('usina_page', sigla=usina.sigla) }}" class="block">

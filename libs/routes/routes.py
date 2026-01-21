@@ -100,6 +100,10 @@ def index():
     print('3- index')
     return homeController.home()
 
+@app.route("/monitoramento")
+def monitoramento():
+    return homeController.monitoramento()
+
 @app.route("/usina/<sigla>")
 # @desempenho
 def usina_page(sigla):
