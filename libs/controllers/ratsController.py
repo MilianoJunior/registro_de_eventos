@@ -108,9 +108,16 @@ class RatsController:
 
             return f"/assets/RAT/{subfolder}/{filename}"
         except OSError as e:
-            print(f"[ERRO PERMISSÃO] Falha ao salvar imagem {filename}: {e}")
-            # Levantar exceção para interromper o fluxo e avisar o usuário
-            raise Exception(f"Erro de Permissão no Servidor: Não foi possível salvar a imagem. Verifique as permissões da pasta assets. Detalhe: {str(e)}")
+            import getpass
+            current_user = getpass.getuser()
+            uid = os.getuid()
+            gid = os.getgid()
+            debug_info = f"User: {current_user} (UID: {uid}, GID: {gid})"
+            
+            print(f"[ERRO PERMISSÃO] {debug_info} - Falha ao salvar imagem {filename}: {e}")
+            
+            # Levantar exceção detalhada com o usuário real que está rodando o script
+            raise Exception(f"Erro de Permissão: O usuário do sistema '{current_user}' não tem permissão de escrita na pasta assets. Execute no terminal: sudo chmod -R 777 /opt/cog/registro_de_eventos/assets")
         except Exception as e:
             print(f"[ERRO GERAL] Falha ao salvar imagem {filename}: {e}")
             raise Exception(f"Erro ao processar imagem: {str(e)}")
