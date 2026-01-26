@@ -85,14 +85,35 @@ class RatsController:
             _, encoded = base64_str.split(",", 1)
             data = base64.b64decode(encoded)
             save_dir = os.path.join(RAT_DIR, subfolder)
-            os.makedirs(save_dir, exist_ok=True)
+            
+            # Garantir existência e tentar ajustar permissões
+            if not os.path.exists(save_dir):
+                os.makedirs(save_dir, exist_ok=True)
+                try:
+                    os.chmod(save_dir, 0o777) # Tenta permissão total se criou agora
+                except Exception:
+                    pass
+
             file_path = os.path.join(save_dir, filename)
+            
+            # Salvar arquivo
             with open(file_path, "wb") as f:
                 f.write(data)
+            
+            # Ajustar permissões do arquivo criado
+            try:
+                os.chmod(file_path, 0o666)
+            except Exception:
+                pass
+
             return f"/assets/RAT/{subfolder}/{filename}"
+        except OSError as e:
+            print(f"[ERRO PERMISSÃO] Falha ao salvar imagem {filename}: {e}")
+            # Levantar exceção para interromper o fluxo e avisar o usuário
+            raise Exception(f"Erro de Permissão no Servidor: Não foi possível salvar a imagem. Verifique as permissões da pasta assets. Detalhe: {str(e)}")
         except Exception as e:
-            print(f"Erro ao salvar imagem {filename}: {e}")
-            return ""
+            print(f"[ERRO GERAL] Falha ao salvar imagem {filename}: {e}")
+            raise Exception(f"Erro ao processar imagem: {str(e)}")
 
     def inforat(self):
         page = request.args.get('page', 1, type=int)
