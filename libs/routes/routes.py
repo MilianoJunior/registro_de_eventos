@@ -91,7 +91,8 @@ def chrome_devtools_probe():
 @app.route('/assets/<path:filename>')
 def serve_assets(filename):
     # Serve files from the assets directory located at the project root
-    assets_folder = os.path.join(os.getcwd(), 'assets')
+    base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    assets_folder = os.path.join(base_dir, 'assets')
     return send_from_directory(assets_folder, filename)
 
 @app.route("/")

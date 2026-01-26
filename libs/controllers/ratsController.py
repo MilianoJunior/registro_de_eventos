@@ -296,20 +296,45 @@ class RatsController:
     
 
     def upload_foto(self):
-        if 'file' not in request.files:
-            return {'status': 'error', 'message': 'Nenhum arquivo enviado'}, 400
-        file = request.files['file']
-        if file.filename == '':
-            return {'status': 'error', 'message': 'Nenhum arquivo selecionado'}, 400
-        if file:
-            filename = secure_filename(file.filename)
-            unique_filename = f"{uuid.uuid4().hex}_{filename}"
-            upload_folder = os.path.join(RAT_DIR, 'imgs')
-            os.makedirs(upload_folder, exist_ok=True)
-            file_path = os.path.join(upload_folder, unique_filename)
-            file.save(file_path)
-            relative_path = f"/assets/RAT/imgs/{unique_filename}"
-            return {'status': 'success', 'url': relative_path}, 200
+        try:
+            if 'file' not in request.files:
+                return {'status': 'error', 'message': 'Nenhum arquivo enviado'}, 400
+            file = request.files['file']
+            if file.filename == '':
+                return {'status': 'error', 'message': 'Nenhum arquivo selecionado'}, 400
+            if file:
+                filename = secure_filename(file.filename)
+                unique_filename = f"{uuid.uuid4().hex}_{filename}"
+                
+                # Certificar que RAT_DIR e imgs existem
+                upload_folder = os.path.join(RAT_DIR, 'imgs')
+                
+                # Debug para logs do servidor
+                print(f"[UPLOAD] Tentando salvar em: {upload_folder}")
+
+                if not os.path.exists(upload_folder):
+                    try:
+                        os.makedirs(upload_folder, exist_ok=True)
+                        print(f"[UPLOAD] Diretório criado: {upload_folder}")
+                    except OSError as e:
+                        print(f"[UPLOAD] Erro ao criar diretório: {e}")
+                        return {'status': 'error', 'message': f'Erro de permissão ao criar pasta: {str(e)}'}, 500
+
+                file_path = os.path.join(upload_folder, unique_filename)
+                
+                try:
+                    file.save(file_path)
+                    print(f"[UPLOAD] Arquivo salvo: {file_path}")
+                except Exception as e:
+                    print(f"[UPLOAD] Erro ao salvar arquivo: {e}")
+                    return {'status': 'error', 'message': f'Erro ao gravar arquivo: {str(e)}'}, 500
+
+                relative_path = f"/assets/RAT/imgs/{unique_filename}"
+                return {'status': 'success', 'url': relative_path}, 200
+                
+        except Exception as e:
+            print(f"[UPLOAD] Erro inesperado: {e}")
+            return {'status': 'error', 'message': f'Erro interno: {str(e)}'}, 500
 
     def ver_rat(self, rat_id):
         try:
