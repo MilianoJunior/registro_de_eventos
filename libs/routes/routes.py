@@ -71,13 +71,16 @@ USERS = {
         'role': 'user'
     },
     'user':{
-        'password': 'User654123@',
+        'password': 'Use654123@',
         'name': 'User',
         'email': 'user@engesep.com.br',
         'role': 'user'
     }
 }
-
+'''
+Agora vamos criar a seguinte lógica de cadastramento,  quando alguém se conectar com o usuario user, esse usuario vai ser redirecionando para a pagina de cadastramento, 
+sendo assim, onde constara apenas os campos de nome, email, senha, perfil e confirmar senha, e um botão para cadastrar o usuário.
+'''
 # Rate-limit simples em memória para login (5 tentativas / 5 min por IP)
 LOGIN_MAX_ATTEMPTS = 5
 LOGIN_WINDOW_SECONDS = 300
