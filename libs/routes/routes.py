@@ -70,6 +70,12 @@ USERS = {
         'email': 'laura@engesep.com.br',
         'role': 'user'
     },
+    'user':{
+        'password': 'User654123@',
+        'name': 'User',
+        'email': 'user@engesep.com.br',
+        'role': 'user'
+    }
 }
 
 # Rate-limit simples em memória para login (5 tentativas / 5 min por IP)
