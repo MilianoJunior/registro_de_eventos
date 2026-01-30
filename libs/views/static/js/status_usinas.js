@@ -188,13 +188,6 @@
                     risco: Number(item.risco ?? 0),
                 });
             });
-            // Ordenação inicial
-            /*
-            O render já vem ordenado do servidor ?
-            Se sim, não precisamos reordenar agora para não mudar a ordem visual
-            Se não, talvez seria bom. Mas no load inicial é melhor respeitar o HTML.
-            As atualizações subsequentes usarão o sort do JS.
-            */
             const sensores = Array.from(this.state.temperaturasPorChave.values());
             if (sensores.length === 0) return;
         },
@@ -420,8 +413,6 @@
                 const clone = template.content.cloneNode(true);
                 const span = clone.querySelector('span'); // root span
 
-                // Adicionar classes de cor
-                // Nota: fallbackColors traz strings completas 'bg-...' mas precisamos cuidar pra não sobrescrever
                 span.className = `${fallbackColors.bg} ${fallbackColors.text} text-xs px-2 py-0.5 rounded inline-flex items-center gap-1 whitespace-nowrap transition-all`;
 
                 clone.querySelector('.rounded-full').className = `w-1.5 h-1.5 rounded-full ${fallbackColors.dot}`;
@@ -438,7 +429,7 @@
                 const deviceName = disp.nome || '';
 
                 const descLower = descricao.toLowerCase().trim();
-                const isEditable = ['up (parada)', 'manutenção (parada)', 'restrição da concessionária (parada)'].includes(descLower);
+                const isEditable = ['up (parada)', 'manutenção (parada)', 'restrição da concessionária (parada)','sem conexão'].includes(descLower);
 
                 const rootSpan = clone.querySelector('span'); // root
                 rootSpan.className = `${colors.bg} ${colors.text} text-xs px-2 py-0.5 rounded inline-flex items-center gap-1 whitespace-nowrap transition-all`;
@@ -566,8 +557,6 @@
                     timestamp: Date.now()
                 });
 
-                // Feedback visual
-                // O modal fecha, e a atualização virá do backend via broadcast
             } else {
                 alert('Erro: Sem conexão com o servidor.');
             }

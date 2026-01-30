@@ -113,7 +113,7 @@
             </tbody>
         </table>
     </div>
-    <div class="rat-footer">
+    <div class="rat-footer" data-search="{{ search_query }}">
         <span class="text-xs text-[var(--color-text-muted)]">
             Página <span class="font-bold text-[var(--color-text)]">{{ current_page }}</span> de <span
                 class="font-bold text-[var(--color-text)]">{{ total_pages }}</span>
@@ -628,6 +628,14 @@ ${foto.legenda ? `<div
 
     let searchTimeout = null;
 
+    document.addEventListener('DOMContentLoaded', () => {
+        const input = document.getElementById('search-rats-input');
+        if (!input || input.value) return;
+        const urlParams = new URLSearchParams(window.location.search);
+        const q = urlParams.get('q');
+        if (q) input.value = q;
+    });
+
     // Server-side debounced search
     function debounceFilterRats() {
         const input = document.getElementById('search-rats-input');
@@ -645,7 +653,8 @@ ${foto.legenda ? `<div
         if (btn.disabled) return;
         const page = btn.dataset.page;
         const input = document.getElementById('search-rats-input');
-        const term = input ? input.value : '';
+        const urlParams = new URLSearchParams(window.location.search);
+        const term = (input && input.value.trim()) || urlParams.get('q') || '';
         fetchRats(page, term);
     }
 
@@ -675,7 +684,11 @@ ${foto.legenda ? `<div
                     document.querySelector('.rat-table-wrapper').innerHTML = newTableWrapper.innerHTML;
                 }
                 if (newFooter) {
-                    document.querySelector('.rat-footer').innerHTML = newFooter.innerHTML;
+                    const footer = document.querySelector('.rat-footer');
+                    if (footer) {
+                        footer.innerHTML = newFooter.innerHTML;
+                        footer.dataset.search = term || '';
+                    }
                 }
 
                 // Update URL history without reload

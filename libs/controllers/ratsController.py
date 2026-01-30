@@ -156,7 +156,8 @@ class RatsController:
                 'components/_tabela_rats.html',
                 lista_rats=lista_rats,
                 current_page=page,
-                total_pages=total_pages
+                total_pages=total_pages,
+                search_query=search_query
             )
             
         # Buscar KPIs

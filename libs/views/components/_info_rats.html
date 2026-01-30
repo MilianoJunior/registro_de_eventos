@@ -143,31 +143,46 @@
         const page = btn.getAttribute('data-page');
         if (!page || page < 1) return;
 
-        try {
-            // Add loading state opacity
-            const container = document.getElementById('rat-table-container');
-            container.style.opacity = '0.5';
-            container.style.pointerEvents = 'none';
+        const input = document.getElementById('search-rats-input');
+        const urlParams = new URLSearchParams(window.location.search);
+        const term = (input && input.value.trim()) || urlParams.get('q') || '';
 
-            const response = await fetch(`/rats?page=${page}&partial=true`);
+        if (typeof fetchRats === 'function') {
+            fetchRats(page, term);
+            return;
+        }
+
+        try {
+            const container = document.getElementById('rat-table-container');
+            if (container) {
+                container.style.opacity = '0.5';
+                container.style.pointerEvents = 'none';
+            }
+
+            let url = `/rats?page=${page}&partial=true`;
+            if (term) {
+                url += `&q=${encodeURIComponent(term)}`;
+            }
+
+            const response = await fetch(url);
             if (response.ok) {
                 const html = await response.text();
-                // Create a temporary container to extract the new content
                 const tempDiv = document.createElement('div');
                 tempDiv.innerHTML = html;
 
-                // If the response is the full table container, replace the current one
-                // The partial returns the root element <div id="rat-table-container">...</div>
-                // So we replace the current container with the new one
-                if (tempDiv.firstElementChild) {
+                if (tempDiv.firstElementChild && container) {
                     container.replaceWith(tempDiv.firstElementChild);
                 }
+
+                let newUrl = window.location.pathname + `?page=${page}`;
+                if (term) newUrl += `&q=${encodeURIComponent(term)}`;
+                window.history.pushState({ path: newUrl }, '', newUrl);
             } else {
                 console.error('Failed to load page');
             }
         } catch (error) {
             console.error('Error fetching data:', error);
-            // Restore opacity in case of error
+        } finally {
             const container = document.getElementById('rat-table-container');
             if (container) {
                 container.style.opacity = '1';

@@ -20,21 +20,17 @@
 
         <!-- Cards de Estatísticas -->
         <header class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-            {{ cards.card('Potência Ativa', vm.potencia_total_mw, unit='MW', text_color_class='text-text-primary',
-            value_id='potencia-total-mw') }}
-            {{ cards.card('Ocorrências Abertas', vm.stats_por_status.get('aberta', 0), text_color_class='text-danger')
-            }}
-            {{ cards.card('Em Andamento', vm.stats_por_status.get('em_andamento', 0), text_color_class='text-warning')
-            }}
+            {{ cards.card('Potência Ativa', vm.potencia_total_mw, unit='MW',
+            text_color_class='text-text-primary',value_id='potencia-total-mw') }}
+            {{ cards.card('Ocorrências Abertas', vm.stats_por_status.get('aberta', 0), text_color_class='text-danger')}}
+            {{ cards.card('Em Andamento', vm.stats_por_status.get('em_andamento', 0), text_color_class='text-warning')}}
             {{ cards.card('Resolvidas', vm.stats_por_status.get('resolvida', 0), text_color_class='text-success') }}
         </header>
 
         <!-- Conteúdo Principal -->
         <main class="space-y-6">
-
             <!-- Grid: Status das Usinas e Ocorrências Recentes -->
             <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
-
                 <!-- Seção: Status das Usinas -->
                 <section>
                     <div class="flex justify-between items-center mb-3">
@@ -54,10 +50,8 @@
                                     <div class="flex flex-wrap gap-1 justify-end max-w-[60%]"
                                         data-role="status-operacional"
                                         data-usina-key="{{ (usina.nome or usina.sigla)|slugify }}">
-                                        <span
-                                            class="bg-blue-500/20 text-blue-500 text-xs px-2 py-0.5 rounded inline-flex items-center gap-1">
-                                            <span
-                                                class="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></span>Carregando...
+                                        <span class="bg-blue-500/20 text-blue-500 text-xs px-2 py-0.5 rounded inline-flex items-center gap-1">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></span>Carregando...
                                         </span>
                                     </div>
                                 </div>

@@ -55,11 +55,13 @@
             <div class="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <label class="flex flex-col gap-2">
                     <span class="text-sm font-medium rat-text-muted">Data da Solicitação</span>
-                    <input class="rat-input dark:[color-scheme:dark]" type="date" value="{{ data_atual }}" />
+                    <input id="input-data-solicitacao" class="rat-input dark:[color-scheme:dark]" type="date"
+                        value="{{ data_atual }}" />
                 </label>
                 <label class="flex flex-col gap-2">
                     <span class="text-sm font-medium rat-text-muted">Solicitante</span>
-                    <input class="rat-input placeholder:text-gray-600" placeholder="Nome do contato" type="text" />
+                    <input id="input-solicitante" class="rat-input placeholder:text-gray-600"
+                        placeholder="Nome do contato" type="text" />
                 </label>
                 <label class="flex flex-col gap-2">
                     <span class="text-sm font-medium rat-text-muted">Tipo de Atividade</span>
@@ -308,8 +310,7 @@
                             <div class="absolute bottom-8 left-4 right-4 border-b border-gray-300 pointer-events-none">
                             </div>
                         </div>
-                        <input id="nome-tecnico" class="rat-input text-sm mt-1" placeholder="Nome Legível do Técnico"
-                            type="text" />
+                        <input id="nome-tecnico" class="rat-input text-sm mt-1" placeholder="Nome Legível do Técnico" type="text" />
                     </div>
                     <div class="flex flex-col gap-2">
                         <span class="text-sm font-medium rat-text-muted">Assinatura do Cliente</span>
@@ -388,6 +389,255 @@
     }
 </script>
 <script>
+    // -------- Draft em sessionStorage (TTL) --------
+    const RAT_DRAFT_KEY = 'rat_draft_v1';
+    const RAT_DRAFT_TTL_MS = 10 * 60 * 1000; // 10 minutos
+    let saveDraftTimeout = null;
+
+    function _getDraftPayload() {
+        const horas = [];
+        document.querySelectorAll('#tbody-horas tr').forEach(row => {
+            const data = row.querySelector('.input-data')?.value || '';
+            const inicio = row.querySelector('.input-hora-inicio')?.value || '';
+            const fim = row.querySelector('.input-hora-fim')?.value || '';
+            const executante = row.querySelector('.input-executante')?.value || '';
+            const obs = row.querySelector('input[placeholder="Notas"]')?.value || '';
+            if (data || inicio || fim || executante || obs) {
+                horas.push({ data, inicio, fim, executante, obs });
+            }
+        });
+
+        const materiais = [];
+        document.querySelectorAll('#tbody-materiais tr').forEach(row => {
+            const codigo = row.querySelector('.input-codigo')?.value || '';
+            const descricao = row.querySelector('.input-descricao')?.value || '';
+            const fabricante = row.querySelector('.input-fabricante')?.value || '';
+            const qtd = row.querySelector('.input-qtd')?.value || '';
+            const unidade = row.querySelector('.input-unidade')?.value || '';
+            if (codigo || descricao || fabricante || qtd || unidade) {
+                materiais.push({ codigo, descricao, fabricante, qtd, unidade });
+            }
+        });
+
+        const fotos = [];
+        document.querySelectorAll('.foto-item').forEach(item => {
+            const img = item.querySelector('img');
+            const legenda = item.querySelector('input[type="text"]')?.value || '';
+            if (img?.dataset?.path) {
+                fotos.push({ url: img.dataset.path, legenda });
+            }
+        });
+
+        return {
+            savedAt: Date.now(),
+            clienteId: document.getElementById('select-cliente')?.value || '',
+            obra: document.getElementById('select-obra')?.value || '',
+            dataSolicitacao: document.getElementById('input-data-solicitacao')?.value || '',
+            solicitante: document.getElementById('input-solicitante')?.value || '',
+            atividade: document.getElementById('select-atividade')?.value || '',
+            prioridade: document.getElementById('select-prioridade')?.value || '',
+            garantia: document.getElementById('input-garantia')?.checked || false,
+            relato: document.getElementById('txt-relato')?.value || '',
+            descricao: document.getElementById('txt-descricao')?.value || '',
+            conclusao: document.getElementById('txt-conclusao')?.value || '',
+            deslocamento: document.getElementById('input-deslocamento')?.value || '',
+            nomeTecnico: document.getElementById('nome-tecnico')?.value || '',
+            nomeCliente: document.getElementById('nome-cliente')?.value || '',
+            horas,
+            materiais,
+            fotos
+        };
+    }
+
+    function _saveDraftDebounced() {
+        if (saveDraftTimeout) clearTimeout(saveDraftTimeout);
+        saveDraftTimeout = setTimeout(() => {
+            try {
+                const payload = _getDraftPayload();
+                sessionStorage.setItem(RAT_DRAFT_KEY, JSON.stringify(payload));
+            } catch (e) {
+                console.warn('Falha ao salvar draft RAT:', e);
+            }
+        }, 300);
+    }
+
+    function _clearDraft() {
+        try {
+            sessionStorage.removeItem(RAT_DRAFT_KEY);
+        } catch (e) { }
+    }
+
+    function _resetHorasRow(row) {
+        const inputs = row.querySelectorAll('input, select');
+        inputs.forEach(input => {
+            if (input.tagName === 'SELECT') {
+                input.value = '';
+            } else {
+                input.value = '';
+            }
+        });
+    }
+
+    function _applyHorasDraft(horas) {
+        const tbody = document.getElementById('tbody-horas');
+        if (!tbody) return;
+        const templateRow = tbody.querySelector('tr') ? tbody.querySelector('tr').cloneNode(true) : null;
+        tbody.innerHTML = '';
+
+        if (!templateRow) return;
+        if (!horas || horas.length === 0) {
+            _resetHorasRow(templateRow);
+            tbody.appendChild(templateRow);
+            return;
+        }
+
+        horas.forEach(item => {
+            const linha = templateRow.cloneNode(true);
+            linha.querySelector('.input-data').value = item.data || '';
+            linha.querySelector('.input-hora-inicio').value = item.inicio || '';
+            linha.querySelector('.input-hora-fim').value = item.fim || '';
+            linha.querySelector('.input-executante').value = item.executante || '';
+            const obs = linha.querySelector('input[placeholder="Notas"]');
+            if (obs) obs.value = item.obs || '';
+            tbody.appendChild(linha);
+        });
+        calcularTotalHoras();
+    }
+
+    function _resetMateriaisRow(row) {
+        const inputs = row.querySelectorAll('input');
+        inputs.forEach(input => {
+            if (input.type === 'number') {
+                input.value = '1';
+            } else {
+                input.value = '';
+            }
+        });
+        const resultsContainer = row.querySelector('.results-container');
+        if (resultsContainer) {
+            resultsContainer.innerHTML = '';
+            resultsContainer.classList.add('hidden');
+        }
+    }
+
+    function _applyMateriaisDraft(materiais) {
+        const tbody = document.getElementById('tbody-materiais');
+        if (!tbody) return;
+        const templateRow = tbody.querySelector('tr') ? tbody.querySelector('tr').cloneNode(true) : null;
+        tbody.innerHTML = '';
+
+        if (!templateRow) return;
+        if (!materiais || materiais.length === 0) {
+            _resetMateriaisRow(templateRow);
+            tbody.appendChild(templateRow);
+            return;
+        }
+
+        materiais.forEach(item => {
+            const linha = templateRow.cloneNode(true);
+            linha.querySelector('.input-codigo').value = item.codigo || '';
+            linha.querySelector('.input-descricao').value = item.descricao || '';
+            linha.querySelector('.input-fabricante').value = item.fabricante || '';
+            linha.querySelector('.input-qtd').value = item.qtd || '1';
+            linha.querySelector('.input-unidade').value = item.unidade || '';
+            tbody.appendChild(linha);
+        });
+    }
+
+    function _applyFotosDraft(fotos) {
+        const grid = document.getElementById('grid-fotos');
+        if (!grid) return;
+        grid.innerHTML = '';
+        if (!fotos || fotos.length === 0) return;
+        fotos.forEach(item => {
+            adicionarCardFoto(item.url, '');
+            const last = grid.lastElementChild;
+            if (last) {
+                const legendaInput = last.querySelector('input[type="text"]');
+                if (legendaInput) legendaInput.value = item.legenda || '';
+            }
+        });
+    }
+
+    function _restoreDraft() {
+        let raw = null;
+        try {
+            raw = sessionStorage.getItem(RAT_DRAFT_KEY);
+        } catch (e) { }
+        if (!raw) return;
+
+        let draft = null;
+        try {
+            draft = JSON.parse(raw);
+        } catch (e) {
+            _clearDraft();
+            return;
+        }
+        if (!draft?.savedAt || Date.now() - draft.savedAt > RAT_DRAFT_TTL_MS) {
+            _clearDraft();
+            return;
+        }
+
+        const selectCliente = document.getElementById('select-cliente');
+        if (selectCliente && draft.clienteId) {
+            selectCliente.value = draft.clienteId;
+            atualizarDadosCliente();
+        }
+        const selectObra = document.getElementById('select-obra');
+        if (selectObra && draft.obra) {
+            const exists = Array.from(selectObra.options).some(opt => opt.value === draft.obra);
+            if (!exists) {
+                const opt = document.createElement('option');
+                opt.value = draft.obra;
+                opt.text = draft.obra;
+                selectObra.appendChild(opt);
+            }
+            selectObra.value = draft.obra;
+        }
+
+        const dataInput = document.getElementById('input-data-solicitacao');
+        if (dataInput && draft.dataSolicitacao) dataInput.value = draft.dataSolicitacao;
+        const solicitanteInput = document.getElementById('input-solicitante');
+        if (solicitanteInput && draft.solicitante) solicitanteInput.value = draft.solicitante;
+
+        const atividade = document.getElementById('select-atividade');
+        if (atividade && draft.atividade) atividade.value = draft.atividade;
+        const prioridade = document.getElementById('select-prioridade');
+        if (prioridade && draft.prioridade) prioridade.value = draft.prioridade;
+
+        const garantia = document.getElementById('input-garantia');
+        if (garantia) garantia.checked = !!draft.garantia;
+
+        const relato = document.getElementById('txt-relato');
+        if (relato && draft.relato) relato.value = draft.relato;
+        const descricao = document.getElementById('txt-descricao');
+        if (descricao && draft.descricao) descricao.value = draft.descricao;
+        const conclusao = document.getElementById('txt-conclusao');
+        if (conclusao && draft.conclusao) conclusao.value = draft.conclusao;
+
+        const deslocamento = document.getElementById('input-deslocamento');
+        if (deslocamento && draft.deslocamento) deslocamento.value = draft.deslocamento;
+
+        const nomeTecnico = document.getElementById('nome-tecnico');
+        if (nomeTecnico && draft.nomeTecnico) nomeTecnico.value = draft.nomeTecnico;
+        const nomeCliente = document.getElementById('nome-cliente');
+        if (nomeCliente && draft.nomeCliente) nomeCliente.value = draft.nomeCliente;
+
+        _applyHorasDraft(draft.horas || []);
+        _applyMateriaisDraft(draft.materiais || []);
+        _applyFotosDraft(draft.fotos || []);
+    }
+
+    function _bindDraftEvents() {
+        document.addEventListener('input', _saveDraftDebounced);
+        document.addEventListener('change', _saveDraftDebounced);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        _restoreDraft();
+        _bindDraftEvents();
+    });
+
     // Script e Lógica para Horas de Serviço
     document.getElementById('btn-adicionar-horas').addEventListener('click', function () {
         const tbody = document.getElementById('tbody-horas');
@@ -404,6 +654,7 @@
         });
 
         tbody.appendChild(novaLinha);
+        _saveDraftDebounced();
     });
 
     function removerLinhaHoras(btn) {
@@ -420,6 +671,7 @@
             inputs.forEach(input => input.value = '');
             calcularTotalHoras();
         }
+        _saveDraftDebounced();
     }
 
     function calcularTotalHoras() {
@@ -483,6 +735,7 @@
         }
 
         tbody.appendChild(novaLinha);
+        _saveDraftDebounced();
     });
 
     function removerLinhaMaterial(btn) {
@@ -501,6 +754,7 @@
                 }
             });
         }
+        _saveDraftDebounced();
     }
 
     let searchTimeout = null;
@@ -554,6 +808,7 @@
         tr.querySelector('.input-unidade').value = produto.unidade || 'UN';
 
         tr.querySelector('.results-container').classList.add('hidden');
+        _saveDraftDebounced();
     }
 
     // Fechar resultados ao clicar fora
@@ -634,12 +889,14 @@
             </div>
         `;
         grid.appendChild(div);
+        _saveDraftDebounced();
     }
 
     function removerFoto(btn) {
         const item = btn.closest('.foto-item');
         item.remove();
         // Não precisamos mais verificar msg-sem-fotos
+        _saveDraftDebounced();
     }
 
     // Logic for Signatures
@@ -884,6 +1141,7 @@
             const result = await response.json();
 
             if (response.ok) {
+                _clearDraft();
                 customAlert('Sucesso', `RAT ${result.protocolo} salva com sucesso!`, 'success', () => {
                     window.location.href = '/rats';
                 });
