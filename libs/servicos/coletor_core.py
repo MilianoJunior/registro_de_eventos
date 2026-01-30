@@ -259,6 +259,15 @@ async def _ler_dispositivo(
     """Lê status e potência de um dispositivo via Modbus."""
     slug_usina = _normalizar_slug(nome_usina)
     conexao = (dados_dispositivo or {}).get("conexao") or {}
+
+    # Prepara dados de intervenção (Override)
+    intervencao_usina = intervencoes_externas.get(slug_usina, {})
+    motivo_override = intervencao_usina.get(nome_dispositivo)
+    descricao_override = None
+    if motivo_override == "MANUTENCAO":
+        descricao_override = "Manutenção (parada)"
+    elif motivo_override == "RESTRICAO":
+        descricao_override = "Restrição da concessionária (parada)"
     
     registradores_status = {}
     registradores_potencia = {}
@@ -281,6 +290,11 @@ async def _ler_dispositivo(
     
     if not registradores_leitura:
         print(f"[WARN][coletor_core] Sem registradores: {nome_usina}/{nome_dispositivo}")
+        if motivo_override and descricao_override:
+             return _dict_response(
+                nome_usina, slug_usina, nome_dispositivo, 0.0, descricao_override, 0.0,
+                "Nenhum registrador configurado (Override ativo)."
+            )
         return _dict_response(
             nome_usina, slug_usina, nome_dispositivo, 0.0, "Sem conexão", 0.0,
             "Nenhum registrador configurado."
@@ -307,13 +321,15 @@ async def _ler_dispositivo(
         erro_str = str(exc)
         print(f"[ERRO][coletor_core] Falha leitura {nome_usina}/{nome_dispositivo}: {erro_str}")
         
+        msg_status = descricao_override if (motivo_override and descricao_override) else "Sem conexão"
         return _dict_response(
-            nome_usina, slug_usina, nome_dispositivo, 0.0, "Sem conexão", 0.0, erro_str
+            nome_usina, slug_usina, nome_dispositivo, 0.0, msg_status, 0.0, erro_str
         )
     
     if resultado is None:
+        msg_status = descricao_override if (motivo_override and descricao_override) else "Sem conexão"
         return _dict_response(
-            nome_usina, slug_usina, nome_dispositivo, 0.0, "Sem conexão", tempo, erro
+            nome_usina, slug_usina, nome_dispositivo, 0.0, msg_status, tempo, erro
         )
     
     status_real = "Indeterminado"
@@ -331,15 +347,8 @@ async def _ler_dispositivo(
         status_real = _determinar_status(valores_status, nome_usina, nome_dispositivo)
         descricao_final = status_real
 
-        # LÓGICA DE OVERRIDE DE INTERVENÇÃO MANUAL
-        if status_real == "UP (parada)":
-            intervencao_usina = intervencoes_externas.get(slug_usina, {})
-            motivo_override = intervencao_usina.get(nome_dispositivo)
-            
-            if motivo_override == "MANUTENCAO":
-                descricao_final = "Manutenção (parada)"
-            elif motivo_override == "RESTRICAO":
-                descricao_final = "Restrição da concessionária (parada)"
+        # LÓGICA DE OVERRIDE MOVIDA PARA O FINAL
+        pass
 
     potencia_ativa_mw = _extrair_potencia_ativa(resultado)
 
@@ -359,6 +368,22 @@ async def _ler_dispositivo(
             if val is not None:
                 valores_nivel[key] = val
     
+    # --- LÓGICA DE OVERRIDE UNIFICADA ---
+    if motivo_override and descricao_override:
+        # Só aplica override se não estiver gerando potência (segurança)
+        # Se houve erro de leitura, assumimos potencia 0.0, então aplica.
+        # Se leu sucesso, verifica status_real.
+        
+        # Casos onde NÃO se deve aplicar override de parada:
+        # 1. Se estiver sincronizado/gerando (potencia > 0.1 apenas p/ margem)
+        p_ativa = potencia_ativa_mw if potencia_ativa_mw is not None else 0.0
+        
+        # Verifica status se disponível
+        eh_status_ativo = status_real in ["US (sincronizado)", "UMD (marcha desexcitada)", "UPS (pronta para sincronização)", "UPGM (pronta para giro mecânico)"]
+        
+        if p_ativa < 0.1 and not eh_status_ativo:
+             descricao_final = descricao_override
+
     return _dict_response(
         nome_usina, slug_usina, nome_dispositivo,
         potencia_ativa_mw or 0.0, descricao_final, tempo, erro,
