@@ -8,6 +8,8 @@ __pycache__/
 # C extensions
 *.so
 
+config/intervencoes_operador.json
+
 # Distribution / packaging
 .Python
 build/
