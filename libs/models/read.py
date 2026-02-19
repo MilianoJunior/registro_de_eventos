@@ -10,11 +10,13 @@
 from __future__ import annotations
 
 import json
+import sys
+import time as _time
 from datetime import datetime, timedelta
 import os
 from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
 
-from libs.controllers.decorador import desempenho
+from libs.controllers.decorador import desempenho, LOGS_LEVEL
 from libs.models.database import Database
 from libs.models.utils.utils import columns_sql, limit_sql, order_sql, safe_ident
 
@@ -301,13 +303,30 @@ class OpParadas(BaseReader):
         return f"{horas}h {minutos}m" if horas > 0 else f"{minutos} min"
 
     def _get_dados_brutos_periodo(self, periodo: str) -> List[Dict[str, Any]]:
-        """Busca snapshots de paradas (que contêm temperaturas) dado um período, com cache local."""
+        """Busca snapshots de paradas dado um período, com cache local."""
         janela = _periodo_para_intervalo(periodo)
         sql = (
             "SELECT timestamp, dados FROM op_paradas "
             "WHERE timestamp >= %s ORDER BY timestamp ASC"
         )
+        t0 = _time.time()
         data = self._run(sql, (janela,))
+        elapsed = _time.time() - t0
+
+        if LOGS_LEVEL == 2:
+            total_rows = len(data)
+            tamanho_bytes = sum(
+                sys.getsizeof(r.get('dados', '')) for r in data
+            )
+            print(
+                f"[LOGS] _get_dados_brutos_periodo"
+                f" | período={periodo}"
+                f" | janela_inicio={janela.strftime('%Y-%m-%d %H:%M')}"
+                f" | rows={total_rows}"
+                f" | tamanho_dados≈{tamanho_bytes / 1024:.1f} KB"
+                f" | tempo_query={elapsed:.3f}s"
+            )
+
         self._cache_dados_brutos[periodo] = data
         return data
 
@@ -322,11 +341,15 @@ class OpParadas(BaseReader):
     def get_indicadores_manutencao(self, periodo: str = 'diario') -> Dict[str, Any]:
         """Calcula MTTR (Tempo médio para reparo) por usina, a partir de snapshots em `op_paradas`."""
         try:
+            t0_total = _time.time()
             rows = self._get_dados_brutos_periodo(periodo)
 
             estado_anterior: Dict[str, Dict[str, bool]] = {}
             totais: Dict[str, Dict[str, float]] = {}
+            pulados = 0
+            processados = 0
 
+            t0_loop = _time.time()
             anterior: Optional[Dict[str, Any]] = None
             for atual in rows:
                 if anterior is None:
@@ -337,21 +360,25 @@ class OpParadas(BaseReader):
                 ts_atual = atual.get("timestamp")
                 if not isinstance(ts_ant, datetime) or not isinstance(ts_atual, datetime):
                     anterior = atual
+                    pulados += 1
                     continue
 
                 dt_minutos = (ts_atual - ts_ant).total_seconds() / 60.0
                 if dt_minutos <= 0 or dt_minutos > 60.0:
                     anterior = atual
+                    pulados += 1
                     continue
 
                 raw = anterior.get("dados")
                 if not self._payload_pode_conter_manutencao(raw):
                     anterior = atual
+                    pulados += 1
                     continue
 
                 dados = self._parse_dados_paradas(raw)
                 if not dados:
                     anterior = atual
+                    pulados += 1
                     continue
 
                 lista_usinas = dados.get("usinas") or []
@@ -359,8 +386,27 @@ class OpParadas(BaseReader):
                     self._acumular_manutencao_por_usina(totais, estado_anterior, lista_usinas, dt_minutos)
 
                 anterior = atual
+                processados += 1
 
-            return {slug: {"mttr_str": self._formatar_mttr(t["tempo_manutencao"], t["eventos"])} for slug, t in totais.items()}
+            resultado = {slug: {"mttr_str": self._formatar_mttr(t["tempo_manutencao"], t["eventos"])} for slug, t in totais.items()}
+
+            if LOGS_LEVEL == 2:
+                elapsed_loop = _time.time() - t0_loop
+                elapsed_total = _time.time() - t0_total
+                print(
+                    f"[LOGS] get_indicadores_manutencao"
+                    f" | período={periodo}"
+                    f" | rows_recebidas={len(rows)}"
+                    f" | processadas={processados}"
+                    f" | puladas={pulados}"
+                    f" | usinas_com_mttr={len(resultado)}"
+                    f" | tempo_loop={elapsed_loop:.3f}s"
+                    f" | tempo_total={elapsed_total:.3f}s"
+                )
+                for slug, v in resultado.items():
+                    print(f"  [LOGS]   usina={slug} mttr={v['mttr_str']}")
+
+            return resultado
 
         except Exception as e:
             raise Exception(f"Erro em get_indicadores_manutencao: {e}")
