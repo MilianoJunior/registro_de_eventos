@@ -163,23 +163,6 @@
         "comandos": {
           "CalaSirene SuperSEP": [12532,"BOOLEAN",{"offset": -1}],
           "Reset SuperSEP": [12529,"BOOLEAN",{"offset": -1}]
-        },
-        "vibrações": {
-          "Vib. Mancal Comb. X alarmes": [13987,"REAL",{"offset": -1}],
-          "Vib. Mancal Comb. X trip": [13923,"REAL",{"offset": -1}],
-          "Vib. Mancal Comb. X value": [13467,"REAL",{"offset": -1}],
-          "Vib. Mancal Comb. Y alarmes": [13989,"REAL",{"offset": -1}],
-          "Vib. Mancal Comb. Y trip": [13925,"REAL",{"offset": -1}],
-          "Vib. Mancal Comb. Y value": [13469,"REAL",{"offset": -1}],
-          "Vib. Mancal Comb. Z alarmes": [13991,"REAL",{"offset": -1}],
-          "Vib. Mancal Comb. Z trip": [13927,"REAL",{"offset": -1}],
-          "Vib. Mancal Comb. Z value": [13471,"REAL",{"offset": -1}],
-          "Vib. Mancal Guia X alarmes": [13983,"REAL",{"offset": -1}],
-          "Vib. Mancal Guia X trip": [13919,"REAL",{"offset": -1}],
-          "Vib. Mancal Guia X value": [13463,"REAL",{"offset": -1}],
-          "Vib. Mancal Guia Y alarmes": [13985,"REAL",{"offset": -1}],
-          "Vib. Mancal Guia Y trip": [13921,"REAL",{"offset": -1}],
-          "Vib. Mancal Guia Y value": [13465,"REAL",{"offset": -1}]
         }
       },
       "UG-02": {

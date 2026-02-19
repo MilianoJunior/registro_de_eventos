@@ -19,15 +19,17 @@ def desempenho(func):
         contador += 1
         
         modulo = func.__module__.split('.')[-1] if func.__module__ else 'desconhecido'
-        # print('...' * 50)
-        # print(f" {contador} - Função: {func.__name__} | Local: {modulo}")
+        if LOGS_LEVEL == 2:
+            print('...' * 50)
+            print(f" {contador} - Função: {func.__name__} | Local: {modulo}")
         
         inicio = time.time()
         resultado = func(*args, **kwargs)
         fim = time.time() - inicio
         
-        # print(f"  {contador} - Função: {func.__name__} Tempo de execução: {fim} segundos")
-        # print('...' * 50)
+        if LOGS_LEVEL == 2:
+            print(f"  {contador} - Função: {func.__name__} Tempo de execução: {fim} segundos")
+            print('...' * 50)
         
         return resultado
     return wrapper

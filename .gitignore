@@ -9,6 +9,9 @@ __pycache__/
 *.so
 
 config/intervencoes_operador.json
+.agent/
+.cursor/
+assets/clientes/
 
 # Distribution / packaging
 .Python

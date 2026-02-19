@@ -1,223 +1,362 @@
-# Sistema COG - Monitoramento de Usinas
+# COG — Centro de Operação e Gestão de Usinas
+
+> Sistema de supervisão, registro e gestão de eventos operacionais para Pequenas Centrais Hidrelétricas (PCH) e Centrais Geradoras Hidrelétricas (CGH), desenvolvido pela **Engesep**.
+
+---
 
 ## 🎯 Propósito
 
 Reduzir paradas e custo operacional em CGHs/PCHs transformando sinais e registros em ações padronizadas, notificações úteis e relatórios automáticos para o cliente.
 
-**Nosso software existe para transformar eventos em decisões e resultados:** menos paradas, mais energia faturada e relatórios automáticos — com uma rotina tão simples que o operador quer usar.
+**O software existe para transformar eventos em decisões:** menos paradas, mais energia faturada e relatórios automáticos — com uma rotina simples o suficiente para o operador querer usar.
 
 ---
 
-## 📋 Requisitos
+## 🚀 Como Rodar
 
-### Funcionalidades Principais (com poucos cliks)
+### Pré-requisitos
+- Python 3.12+
+- MySQL (ou acesso ao banco Railway)
+- Ambiente virtual `amb`
 
-- O operador deve registrar um novo evento
-- O gerenciador deve saber os principais eventos em todas as usinas monitoradas
-- O sistema deve priorizar os eventos que podem ser mais críticos, seguindo uma classificação
+### Instalação
 
----
+```bash
+# 1. Ativar o ambiente virtual
+source /home/jrmfilho23/projetos/amb/bin/activate
 
-## 📄 Páginas do Sistema
+# 2. Instalar dependências
+pip install -r requeriments.txt
 
-### 🏠 Página - Home
+# 3. Configurar variáveis de ambiente
+cp .env.example .env   # editar com as credenciais reais
 
-**Descrição:** Página principal que mostra uma visão geral e contém no máximo 6 usinas, divididas em 2 linhas e 3 colunas de forma responsiva. Será feito um roteamento dessa página home para mostrar mais usinas em outras páginas pelo navegador.
+# 4. Iniciar o servidor
+python main.py
+```
 
-#### Componentes que Compoem a página Home
-
-##### 1 Sidebar Lateral
-**Descrição:** Possibilita o acesso as paginas de Visão geral(Home), Registro de Eventos, Configurar Usinas e página individual de cada usina.
-
-##### 2 Menu Superior
-
-##### 3 Lista Cards Gerais
-
-##### 4 Alerta de ocorrências críticas
-
-##### 4 Status das Usinas
-
-##### 5 Ocorrências
-
-#### Funções em Javascript usadas na página Home
-
-##### Funções herdadas de base.html (Socket.IO Core)
-
-1. **`socket.on('connect')`** - Event listener que dispara quando Socket.IO estabelece conexão com o servidor. Registra log detalhado com Socket ID e status de conexão no console
-
-2. **`socket.on('disconnect')`** - Event listener que dispara quando Socket.IO perde conexão com o servidor. Emite warning no console para monitoramento de desconexões
-
-3. **`socket.on('connect_error')`** - Event listener que captura erros durante tentativas de conexão Socket.IO. Registra erro detalhado no console para debugging
-
-4. **`socket.on('file_changed')`** - Event listener para hot-reload em desenvolvimento. Recarrega a página automaticamente quando detecta mudanças em arquivos do servidor
-
-5. **`socket.on('resultado_teste_leitura')`** - Event listener que processa respostas de testes de leitura de dispositivos Modbus TCP. Atualiza DOM com valores lidos (REAL, BOOLEAN) e exibe timestamp, tratando sucesso e erro de forma diferenciada
-
-6. **`themeToggle.addEventListener('click')`** - Event listener do botão de alternância de tema (dark/light mode). Toggle de classes CSS e persistência da preferência em localStorage
-
-##### Funções específicas de home.html (Status das Usinas)
-
-7. **`initStatusUsinas()`** - Função principal que inicializa todo o módulo de atualização de status das usinas. Define constantes, registra funções auxiliares e orquestra o fluxo de execução
-
-8. **`getColorByDescription(descricao)`** - Recebe uma string de descrição de status e retorna o objeto de cores correspondente (background, text, dot) do mapeamento STATUS_COLORS_MAP. Faz matching case-insensitive com palavras-chave
-
-9. **`renderBadge(dispositivos)`** - Renderiza badges visuais de status dos dispositivos. Recebe array de dispositivos e retorna HTML string com spans estilizados (Tailwind) para cada dispositivo, mostrando nome e descrição com cores apropriadas
-
-10. **`renderStatusDetalhes(dispositivos)`** - Gera HTML detalhado para exibição de status dos dispositivos. Formata informações de nome e descrição de cada dispositivo em divs com classes de texto, incluindo logs de debug
-
-11. **`applyStatus(slug, dispositivos)`** - Aplica os dados de status recebidos aos elementos DOM correspondentes. Localiza elementos pelo atributo data-usina-key e atualiza tanto os badges quanto os detalhes de status
-
-12. **`handleStatusPayload(payload)`** - Processa os dados recebidos do evento Socket.IO 'status_usinas_dados'. Valida o payload, extrai array de usinas, coleta métricas de status e chama applyStatus para cada usina
-
-13. **`solicitarStatus(socketInstance)`** - Envia solicitação de atualização de status ao servidor via Socket.IO. Implementa throttle de 5 segundos (THROTTLE_MS) para evitar requisições excessivas e registra logs detalhados
-
-14. **`setup()`** - Configura todo o sistema Socket.IO após garantir que o socket está disponível. Registra event listeners, cria intervalo automático de 30 segundos, implementa cleanup de recursos e faz solicitação inicial
-
-15. **`verificarSocket()`** - Função aninhada dentro de setup() que tenta localizar window.socket com retry automático. Executa até 50 tentativas com intervalo de 400ms entre cada tentativa antes de abortar
-
-16. **`solicitar(tipo)`** - Função arrow anônima que serve como wrapper para solicitarStatus(). Registra log com timestamp e tipo de solicitação (manual, automático, inicial) antes de executar a solicitação
-
-#### KPI - Key Performance Indicator (Indicador chave de desempenho)
-
-Para cada `op_usina` e cada Unidade Geradora (UG):
-
-- Indicador se a UG está parada ou operacional e botão que leva à tela personalizada da op_usina com mais informações
-- Quanto cada UG gerou de potência - geração instantânea, dia, mês
-- Nível montante (valor comum entre as UG's) e jusante (valor individual para cada UG) - instantânea, taxa de variação (mma 12 min), dia, mês e diferencial de grade (nível montante - nível jusante)
-- Temperaturas de todas as usinas, ordenadas pelo valor do maior risco, com valores de alarme e trip, onde o risco é calculado pela razão entre o valor atual e o TRIP
-- Display de eventos para cada UG e botão para inserir manualmente um novo evento, com cores definidas para as prioridades dos eventos
-
-### 📝 Página - Registro de Eventos
-
-**Descrição:** Página para registro e gerenciamento de ocorrências operacionais, permitindo criar novos eventos, visualizar histórico, adicionar anexos e acompanhar o status das ocorrências.
-
-### 🧾 Página - RAT
-
-**Descrição:** Página para criação, edição e geração de PDF do Relatório de Assistência Técnica (RAT), incluindo serviços executados, materiais aplicados, fotos e assinaturas. O RAT é criado após a equipe ir a campo e concluir a ação.
-
-### 📊 Página - Análise e Relatórios (desativada por enquanto)
-
-**Descrição:** Página para visualização de análises, métricas e relatórios consolidados das usinas e ocorrências.
-
-### ⚡ Página - Usinas
-
-**Descrição:** Página personalizada para cada op_usina, com gráficos e informações mais detalhadas.
-
-### ⚙️ Página - Configurações
-
-**Descrição:** Página para configurar as variáveis que alteram o desempenho do COG.
+O servidor sobe em `http://0.0.0.0:5001` por padrão.
 
 ---
 
-## 🏗️ Arquitetura do Projeto
+## 🔑 Variáveis de Ambiente (`.env`)
 
-O sistema segue uma arquitetura MVC (Model-View-Controller) organizada da seguinte forma:
+| Variável | Descrição | Padrão |
+|---|---|---|
+| `MYSQLHOST` | Host do banco MySQL | — |
+| `MYSQLUSER` | Usuário do banco | — |
+| `MYSQLPASSWORD` | Senha do banco | — |
+| `MYSQLDATABASE` | Nome do banco | — |
+| `MYSQLPORT` | Porta do banco | `3306` |
+| `MYSQLCONNECTIONTIMEOUT` | Timeout de conexão (s) | `10` |
+| `MYSQL_POOL_SIZE` | Tamanho do pool de conexões | `10` |
+| `SECRET_KEY` | Chave secreta do Flask (sessão) | `change-me` |
+| `PORT` | Porta do servidor Flask | `5001` |
+| `INTERVALO_COLETA` | Intervalo de coleta Modbus (s) | `30` |
+| `DEV_RELOAD` | Ativa hot-reload de estáticos | `0` |
+| `TEMP_DEBUG` | Ativa logs de depuração temporários | `0` |
 
-### Estrutura de Diretórios
+---
+
+## 📁 Estrutura do Projeto
 
 ```
-10_registro_eventos/
+registro_de_eventos/
+├── main.py                        # Entrypoint Flask + SocketIO + thread de coleta
+├── requeriments.txt               # Dependências Python
+├── .env                           # Credenciais (não versionar)
+├── config/
+│   ├── usinas_dispositivos.json   # Configuração de usinas e dispositivos Modbus
+│   └── intervencoes_operador.json # Intervenções manuais persistidas
+├── assets/
+│   └── clientes/                  # CSVs para seed de clientes
 ├── libs/
-│   ├── controllers/      # Controladores de lógica de negócio
-│   │   ├── homeController.py
-│   │   ├── eventosController.py
-│   │   ├── usinasController.py
-│   │   └── analiseController.py
-│   ├── models/          # Camada de acesso ao banco de dados
-│   │   ├── read.py      # Classes para operações SELECT
-│   │   ├── edit.py      # Classes para operações UPDATE
-│   │   ├── create.py    # Classes para operações INSERT
-│   │   ├── delete.py    # Classes para operações DELETE
-│   │   ├── database.py  # Gerenciamento de conexões
-│   │   └── docs/        # Documentação do banco
-│   ├── routes/          # Definição de rotas Flask
-│   │   └── routes.py
-│   └── views/           # Templates HTML e arquivos estáticos
-│       ├── home.html
-│       ├── registro_eventos.html
-│       ├── usinas.html
-│       ├── analise_relatorios.html
-│       ├── components/  # Componentes reutilizáveis
-│       └── static/      # CSS, imagens, JS
-├── main.py              # Ponto de entrada da aplicação Flask
-└── requeriments.txt     # Dependências Python
+    ├── routes/
+    │   └── routes.py              # Todas as rotas Flask (autenticação + páginas + API)
+    ├── controllers/
+    │   ├── homeController.py      # Dashboard principal
+    │   ├── ocorrenciasController.py # Criação, listagem e resolução de ocorrências
+    │   ├── usinasController.py    # Página individual por usina
+    │   ├── ratsController.py      # CRUD completo de RATs + geração de PDF
+    │   ├── configController.py    # Configurações das usinas
+    │   └── decorador.py           # Decorator @desempenho (log de tempo)
+    ├── models/
+    │   ├── database.py            # Connection pool MySQL (singleton thread-safe)
+    │   ├── read.py                # Classes Read por tabela (SELECT)
+    │   ├── create.py              # Classes Create por tabela (INSERT)
+    │   ├── edit.py                # Classes Edit por tabela (UPDATE)
+    │   ├── delete.py              # Classes Delete por tabela (DELETE)
+    │   ├── modelstate.py          # CacheStore + DadosContexto + ViewModels
+    │   ├── rats_crud.py           # CRUD especializado para RATs
+    │   └── docs/                  # Seeds e migrations (scripts pontuais)
+    ├── servicos/
+    │   ├── coletor_core.py        # Coleta async Modbus TCP de todas as usinas
+    │   └── readRT.py              # Leitura individual de registradores Modbus
+    ├── sockets/
+    │   └── __init__.py            # Registro de handlers Socket.IO
+    └── views/
+        ├── base.html              # Layout base com sidebar, Socket.IO e tema dark/light
+        ├── login.html             # Tela de login com rate-limit
+        ├── home.html              # Dashboard com cards de usinas e KPIs
+        ├── ocorrencias.html       # Registro e listagem de ocorrências
+        ├── usinas.html            # Página individual por usina com timeline
+        ├── rats.html              # RAT (Relatório de Assistência Técnica)
+        ├── configuracoes.html     # Configuração de usinas e dispositivos
+        ├── temperaturas.html      # Monitor de temperaturas em risco
+        ├── error.html             # Página de erro genérico
+        └── components/            # Componentes Jinja2 reutilizáveis
+        |   ├── _cards.html
+        |   ├── _info_rats.html
+        |   ├── _criar_rats.html
+        |   ├── _modificar_rats.html
+        |   ├── _pdf_rats.html
+        |   └── macros.html
+        └── static/
+            ├── css/
+            │   ├── styles.css             # Design system (variáveis CSS globais)
+            │   ├── card.css               # Estilos de cards
+            │   └── tailwind.min.css       # Tailwind (offline)
+            └── js/
+                └── status_usinas.js       # Módulo de atualização de status via Socket.IO
 ```
-
-### Camadas da Aplicação
-
-1. **Views (Apresentação):** Templates HTML com Jinja2
-2. **Controllers (Lógica):** Processamento de requisições e orquestração
-3. **Models (Dados):** Classes abstratas para acesso ao banco de dados MySQL
 
 ---
 
-## 📊 Estrutura de Ocorrências
+## 🏗️ Arquitetura
 
-O sistema utiliza a tabela `op_ocorrencia` para registrar eventos operacionais:
+### Fluxo Principal
 
-### ✅ Lógica de Operação (Ocorrência → Ação → RAT)
+```
+Browser
+  │
+  ├─ HTTP → Flask routes.py → Controller → Model/DadosContexto → MySQL
+  │
+  └─ WebSocket (Socket.IO) ←── Thread Background (coletor_core.py → Modbus TCP)
+                                      │
+                                      └─ op_paradas (MySQL) ← persiste cada coleta
+```
 
-1. **Registro de ocorrência**: operador cria a ocorrência na tela de registro.
-2. **Requer ação urgente**: quando marcado, a ocorrência entra na lista de ações pendentes e exibe botão **Resolver**.
-3. **Resolução operacional**: equipe/operador registra a resolução na aba “Resolver Ocorrência”.
-4. **RAT somente após campo**: o RAT é criado apenas depois da equipe de manutenção ir a campo e concluir a ação.
+### Camadas
+
+| Camada | Responsabilidade |
+|---|---|
+| **routes.py** | Autenticação, rate-limit, mapeamento URL → Controller |
+| **Controllers** | Orquestra lógica de negócio, prepara ViewModel, chama Model |
+| **DadosContexto** | Camada de dados com cache em memória (CacheStore + TTL) |
+| **Models (Read/Create/Edit/Delete)** | Acesso direto ao MySQL via connection pool |
+| **coletor_core.py** | Leitura async paralela das UGs via Modbus TCP a cada 30s |
+| **Socket.IO** | Emite `status_usinas_dados` para todos os clientes em tempo real |
+
+---
+
+## 🔗 Rotas
+
+### Autenticação
+
+| Método | Rota | Descrição |
+|---|---|---|
+| `GET/POST` | `/login` | Tela e processamento de login (rate-limit: 5 tentativas / 5 min por IP) |
+| `GET` | `/logout` | Encerra sessão |
+
+### Páginas HTML
+
+| Método | Rota | Descrição |
+|---|---|---|
+| `GET` | `/` | Dashboard Home (cards de usinas + KPIs + temperaturas) |
+| `GET` | `/usina/<sigla>` | Página individual da usina com timeline de ocorrências |
+| `GET` | `/ocorrencias` | Registro e listagem de ocorrências |
+| `GET` | `/rats` | Informações de RATs |
+| `GET` | `/criarrat` | Formulário de criação de RAT |
+| `GET` | `/modificarrat[/<rat_id>]` | Edição de RAT |
+| `GET` | `/configuracoes` | Configuração das usinas |
+| `GET` | `/temperaturas` | Monitor de temperaturas em risco |
+
+### API JSON
+
+| Método | Rota | Descrição |
+|---|---|---|
+| `POST` | `/salvar_ocorrencia` | Cria nova ocorrência |
+| `GET` | `/listar_ocorrencias` | Lista ocorrências (filtros via querystring) |
+| `PUT/POST` | `/resolver_ocorrencia/<id>` | Resolve uma ocorrência |
+| `POST` | `/rat/salvar` | Cria RAT |
+| `POST` | `/rat/atualizar` | Atualiza RAT existente |
+| `POST` | `/rat/deletar` | Remove RAT e seus dados relacionados |
+| `POST` | `/rat/upload_foto` | Upload de foto para o RAT |
+| `GET` | `/rat/ver/<rat_id>` | Retorna dados completos do RAT |
+| `GET` | `/rat/pdf/<rat_id>` | Gera PDF do RAT (preview ou download) |
+| `POST` | `/rat/atualizar_status_financeiro` | Atualiza status financeiro do RAT |
+| `GET` | `/produtos/buscar` | Busca produtos/materiais para RAT |
+| `GET` | `/configuracoes/carregar` | Retorna configurações das usinas |
+| `POST` | `/configuracoes/salvar` | Persiste configurações |
+
+---
+
+## 🗄️ Banco de Dados
+
+### Connection Pool
+
+- Pool singleton thread-safe (tamanho configurável via `MYSQL_POOL_SIZE`)
+- Toda instância de `Database` obtém uma conexão do pool, usa e devolve no `finally`
+- `autocommit=False` — commit explícito após cada operação de escrita
+
+### Tabelas Principais
+
+| Tabela | Descrição |
+|---|---|
+| `op_usina` | Cadastro das usinas monitoradas |
+| `op_usuario` | Usuários e operadores |
+| `op_ocorrencia` | Eventos operacionais registrados |
+| `op_ocorrencia_hist` | Histórico/auditoria de mudanças nas ocorrências |
+| `op_paradas` | Snapshots JSON de coleta Modbus (inserido a cada 30s) |
+| `op_anexo` | Anexos e fotos de ocorrências |
+| `clientes` | Clientes/usinas para faturamento (`nome_razao`, `cnpj`, `cidade`, `obras`) |
+| `rats` | Relatórios de Assistência Técnica |
+| `rat_servicos` | Serviços executados por RAT |
+| `rat_materiais` | Materiais aplicados por RAT |
+| `rat_fotos` | Fotos vinculadas ao RAT |
+
+### Estrutura da Ocorrência
 
 ```sql
--- Tabela principal de ocorrências
 op_ocorrencia {
-  BIGINT id PK                    -- Identificador único
-  BIGINT usina_id FK              -- Usina relacionada
-  BIGINT operador_id FK           -- Operador que registrou
-  VARCHAR tipo                    -- Ex.: Evento, Alarme, Trip
-  VARCHAR categoria               -- Ex.: Operação/Humano, Elétrica, Hidráulica
-  VARCHAR unidade                 -- Ex.: UG-01, Vertedouro
-  VARCHAR tags                    -- Tags em formato CSV
-  TEXT playbook                   -- Instruções de resposta
-  TEXT template_texto             -- Template aplicado
-  LONGTEXT descricao              -- Descrição detalhada
-  ENUM status                     -- aberta|em_andamento|resolvida|cancelada
-  ENUM severidade                 -- baixa|média|alta|crítica
-  ENUM origem                     -- humano|scada|api|importacao
-  JSON metadata                   -- Dados extras de integração
-  DATETIME created_at
-  DATETIME updated_at
-  DATETIME resolved_at            -- Data de resolução (nullable)
+  id         BIGINT PK
+  usina_id   BIGINT FK → op_usina
+  tipo       VARCHAR   -- Evento | Alarme | Trip | Comando | Manutenção
+  categoria  VARCHAR   -- Operação/Humano | Elétrica | Hidráulica | Mecânica | ...
+  unidade    VARCHAR   -- UG-01 | Vertedouro | ...
+  severidade ENUM      -- baixa | média | alta | crítica
+  status     ENUM      -- aberta | em_andamento | resolvida | cancelada
+  origem     ENUM      -- humano | scada | api | importacao
+  descricao  LONGTEXT
+  metadata   JSON
+  created_at DATETIME
+  resolved_at DATETIME
 }
 ```
 
-### Estrutura do Banco de Dados
+---
 
-O sistema é composto por 5 tabelas principais:
+## ⚡ Coleta de Dados em Tempo Real (Modbus TCP)
 
-1. **`op_usina`** - Cadastro de usinas
-2. **`op_usuario`** - Usuários e operadores do sistema
-3. **`op_ocorrencia`** - Registro de eventos operacionais
-4. **`op_ocorrencia_hist`** - Histórico e auditoria de mudanças
-5. **`op_anexo`** - Anexos de evidências (fotos, relatórios, etc.)
+### Fluxo de Coleta
 
-#### Relacionamentos:
-- Uma usina possui muitas ocorrências (1:N)
-- Um operador registra muitas ocorrências (1:N)
-- Uma ocorrência possui histórico de auditoria (1:N)
-- Uma ocorrência pode ter múltiplos anexos (1:N)
+1. **Thread background** (`coletor_background_thread`) inicia junto com o servidor
+2. A cada `INTERVALO_COLETA` segundos (padrão: 30s), chama `coletar_status_completo()`
+3. `coletor_core.py` lê `config/usinas_dispositivos.json` e dispara leituras **async paralelas** para cada dispositivo de cada usina
+4. Para cada dispositivo UG, coleta via Modbus TCP:
+   - **Status** (registradores BOOLEAN): US, UMD, UPS, UPGM, UP
+   - **Potência Ativa** (MW)
+   - **Temperaturas** (mancais, gaxeteiros, etc.)
+   - **Níveis** (montante e jusante)
+5. Resultado salvo em `op_paradas` (JSON) e emitido via `Socket.IO` (`status_usinas_dados`) para todos os clientes conectados
 
-Para detalhes completos sobre a estrutura do banco, métodos de consulta e operações, consulte:
-- [📘 Documentação do Banco de Dados](./libs/models/docs/database.md) - Schema completo, modelos e API de acesso
+### Intervenções Manuais
+
+Permitem sobrescrever o status de um dispositivo sem alterar a leitura Modbus:
+
+- `MANUTENCAO` → exibe "Manutenção (parada)"
+- `RESTRICAO` → exibe "Restrição da concessionária (parada)"
+- `NORMAL` → remove o override
+
+Intervenções são persistidas em `config/intervencoes_operador.json` (sobrevivem a restarts).
+
+---
+
+## 🧠 Cache em Memória
+
+### CacheStore
+
+Cache global com TTL por chave. Registra `MISS / HIT / EXPIRED / SET / DEL` no console com prefixo `[CACHE]`.
+
+### TTLs Configurados
+
+| Chave | TTL | Dado |
+|---|---|---|
+| `usinas` | 6h | Cadastro de usinas |
+| `usuarios` | 6h | Lista de usuários |
+| `ocorrencias_N` | 6h* | Ocorrências recentes (atualização incremental por ID) |
+| `stats_status` | 5min | Contagem de ocorrências por status |
+| `kpis_mttr` | 5min | MTTR por usina |
+| `temperaturas` | 1min | Temperaturas em risco |
+| `ocorrencias_requer_acao` | 30s | Ocorrências com ação pendente |
+
+\* Atualização incremental a cada 60s: busca apenas registros com ID > último ID em cache, sem recarregar tudo.
+
+---
+
+## 📝 Fluxo Operacional (Ocorrência → RAT)
+
+```
+1. Operador detecta evento na usina
+       ↓
+2. Registra ocorrência em /ocorrencias
+       ↓
+3. Se "requer ação urgente" → entra na fila de ações pendentes
+       ↓
+4. Equipe resolve operacionalmente → registra resolução
+       ↓
+5. Equipe vai a campo → conclui ação física
+       ↓
+6. Cria RAT em /criarrat com:
+   - Serviços executados (horas de início/fim por dia)
+   - Materiais aplicados
+   - Fotos de evidência
+   - Assinaturas (técnico + cliente)
+       ↓
+7. Gera PDF do RAT em /rat/pdf/<id>
+```
+
+---
+
+## 🧾 RAT (Relatório de Assistência Técnica)
+
+- Criação, edição e exclusão de RATs com relacionamentos em cascata
+- Upload de fotos associadas ao RAT
+- Cálculo automático de horas trabalhadas por serviço
+- Geração de PDF via **WeasyPrint** (template HTML → PDF renderizado)
+- Status financeiro atualizável independentemente
+
+---
+
+## 🔒 Autenticação
+
+- Usuários definidos em memória no `routes.py` (sem banco de dados)
+- Login por username ou e-mail + senha
+- Sessão Flask com `session.permanent` para "lembrar-me"
+- Rate-limit em memória: **5 tentativas por IP a cada 5 minutos**
+- Todas as rotas exigem sessão ativa, exceto `/login`, `/static/` e `/socket.io/`
+
+---
+
+## 🎨 Design System
+
+- **Framework CSS**: Tailwind (offline) + variáveis globais em `styles.css`
+- **Tema**: dark/light mode com toggle persistido em `localStorage`
+- **Componentes**: reutilizados via Jinja2 `{% include %}` e `{% macro %}`
+- **Nenhum HTML em strings JS** — usar `<template>` para clones dinâmicos
+
+---
+
+## 🛠️ Dependências
+
+| Pacote | Versão | Uso |
+|---|---|---|
+| `Flask` | 3.0.0 | Framework web |
+| `Flask-SocketIO` | 5.3.5 | WebSocket (Socket.IO) |
+| `mysql-connector-python` | 8.2.0 | Driver MySQL com pool |
+| `python-dotenv` | 1.0.0 | Variáveis de ambiente |
+| `python-socketio` | 5.10.0 | Backend Socket.IO |
+| `eventlet` | 0.33.3 | Async mode Socket.IO |
+| `watchdog` | 3.0.0 | Hot-reload de estáticos (DEV) |
+| `WeasyPrint` | latest | Geração de PDF |
+| `werkzeug` | latest | Utilitários HTTP/HTTP |
+| `httpx` | latest | Requisições HTTP async |
+| `python-dateutil` | 2.8.2 | Parsing de datas |
 
 ---
 
 ## 📚 Documentação Adicional
 
-Para mais detalhes sobre a arquitetura e componentes do sistema:
-
-- **[📘 Database Documentation](./libs/models/docs/database.md)** - Documentação completa do banco de dados
-  - Schema de todas as tabelas
-  - API de leitura (`Read`) - métodos como `get_all()`, `where()`, `get_by_id()`, etc.
-  - API de edição (`Edit`) - métodos como `update_by_id()`, `update_where()`, `increment()`, etc.
-  - Operadores de filtro e consultas avançadas
-  - Diagramas ER (Entity-Relationship)
-
-- **[🔄 FLOWCHART.md](./FLOWCHART.md)** - Fluxogramas detalhados do projeto
-
-- **[🎨 DESIGN_SYSTEM.md](./DESIGN_SYSTEM.md)** - Sistema de design e componentes UI
-
+- **[`.agent/rules/projeto.md`](.agent/rules/projeto.md)** — Regras de arquitetura e convenções de código para o agente de IA
+- **[`config/usinas_dispositivos.json`](config/usinas_dispositivos.json)** — Configuração de usinas, IPs, portas e registradores Modbus
+- **[`libs/models/docs/`](libs/models/docs/)** — Seeds e scripts de migração do banco de dados
