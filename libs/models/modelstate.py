@@ -17,6 +17,7 @@ import time
 import inspect
 import os
 from libs.models.read import OpUsina, OpOcorrencia, OpUsuario, OpParadas
+from libs.servicos import mttr_tracker
 from libs.models.utils.mock_data import (
     DEVELOPER_MODE, 
     get_mock_data, 
@@ -327,12 +328,8 @@ class DadosContexto:
 
     @desempenho
     def get_kpis_mttr(self) -> Dict:
-
-        cached = CacheStore.get('kpis_mttr')
-        if cached is not None:
-            return cached
-
-        data = self._op_parada.get_indicadores_manutencao(periodo='diario')
+        """Lê MTTR acumulado em memória pelo mttr_tracker — sem banco, 0ms."""
+        data = mttr_tracker.get_mttr_atual()
         CacheStore.set('kpis_mttr', data, ttl_seconds=TTL_KPIS_MTTR_SEG)
         return data
 

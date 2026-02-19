@@ -55,6 +55,7 @@ def handle_exception(e):
 # ----------------------------------------------------------------------------------
 from libs.routes.routes import *
 from libs.servicos.coletor_core import coletar_status_completo
+from libs.servicos import mttr_tracker
 from libs.models.create import OpParadasCreate
 import threading
 import json
@@ -79,6 +80,8 @@ def coletor_background_thread():
         except Exception:
             time.sleep(intervalo_coleta)
             continue
+
+        mttr_tracker.atualizar(payload)
 
         try:
             insert_id = OpParadasCreate().insert({"dados": json.dumps(payload)})
