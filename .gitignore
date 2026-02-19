@@ -9,6 +9,7 @@ __pycache__/
 *.so
 
 config/intervencoes_operador.json
+config/intervencoes_operador.json.bkp
 .agent/
 .cursor/
 assets/clientes/
