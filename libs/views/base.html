@@ -82,14 +82,26 @@
             document.documentElement.classList.remove('dark')
         }
 
-        // Sidebar (toggle minimalista)
+        // Sidebar (toggle minimalista com auto-close)
         (function () {
             const STORAGE_KEY = 'sidebar_collapsed';
+            const AUTO_CLOSE_DELAY = 30000; // 30 segundos
             const sidebar = document.getElementById('sidebar');
             const btnClose = document.getElementById('sidebar-toggle-close');
             const btnOpen = document.getElementById('sidebar-toggle-open');
             const main = document.getElementById('app-main');
+            let timer = null;
+
             if (!sidebar) return;
+
+            function _iniciar_temporizador() {
+                clearTimeout(timer);
+                timer = setTimeout(() => setCollapsed(true), AUTO_CLOSE_DELAY);
+            }
+
+            function _parar_temporizador() {
+                clearTimeout(timer);
+            }
 
             function setCollapsed(collapsed) {
                 const isCollapsed = Boolean(collapsed);
@@ -97,6 +109,8 @@
                 if (btnOpen) btnOpen.classList.toggle('hidden', !isCollapsed);
                 if (main) main.classList.toggle('pl-14', isCollapsed);
                 try { localStorage.setItem(STORAGE_KEY, isCollapsed ? '1' : '0'); } catch { }
+
+                isCollapsed ? _parar_temporizador() : _iniciar_temporizador();
             }
 
             let collapsed = false;
@@ -105,6 +119,9 @@
 
             if (btnClose) btnClose.addEventListener('click', () => setCollapsed(true));
             if (btnOpen) btnOpen.addEventListener('click', () => setCollapsed(false));
+
+            sidebar.addEventListener('mouseenter', _parar_temporizador);
+            sidebar.addEventListener('mouseleave', _iniciar_temporizador);
         })();
     </script>
 </body>
