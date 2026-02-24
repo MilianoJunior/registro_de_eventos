@@ -59,23 +59,14 @@ def build_sigla(nome: str) -> str:
 
 inserir_dados = {
     "op_usuario": [
-        {
-        "nome":"Eduardo",
-        "email":"eduardo@engesep.com.br",
-        "perfil":"operador",
-        "cargo":"Técnico em Eletrônica",
-        "assinatura":"assets/assinaturas/eduardo.png",
+      {
+        "nome":"Paulo Cesar da Silva",
+        "email":"engenharia@engesep.com.br",
+        "perfil":'engenharia',
+        "cargo":"Engenheiro Eletricista",
+        "assinatura":"assets/assinaturas/paulo.png",
         "ativo":1
-    },
-    ],
-    "op_usina": [
-        {
-        "nome":"PCH PIRA",
-        "sigla":build_sigla("PCH PIRA"),
-        "timezone":"America/Sao_Paulo",
-        "ativo":1
-    },
-    ],
+    }]
 }
 
 def inserir_dados_online():

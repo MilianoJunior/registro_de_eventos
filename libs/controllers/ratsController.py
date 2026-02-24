@@ -322,8 +322,6 @@ class RatsController:
             print(f"Erro no controller salvarrat: {e}")
             return {'status': 'error', 'message': str(e)}, 500
 
-    
-
     def upload_foto(self):
         try:
             if 'file' not in request.files:
@@ -416,6 +414,7 @@ class RatsController:
 
         usinas = self.dados_contexto.get_usinas()
         if rat_id:
+            print(f"Modificando RAT: {rat_id}")
             rat_data = self.rat_model.read(['*'], where=f"id = {rat_id}")
             if rat_data:
                 rat = rat_data[0]
@@ -477,28 +476,36 @@ class RatsController:
             if not rat_id:
                 return {'message': 'ID do RAT não fornecido'}, 400
 
+            servicos = data.get('servicos', [])
+            tecnico_id = None
+            if servicos:
+                exec_val = servicos[0].get('executante')
+                if exec_val:
+                    tecnico_id = int(exec_val)
+
             # 1. Atualizar RAT (Informações Descritivas)
             rat_update = {
                 'descricao_atividades': data.get('descricao_atividades'),
                 'conclusao': data.get('conclusao'),
-                'deslocamento': data.get('deslocamento')
+                'deslocamento': data.get('deslocamento'),
+                'tecnico_id': tecnico_id
             }
             self.rat_model.update(rat_update, where=f"id = {rat_id}")
 
             # 2. Atualizar Serviços (Delete all for RAT and Re-insert)
             self.rat_servicos_model.delete(where=f"rat_id = {rat_id}")
             
-            servicos = data.get('servicos', [])
             if servicos:
                 for svc in servicos:
                     # Validate mandatory fields
                     if svc.get('data') and svc.get('inicio') and svc.get('fim'):
+                        executante_val = svc.get('executante')
                         self.rat_servicos_model.create({
                             'rat_id': rat_id,
                             'data_servico': svc['data'],
                             'hora_inicio': svc['inicio'],
                             'hora_fim': svc['fim'],
-                            'executante_id': svc.get('executante') 
+                            'executante_id': int(executante_val) if executante_val else None
                         })
 
             # 3. Atualizar Materiais (Delete all and Re-insert)
