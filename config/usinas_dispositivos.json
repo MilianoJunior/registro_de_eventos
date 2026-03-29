@@ -663,5 +663,78 @@
         }
       }
     }
+  },
+  "PCH PIRA":{
+        "ip": "100.93.197.110",
+    "port": 8010,
+    "table": "pch_pira",
+    "dispositivos": {
+      "UG-01": {
+        "conexao": {
+          "ip": "10.200.20.11",
+          "port": 502
+        },
+        "caracteristicas": {
+          "potência máxima": 7500,
+          "velocidade máxima": 415
+        },
+        "leituras": {
+          "Potência Ativa": [2588, "INPUT_REAL",{"offset": 0, "converter": "word_order"}]
+        }
+      },
+      "UG-02": {
+        "conexao": {
+          "ip": "10.200.20.21",
+          "port": 502
+        },
+        "caracteristicas": {
+          "potência máxima": 7500,
+          "velocidade máxima": 415
+        },
+        "leituras": {
+          "Potência Ativa": [2588, "INPUT_REAL",{"offset": 0, "converter": "word_order"}]
+        }
+      },
+      "UG-03": {
+        "conexao": {
+          "ip": "10.200.20.31",
+          "port": 502
+        },
+        "caracteristicas": {
+          "potência máxima": 7500,
+          "velocidade máxima": 415
+        },
+        "leituras": {
+          "Potência Ativa": [2588, "INPUT_REAL",{"offset": 0, "converter": "word_order"}]
+        }
+      },
+      "UG-04": {
+        "conexao": {
+          "ip": "10.200.20.41",
+          "port": 502
+        },
+        "caracteristicas": {
+          "potência máxima": 2500,
+          "velocidade máxima": 415
+        },
+        "leituras": {
+          "Potência Ativa": [2588, "INPUT_REAL",{"offset": 0, "converter": "word_order"}]
+        }
+      },
+      "UG-05": {
+        "conexao": {
+          "ip": "10.200.20.51",
+          "port": 502
+        },
+        "caracteristicas": {
+          "potência máxima": 500,
+          "velocidade máxima": 415
+        },
+        "leituras": {
+          "Potência Ativa": [2588, "INPUT_REAL",{"offset": 0, "converter": "word_order"}]
+        }
+      }
+    }
+
   }
 }

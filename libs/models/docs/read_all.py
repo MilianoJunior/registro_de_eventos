@@ -40,7 +40,7 @@ def main():
         for tabela in tabelas:
             print("=" * 60)
             print(f"TABELA: {tabela}")
-            colunas, registros = ler_tabela(cursor, tabela, limite=5)
+            colunas, registros = ler_tabela(cursor, tabela, limite=1)
             if not registros:
                 print("  (vazia)")
                 continue
