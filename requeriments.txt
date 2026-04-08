@@ -29,3 +29,6 @@ httpx
 werkzeug
 WeasyPrint
 
+# adicionar as bibliotecas do gemini
+google-generativeai
+

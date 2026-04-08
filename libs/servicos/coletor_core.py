@@ -453,11 +453,25 @@ def _extrair_potencia_ativa(valores: Optional[Dict[str, Any]]) -> Optional[float
     return None
 
 def _determinar_status(valores: Dict[str, Any], nome_usina: str, nome_dispositivo: str) -> str:
-    """Determina status geral da UG (primeiro True na ordem de prioridade)."""
+    """Determina status geral da UG (primeiro True na ordem de prioridade).
+
+    Exceção PCH PIRA: CLP usa lógica ativa-baixa (False = estado atual).
+    - Se todos os estados operacionais (US, UMD, UPS, UPGM) são False → UP (parada)
+    - Caso contrário → primeiro False na ordem de prioridade = estado atual
+    """
+    if "PIRA" in nome_usina.upper():
+        operacionais = [k for k in STATUS_LABEL_ORDER if k != "UP (parada)"]
+        todos_operacionais_false = all(valores.get(k) is False for k in operacionais if k in valores)
+        if todos_operacionais_false:
+            return "UP (parada)"
+        for key in STATUS_LABEL_ORDER:
+            if key in valores and valores[key] is False:
+                return key
+        return "Indeterminado"
+
     for key, val in valores.items():
         if val is True:
             return key
-    # raise ValueError(f"Nome da usina: {nome_usina}, Nome do dispositivo: {nome_dispositivo}, Status indeterminado: {valores}")
     return "Indeterminado"
 
 def _normalizar_slug(texto: str) -> str:
