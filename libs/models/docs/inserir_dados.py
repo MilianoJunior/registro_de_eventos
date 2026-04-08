@@ -60,11 +60,11 @@ def build_sigla(nome: str) -> str:
 inserir_dados = {
     "op_usuario": [
       {
-        "nome":"Paulo Cesar da Silva",
-        "email":"engenharia@engesep.com.br",
+        "nome":"Felipe Marinelo",
+        "email":"engensep@engesep.com.br",
         "perfil":'engenharia',
-        "cargo":"Engenheiro Eletricista",
-        "assinatura":"assets/assinaturas/paulo.png",
+        "cargo":"Desenvolvedor de Software",
+        "assinatura":"assets/assinaturas/felipe.png",
         "ativo":1
     }]
 }
